@@ -1448,8 +1448,9 @@ Write ONE sentence summary. Maximum 10 words.`;
                 const batch = articles.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (article) => {
                     try {
-                        let prompt;
+                        let prompt = '';
                         let maxTokens = 200;
+                        let response, data, aiContent;
                         
                         if (aiRewrite) {
                             // AI Rewrite mode - transform the article completely
