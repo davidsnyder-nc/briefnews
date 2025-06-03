@@ -2984,6 +2984,47 @@ Write exactly 3 sentences.`;
             }
         }
 
+        let statusMessageInterval = null;
+
+        function startRotatingStatusMessages() {
+            const wittyMessages = [
+                'Fetching and analyzing news articles...',
+                'Teaching AI to read faster than you...',
+                'Convincing servers to share their secrets...',
+                'Filtering out the noise, keeping the gold...',
+                'Making sense of the chaos for you...',
+                'Turning information overload into clarity...',
+                'Brewing your perfect news digest...',
+                'Connecting dots across the internet...',
+                'Hunting down the most important stories...',
+                'Transforming headlines into insights...'
+            ];
+            
+            let messageIndex = 0;
+            const statusElement = document.getElementById('statusMessage');
+            
+            // Set initial message
+            statusElement.textContent = wittyMessages[0];
+            
+            // Clear any existing interval
+            if (statusMessageInterval) {
+                clearInterval(statusMessageInterval);
+            }
+            
+            // Start rotating messages every 5 seconds
+            statusMessageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % wittyMessages.length;
+                statusElement.textContent = wittyMessages[messageIndex];
+            }, 5000);
+        }
+
+        function stopRotatingStatusMessages() {
+            if (statusMessageInterval) {
+                clearInterval(statusMessageInterval);
+                statusMessageInterval = null;
+            }
+        }
+
         async function generateCustomNewsletter() {
             if (!window.currentDisplayedArticles || window.currentDisplayedArticles.length === 0) {
                 showToast('No articles to export', 'error');
@@ -3557,8 +3598,8 @@ Write exactly 3 sentences.`;
                 return;
             }
 
-            // Show loading state
-            document.getElementById('statusMessage').textContent = 'Fetching and analyzing news articles...';
+            // Show loading state with rotating messages
+            startRotatingStatusMessages();
             document.getElementById('loader').classList.remove('hidden');
             document.getElementById('newsletterArea').innerHTML = '';
 
@@ -3709,12 +3750,14 @@ Write exactly 3 sentences.`;
                 }
 
                 // Hide loading state
+                stopRotatingStatusMessages();
                 document.getElementById('loader').classList.add('hidden');
                 document.getElementById('statusMessage').textContent = `Generated newsletter with ${processedArticles.length} articles`;
 
             } catch (error) {
                 console.error('Error generating newsletter:', error);
                 console.error('Error details:', error.message, error.stack);
+                stopRotatingStatusMessages();
                 document.getElementById('statusMessage').textContent = 'Error generating newsletter. Please try again.';
                 document.getElementById('loader').classList.add('hidden');
                 showToast(`Error: ${error.message || 'Unknown error'}`, 'error');
