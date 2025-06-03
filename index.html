@@ -844,7 +844,7 @@ Write ONE sentence summary. Maximum 10 words.`;
 
             // Show toast notification and navigate to home
             showToast('Settings saved successfully!', 'success');
-            showNews();
+            setTimeout(() => showNews(), 500);
         }
 
         function handleAiProviderChange() {
@@ -2426,6 +2426,10 @@ Write exactly 3 sentences.`;
         }
 
         function showNews() {
+            // Show news page and hide settings page
+            document.getElementById('newsPage').style.display = 'block';
+            document.getElementById('settingsPage').style.display = 'none';
+            
             // Show welcome section and hide header controls
             const welcomeSection = document.getElementById('welcomeSection');
             const newsHeader = document.getElementById('newsHeader');
