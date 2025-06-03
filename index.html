@@ -3566,149 +3566,90 @@ Write exactly 3 sentences.`;
             }
         }
 
-        // Enhanced browser TTS function with optimized voice selection
+        // Simplified browser TTS function with single voice consistency
         function useBrowserTTS(text, playButton, stopButton, statusDiv, playerDiv) {
             if ('speechSynthesis' in window) {
                 speechSynthesis.cancel();
                 
-                // Handle long text by chunking (browser TTS works better with smaller chunks)
-                const maxChunkLength = 200; // Shorter chunks for better browser TTS performance
-                const sentences = text.split(/[.!?]+/);
-                const chunks = [];
-                let currentChunk = '';
+                // Find and select the best voice once at the beginning
+                const voices = speechSynthesis.getVoices();
+                let selectedVoice = null;
                 
-                for (const sentence of sentences) {
-                    if ((currentChunk + sentence).length > maxChunkLength && currentChunk.length > 0) {
-                        chunks.push(currentChunk.trim() + '.');
-                        currentChunk = sentence;
-                    } else {
-                        currentChunk += sentence + '.';
-                    }
+                // Enhanced voice selection - find the best male voice available
+                const voiceCandidates = [
+                    // Priority 1: Google male voices
+                    voices.find(voice => voice.name.toLowerCase().includes('google') && voice.name.toLowerCase().includes('male') && !voice.name.toLowerCase().includes('female')),
+                    // Priority 2: Microsoft male voices  
+                    voices.find(voice => voice.name.toLowerCase().includes('microsoft') && (voice.name.toLowerCase().includes('david') || voice.name.toLowerCase().includes('mark'))),
+                    // Priority 3: Apple male voices
+                    voices.find(voice => voice.lang.startsWith('en') && (voice.name.toLowerCase().includes('alex') || voice.name.toLowerCase().includes('daniel'))),
+                    // Priority 4: Any explicit male voice
+                    voices.find(voice => voice.lang.startsWith('en') && voice.name.toLowerCase().includes('male') && !voice.name.toLowerCase().includes('female')),
+                    // Priority 5: Avoid female voices
+                    voices.find(voice => {
+                        const name = voice.name.toLowerCase();
+                        const femaleNames = ['female', 'woman', 'samantha', 'susan', 'karen', 'sarah', 'emma', 'jessica', 'victoria', 'kate', 'serena', 'tessa'];
+                        return voice.lang.startsWith('en') && !femaleNames.some(fn => name.includes(fn));
+                    })
+                ].filter(Boolean);
+                
+                selectedVoice = voiceCandidates[0] || voices.find(voice => voice.lang.startsWith('en'));
+                
+                if (selectedVoice) {
+                    console.log('Selected voice for newsletter:', selectedVoice.name);
+                } else {
+                    console.log('No suitable voice found, using default');
                 }
                 
-                if (currentChunk.trim()) {
-                    chunks.push(currentChunk.trim());
+                // Limit text length for better performance (browser TTS can handle longer text)
+                if (text.length > 32000) {
+                    text = text.substring(0, 31500) + '... Newsletter content truncated for audio playback.';
                 }
                 
-                let currentChunkIndex = 0;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.75;
+                utterance.pitch = 0.2; // Low pitch for deeper voice
+                utterance.volume = 1;
                 
-                const playNextChunk = () => {
-                    if (currentChunkIndex >= chunks.length) {
-                        statusDiv.textContent = 'Audio playback completed.';
-                        playButton.innerHTML = '🔊 Generate Audio';
-                        playButton.disabled = false;
-                        stopButton.style.display = 'none';
-                        window.isPlaying = false;
-                        return;
-                    }
-                    
-                    const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
-                    utterance.rate = 0.8;
-                    utterance.pitch = 0.1; // Much lower pitch for deeper voice
-                    utterance.volume = 1;
-                    
-                    // Advanced voice selection with quality prioritization
-                    const voices = speechSynthesis.getVoices();
-                    let selectedVoice = null;
-                    
-                    // Priority 1: Look for Google voices (highest quality) with male characteristics
-                    selectedVoice = voices.find(voice => 
-                        voice.name.toLowerCase().includes('google') &&
-                        voice.lang.startsWith('en') && 
-                        (voice.name.toLowerCase().includes('male') || 
-                         voice.name.toLowerCase().includes('david') ||
-                         voice.name.toLowerCase().includes('english male'))
-                    );
-                    
-                    // Priority 2: Look for Microsoft voices with male characteristics
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => 
-                            voice.name.toLowerCase().includes('microsoft') &&
-                            voice.lang.startsWith('en') && 
-                            (voice.name.toLowerCase().includes('david') ||
-                             voice.name.toLowerCase().includes('mark') ||
-                             voice.name.toLowerCase().includes('male'))
-                        );
-                    }
-                    
-                    // Priority 3: Look for Apple/macOS voices with male names
-                    if (!selectedVoice) {
-                        const appleMaleVoices = ['alex', 'daniel', 'fred', 'jorge', 'lee', 'ralph', 'sameer', 'thomas'];
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en') && 
-                            appleMaleVoices.some(name => voice.name.toLowerCase().includes(name))
-                        );
-                    }
-                    
-                    // Priority 4: Look for any voice explicitly labeled as male
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en') && 
-                            voice.name.toLowerCase().includes('male') &&
-                            !voice.name.toLowerCase().includes('female')
-                        );
-                    }
-                    
-                    // Priority 5: Avoid known female voices and select best remaining option
-                    if (!selectedVoice) {
-                        const femaleIndicators = ['female', 'woman', 'samantha', 'susan', 'karen', 'sarah', 'emma', 'jessica', 'victoria', 'kate', 'serena', 'tessa', 'nicky', 'fiona'];
-                        const nonFemaleVoices = voices.filter(voice => 
-                            voice.lang.startsWith('en') && 
-                            !femaleIndicators.some(indicator => voice.name.toLowerCase().includes(indicator))
-                        );
-                        
-                        // Prefer voices that are likely to be deeper/male
-                        selectedVoice = nonFemaleVoices.find(voice => 
-                            voice.name.toLowerCase().includes('david') ||
-                            voice.name.toLowerCase().includes('alex') ||
-                            voice.name.toLowerCase().includes('mark') ||
-                            voice.name.toLowerCase().includes('paul') ||
-                            voice.name.toLowerCase().includes('tom')
-                        ) || nonFemaleVoices[0];
-                    }
-                    
-                    // Priority 6: Last resort - any English voice with extremely low pitch
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
-                        if (selectedVoice) {
-                            utterance.pitch = 0.05; // Extremely low pitch as last resort
-                            utterance.rate = 0.65;
-                        }
-                    }
-                    
-                    if (selectedVoice) {
-                        utterance.voice = selectedVoice;
-                        console.log('Selected voice for chunk ' + (currentChunkIndex + 1) + ':', selectedVoice.name);
-                    }
-                    
-                    utterance.onstart = () => {
-                        if (currentChunkIndex === 0) {
-                            statusDiv.textContent = 'Enhanced browser audio is playing...';
-                            playButton.innerHTML = '⏸️ Pause';
-                            playButton.disabled = false;
-                            stopButton.style.display = 'inline-block';
-                            playerDiv.style.display = 'block';
-                            window.isPlaying = true;
-                        } else {
-                            statusDiv.textContent = 'Playing audio segment ' + (currentChunkIndex + 1) + ' of ' + chunks.length + '...';
-                        }
-                    };
-                    
-                    utterance.onend = () => {
-                        currentChunkIndex++;
-                        setTimeout(playNextChunk, 100); // Small delay between chunks
-                    };
-                    
-                    utterance.onerror = () => {
-                        currentChunkIndex++;
-                        setTimeout(playNextChunk, 100); // Continue with next chunk on error
-                    };
-                    
-                    speechSynthesis.speak(utterance);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                // Adjust pitch further if we ended up with a potentially female voice
+                if (selectedVoice && (selectedVoice.name.toLowerCase().includes('female') || 
+                    selectedVoice.name.toLowerCase().includes('woman') ||
+                    selectedVoice.name.toLowerCase().includes('samantha'))) {
+                    utterance.pitch = 0.1;
+                    utterance.rate = 0.7;
+                }
+                
+                utterance.onstart = () => {
+                    statusDiv.textContent = 'Newsletter audio is playing...';
+                    playButton.innerHTML = '⏸️ Pause';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'inline-block';
+                    playerDiv.style.display = 'block';
+                    window.isPlaying = true;
                 };
                 
-                // Start playing the first chunk
-                playNextChunk();
+                utterance.onend = () => {
+                    statusDiv.textContent = 'Audio playback completed.';
+                    playButton.innerHTML = '🔊 Generate Audio';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'none';
+                    window.isPlaying = false;
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event);
+                    statusDiv.textContent = 'Audio playback failed. Please try again.';
+                    playButton.innerHTML = '🔊 Generate Audio';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'none';
+                    window.isPlaying = false;
+                };
+                
+                speechSynthesis.speak(utterance);
                 
             } else {
                 statusDiv.textContent = 'Text-to-speech not supported in this browser.';
