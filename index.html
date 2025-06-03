@@ -1817,11 +1817,6 @@ Write exactly 3 sentences.`;
                     return `
                         <article id="article-${articleNumber}" class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
                             <div class="flex">
-                                <div class="flex-shrink-0 mr-4">
-                                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                                        ${articleNumber}
-                                    </div>
-                                </div>
                                 <div class="flex-grow min-w-0">
                                     <header class="mb-3">
                                         <div class="flex flex-wrap gap-2 mb-2">
@@ -1868,10 +1863,7 @@ Write exactly 3 sentences.`;
                     
                     return `
                         <article id="article-${articleNumber}" class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
-                            <div class="flex items-start mb-4">
-                                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm mr-4">
-                                    ${articleNumber}
-                                </div>
+                            <div class="mb-4">
                                 <div class="flex-grow">
                                     <div class="flex flex-wrap gap-2 mb-2">
                                         ${breakingBadge}
