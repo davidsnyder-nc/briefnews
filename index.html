@@ -754,6 +754,7 @@ Write ONE paragraph summary.</textarea>
             
             if (welcomeSection) {
                 welcomeSection.style.display = 'block';
+                welcomeSection.style.visibility = 'visible';
             }
             
             if (newsHeader) {
@@ -762,6 +763,13 @@ Write ONE paragraph summary.</textarea>
             
             if (headerNewsletterBtn) {
                 headerNewsletterBtn.classList.add('hidden');
+            }
+            
+            // Ensure the newsletter area is cleared and hidden
+            const newsletterArea = document.getElementById('newsletterArea');
+            if (newsletterArea) {
+                newsletterArea.innerHTML = '';
+                newsletterArea.style.display = 'none';
             }
             
             // Clear articles and reset state
@@ -781,24 +789,30 @@ Write ONE paragraph summary.</textarea>
             }
             
             // Remove source filter container by finding elements with "Filter by source" text
-            const sourceFilterElements = document.querySelectorAll('*');
-            sourceFilterElements.forEach(element => {
-                if (element.textContent && element.textContent.includes('Filter by source:')) {
-                    const container = element.closest('div');
-                    if (container) {
-                        container.remove();
+            try {
+                const sourceFilterElements = document.querySelectorAll('*');
+                sourceFilterElements.forEach(element => {
+                    if (element && element.textContent && element.textContent.includes('Filter by source:')) {
+                        const container = element.closest('div');
+                        if (container && container.parentNode) {
+                            container.remove();
+                        }
                     }
-                }
-            });
-            
-            // Remove any remaining source filter buttons
-            const sourceFilters = document.querySelectorAll('.source-filter-btn');
-            sourceFilters.forEach(btn => {
-                const container = btn.closest('div');
-                if (container) {
-                    container.remove();
-                }
-            });
+                });
+                
+                // Remove any remaining source filter buttons
+                const sourceFilters = document.querySelectorAll('.source-filter-btn');
+                sourceFilters.forEach(btn => {
+                    if (btn && btn.parentNode) {
+                        const container = btn.closest('div');
+                        if (container && container.parentNode) {
+                            container.remove();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.log('Error cleaning up source filters:', error);
+            }
             
             // Hide article index
             const articleIndex = document.getElementById('articleIndex');
