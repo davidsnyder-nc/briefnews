@@ -217,30 +217,18 @@
     <div id="newsPage" class="page container mx-auto px-4 py-4">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
             <div class="flex gap-4 items-center justify-center">
-                <div class="flex items-center gap-2" id="categoryDropdownContainer" style="display: none;">
-                    <label for="categorySelect" class="form-label text-gray-700">Category:</label>
-                    <select id="categorySelect" class="form-input">
-                        <option value="all">All Categories</option>
-                        <option value="world news">World News</option>
-                        <option value="technology">Technology</option>
-                        <option value="business">Business</option>
-                        <option value="sports">Sports</option>
-                        <option value="science">Science</option>
-                        <option value="health">Health</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="politics">Politics</option>
-                        <option value="lifestyle">Lifestyle</option>
-                        <option value="education">Education</option>
-                        <option value="environment">Environment</option>
-                        <option value="food">Food & Cooking</option>
-                        <option value="travel">Travel</option>
-                        <option value="finance">Personal Finance</option>
-                        <option value="gaming">Gaming</option>
-                        <option value="general">General</option>
-                    </select>
+                <div class="flex items-center gap-2" id="headerControls" style="display: none;">
+                    <button id="generateNewsletter" onclick="generateNewsletter()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                        Refresh Articles
+                    </button>
+                    <button id="startOver" onclick="startOver()" class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors">
+                        Start Over
+                    </button>
                 </div>
-                <button id="generateNewsletter" class="btn" style="display: none;">Refresh</button>
-                <button id="startOver" class="btn btn-secondary" style="display: none;">Start Over</button>
+                <!-- Hidden select for backward compatibility -->
+                <select id="categorySelect" style="display: none;">
+                    <option value="all">All Categories</option>
+                </select>
             </div>
         </header>
 
@@ -924,6 +912,28 @@ Write ONE sentence summary. Maximum 10 words.`;
             populateCategoryDropdown();
             
             showToast('Cleared custom OPML, using default feeds', 'info');
+        }
+
+        function startOver() {
+            // Clear all content and reset to welcome screen
+            clearPreviousContent();
+            
+            // Hide header and show welcome section
+            document.getElementById('newsHeader').style.display = 'none';
+            document.getElementById('welcomeSection').style.display = 'block';
+            
+            // Reset category selections
+            selectedCategories = [];
+            selectedFilterCategories = [];
+            
+            // Reset category buttons
+            document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('generateFromSelection').style.display = 'none';
+            
+            // Clear status message
+            document.getElementById('statusMessage').textContent = '';
+            
+            showToast('Reset to start page', 'info');
         }
 
         function parseOpml(opmlContent) {
@@ -1644,10 +1654,8 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
-            // Show category dropdown and controls after articles are loaded
-            document.getElementById('categoryDropdownContainer').style.display = 'flex';
-            document.getElementById('generateNewsletter').style.display = 'inline-block';
-            document.getElementById('startOver').style.display = 'inline-block';
+            // Show header controls after articles are loaded
+            document.getElementById('headerControls').style.display = 'flex';
             
             // Update floating buttons visibility
             toggleFloatingButtons();
