@@ -1408,11 +1408,31 @@ Write ONE sentence summary. Maximum 10 words.`;
             
             // Get AI provider and settings
             const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
-            const geminiApiKey = localStorage.getItem('geminiApiKey');
-            const openaiApiKey = localStorage.getItem('openaiApiKey');
+            let apiKey;
             
-            // Check if we have the required API key
-            const apiKey = aiProvider === 'gemini' ? geminiApiKey : openaiApiKey;
+            if (aiProvider === 'gemini') {
+                // Get Gemini API key from localStorage or environment
+                apiKey = localStorage.getItem('geminiApiKey');
+                if (!apiKey) {
+                    // Try to get from environment if available
+                    try {
+                        apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : null;
+                    } catch (e) {
+                        apiKey = null;
+                    }
+                }
+            } else {
+                // Get OpenAI API key from localStorage or environment
+                apiKey = localStorage.getItem('openaiApiKey');
+                if (!apiKey) {
+                    try {
+                        apiKey = typeof OPENAI_API_KEY !== 'undefined' ? OPENAI_API_KEY : null;
+                    } catch (e) {
+                        apiKey = null;
+                    }
+                }
+            }
+            
             if (!apiKey) {
                 throw new Error(`Please configure your ${aiProvider === 'gemini' ? 'Gemini' : 'OpenAI'} API key in settings`);
             }
