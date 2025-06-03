@@ -1093,24 +1093,13 @@ Write ONE sentence summary. Maximum 10 words.`;
                         const feedCat = feed.category.toLowerCase().trim();
                         const selectedCat = category.toLowerCase().trim();
                         
-                        // Exact match or partial match
-                        return feedCat === selectedCat || 
-                               feedCat.includes(selectedCat) || 
-                               selectedCat.includes(feedCat) ||
-                               // Handle common category variations
-                               (selectedCat === 'world news' && (feedCat.includes('world') || feedCat.includes('international'))) ||
-                               (selectedCat === 'technology' && (feedCat.includes('tech') || feedCat.includes('technology'))) ||
-                               (selectedCat === 'business' && (feedCat.includes('business') || feedCat.includes('finance') || feedCat.includes('economy'))) ||
-                               (selectedCat === 'science' && (feedCat.includes('science') || feedCat.includes('research'))) ||
-                               (selectedCat === 'sports' && (feedCat.includes('sport') || feedCat.includes('sports'))) ||
-                               (selectedCat === 'entertainment' && (feedCat.includes('entertainment') || feedCat.includes('celebrity') || feedCat.includes('culture'))) ||
-                               (selectedCat === 'health' && (feedCat.includes('health') || feedCat.includes('medical') || feedCat.includes('wellness'))) ||
-                               (selectedCat === 'politics' && (feedCat.includes('politic') || feedCat.includes('government')));
+                        // Direct match with the category values from dropdown
+                        return feedCat === selectedCat;
                     });
                     
                     console.log(`Filtered ${feedsToUse.length} feeds for category: ${category}`);
-                    console.log('Available feed categories:', currentRssFeeds.map(f => f.category).filter(Boolean));
-                    console.log('Looking for category:', selectedCat);
+                    console.log('Available feed categories:', [...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))]);
+                    console.log('Selected category:', category);
                     
                     if (feedsToUse.length === 0) {
                         throw new Error(`No feeds found for category: ${category}. Available categories: ${[...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))].join(', ')}`);
