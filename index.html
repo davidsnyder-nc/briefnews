@@ -3453,111 +3453,10 @@ Write exactly 3 sentences.`;
 
             newsletterText += 'End of newsletter.';
 
-            const apiKey = getApiKey();
-            if (!apiKey) {
-                statusDiv.textContent = 'No API key found. Using browser text-to-speech...';
-                useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
-                return;
-            }
-
-            statusDiv.textContent = 'Generating premium audio with Google Text-to-Speech...';
-
-            try {
-                // Use the main app's generateAudioFromText function if available (from parent window)
-                if (window.opener && window.opener.generateAudioFromText) {
-                    statusDiv.textContent = 'Requesting premium audio generation from main app...';
-                    
-                    const audioUrl = await window.opener.generateAudioFromText(newsletterText);
-                    if (audioUrl) {
-                        playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv);
-                        return;
-                    }
-                }
-                
-                // Fallback: Try direct Google TTS API call with CORS proxy
-                const maxChunkSize = 4000;
-                const chunks = [];
-                
-                if (newsletterText.length <= maxChunkSize) {
-                    chunks.push(newsletterText);
-                } else {
-                    const sentences = newsletterText.split(/[.!?]+/);
-                    let currentChunk = '';
-                    
-                    for (const sentence of sentences) {
-                        if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
-                            chunks.push(currentChunk.trim() + '.');
-                            currentChunk = sentence;
-                        } else {
-                            currentChunk += sentence + '.';
-                        }
-                    }
-                    
-                    if (currentChunk.trim()) {
-                        chunks.push(currentChunk.trim());
-                    }
-                }
-
-                statusDiv.textContent = 'Generating ' + chunks.length + ' audio segments...';
-
-                const audioChunks = [];
-                const voiceSettings = getVoiceSettings();
-                
-                for (let i = 0; i < chunks.length; i++) {
-                    statusDiv.textContent = 'Generating audio segment ' + (i + 1) + ' of ' + chunks.length + '...';
-                    
-                    const requestBody = {
-                        input: { text: chunks[i] },
-                        voice: {
-                            languageCode: 'en-US',
-                            name: voiceSettings.voiceName || 'en-US-Journey-D',
-                            ssmlGender: 'MALE'
-                        },
-                        audioConfig: {
-                            audioEncoding: 'MP3',
-                            speakingRate: voiceSettings.rate || 1.0,
-                            pitch: voiceSettings.pitch || 0.0,
-                            volumeGainDb: 0.0
-                        }
-                    };
-
-                    // Try using a CORS proxy
-                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                    const targetUrl = encodeURIComponent('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey);
-                    
-                    const response = await fetch(proxyUrl + targetUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('TTS API failed: ' + response.status);
-                    }
-
-                    const data = await response.json();
-                    audioChunks.push(data.audioContent);
-                }
-
-                statusDiv.textContent = 'Combining audio segments...';
-
-                if (audioChunks.length === 1) {
-                    const audioBlob = new Blob([Uint8Array.from(atob(audioChunks[0]), c => c.charCodeAt(0))], {
-                        type: 'audio/mpeg'
-                    });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv);
-                } else {
-                    playAudioChunksSequentially(audioChunks, 0, playButton, stopButton, statusDiv, playerDiv);
-                }
-
-            } catch (error) {
-                console.error('Google TTS error:', error);
-                statusDiv.textContent = 'Premium audio failed. Using browser text-to-speech...';
-                useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
-            }
+            statusDiv.textContent = 'Generating newsletter audio with enhanced browser voices...';
+            
+            // Use enhanced browser TTS with optimized voice selection for newsletter content
+            useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
         }
 
         // Helper function to play single audio URL
@@ -3667,45 +3566,122 @@ Write exactly 3 sentences.`;
             }
         }
 
-        // Fallback browser TTS function
+        // Enhanced browser TTS function with optimized voice selection
         function useBrowserTTS(text, playButton, stopButton, statusDiv, playerDiv) {
             if ('speechSynthesis' in window) {
                 speechSynthesis.cancel();
                 
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.9;
-                utterance.pitch = 0.6; // Lower pitch for male-like voice
-                utterance.volume = 1;
+                // Handle long text by chunking (browser TTS works better with smaller chunks)
+                const maxChunkLength = 200; // Shorter chunks for better browser TTS performance
+                const sentences = text.split(/[.!?]+/);
+                const chunks = [];
+                let currentChunk = '';
                 
-                // Try to find a male voice
-                const voices = speechSynthesis.getVoices();
-                const maleVoice = voices.find(voice => 
-                    voice.lang.startsWith('en') && 
-                    (voice.name.toLowerCase().includes('male') && !voice.name.toLowerCase().includes('female'))
-                );
-                
-                if (maleVoice) {
-                    utterance.voice = maleVoice;
+                for (const sentence of sentences) {
+                    if ((currentChunk + sentence).length > maxChunkLength && currentChunk.length > 0) {
+                        chunks.push(currentChunk.trim() + '.');
+                        currentChunk = sentence;
+                    } else {
+                        currentChunk += sentence + '.';
+                    }
                 }
                 
-                utterance.onstart = () => {
-                    statusDiv.textContent = 'Browser audio is playing...';
-                    playButton.innerHTML = '⏸️ Playing';
-                    playButton.disabled = false;
-                    stopButton.style.display = 'inline-block';
-                    playerDiv.style.display = 'block';
-                    window.isPlaying = true;
+                if (currentChunk.trim()) {
+                    chunks.push(currentChunk.trim());
+                }
+                
+                let currentChunkIndex = 0;
+                
+                const playNextChunk = () => {
+                    if (currentChunkIndex >= chunks.length) {
+                        statusDiv.textContent = 'Audio playback completed.';
+                        playButton.innerHTML = '🔊 Generate Audio';
+                        playButton.disabled = false;
+                        stopButton.style.display = 'none';
+                        window.isPlaying = false;
+                        return;
+                    }
+                    
+                    const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
+                    utterance.rate = 0.85;
+                    utterance.pitch = 0.5; // Very low pitch for deeper voice
+                    utterance.volume = 1;
+                    
+                    // Enhanced voice selection with priority system
+                    const voices = speechSynthesis.getVoices();
+                    let selectedVoice = null;
+                    
+                    // Priority 1: Look for specifically named male voices
+                    const maleNames = ['david', 'alex', 'daniel', 'thomas', 'paul', 'michael', 'john', 'james', 'robert', 'mark'];
+                    for (const name of maleNames) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            voice.name.toLowerCase().includes(name)
+                        );
+                        if (selectedVoice) break;
+                    }
+                    
+                    // Priority 2: Look for voices explicitly labeled as male
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            voice.name.toLowerCase().includes('male') &&
+                            !voice.name.toLowerCase().includes('female')
+                        );
+                    }
+                    
+                    // Priority 3: Avoid obviously female voices and pick the first English voice
+                    if (!selectedVoice) {
+                        const femaleIndicators = ['female', 'woman', 'samantha', 'susan', 'karen', 'sarah', 'emma', 'jessica'];
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            !femaleIndicators.some(indicator => voice.name.toLowerCase().includes(indicator))
+                        );
+                    }
+                    
+                    // Priority 4: Last resort - any English voice with very low pitch
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+                        if (selectedVoice) {
+                            utterance.pitch = 0.3; // Extremely low pitch as last resort
+                            utterance.rate = 0.7;
+                        }
+                    }
+                    
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                        console.log('Selected voice for chunk ' + (currentChunkIndex + 1) + ':', selectedVoice.name);
+                    }
+                    
+                    utterance.onstart = () => {
+                        if (currentChunkIndex === 0) {
+                            statusDiv.textContent = 'Enhanced browser audio is playing...';
+                            playButton.innerHTML = '⏸️ Pause';
+                            playButton.disabled = false;
+                            stopButton.style.display = 'inline-block';
+                            playerDiv.style.display = 'block';
+                            window.isPlaying = true;
+                        } else {
+                            statusDiv.textContent = 'Playing audio segment ' + (currentChunkIndex + 1) + ' of ' + chunks.length + '...';
+                        }
+                    };
+                    
+                    utterance.onend = () => {
+                        currentChunkIndex++;
+                        setTimeout(playNextChunk, 100); // Small delay between chunks
+                    };
+                    
+                    utterance.onerror = () => {
+                        currentChunkIndex++;
+                        setTimeout(playNextChunk, 100); // Continue with next chunk on error
+                    };
+                    
+                    speechSynthesis.speak(utterance);
                 };
                 
-                utterance.onend = () => {
-                    statusDiv.textContent = 'Audio playback completed.';
-                    playButton.innerHTML = '🔊 Generate Audio';
-                    playButton.disabled = false;
-                    stopButton.style.display = 'none';
-                    window.isPlaying = false;
-                };
+                // Start playing the first chunk
+                playNextChunk();
                 
-                speechSynthesis.speak(utterance);
             } else {
                 statusDiv.textContent = 'Text-to-speech not supported in this browser.';
                 playButton.innerHTML = '❌ Not Supported';
