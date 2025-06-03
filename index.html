@@ -994,11 +994,11 @@
             const articles = [];
             const corsProxy = 'https://api.allorigins.win/get?url=';
             
-            // Process feeds in parallel with shorter timeouts
-            const feedPromises = feeds.slice(0, 20).map(async (feed) => {
+            // Process feeds in parallel with manageable batch size
+            const feedPromises = feeds.slice(0, 15).map(async (feed) => {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 4000); // Reduced to 4 seconds
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased to 8 seconds
                     
                     const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
                         signal: controller.signal
@@ -1152,20 +1152,31 @@ Write the complete rewritten article:`;
                             maxTokens = digestLength === 'brief' ? 300 : digestLength === 'medium' ? 500 : 700;
                         } else {
                             // Standard summary mode - keep very concise
-                            const summaryInstructions = {
-                                'brief': 'Summarize in exactly 1-2 concise sentences',
-                                'medium': 'Summarize in exactly 2-3 sentences', 
-                                'detailed': 'Summarize in exactly 3-4 sentences'
-                            };
-                            
-                            prompt = `${summaryInstructions[digestLength]}:
+                            if (digestLength === 'brief') {
+                                prompt = `Write ONE SHORT sentence summarizing this news:
 
-Title: ${article.title}
-Content: ${article.description.substring(0, 400)}
+${article.title}
+${article.description.substring(0, 300)}
 
-Keep it very concise and focused on the main facts only.`;
-                            
-                            maxTokens = digestLength === 'brief' ? 80 : digestLength === 'medium' ? 120 : 160;
+Respond with only ONE sentence under 25 words.`;
+                                maxTokens = 40;
+                            } else if (digestLength === 'medium') {
+                                prompt = `Write exactly 2 sentences summarizing this news:
+
+${article.title}
+${article.description.substring(0, 400)}
+
+Respond with exactly 2 sentences.`;
+                                maxTokens = 80;
+                            } else {
+                                prompt = `Write exactly 3-4 sentences summarizing this news:
+
+${article.title}
+${article.description.substring(0, 500)}
+
+Respond with exactly 3-4 sentences.`;
+                                maxTokens = 120;
+                            }
                         }
 
                         const controller = new AbortController();
