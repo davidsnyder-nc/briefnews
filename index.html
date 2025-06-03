@@ -3361,12 +3361,24 @@ Write exactly 3 sentences.`;
                 // Filter feeds by categories
                 let feedsToUse = currentRssFeeds;
                 if (!categories.includes('all') && categories.length > 0) {
-                    feedsToUse = currentRssFeeds.filter(feed => 
-                        categories.some(category => 
-                            feed.category.toLowerCase().includes(category.toLowerCase()) ||
-                            category.toLowerCase().includes(feed.category.toLowerCase())
-                        )
-                    );
+                    feedsToUse = currentRssFeeds.filter(feed => {
+                        if (!feed.category) return false;
+                        const feedCat = feed.category.toLowerCase().trim();
+                        return categories.some(category => {
+                            const selectedCat = category.toLowerCase().trim();
+                            return feedCat === selectedCat;
+                        });
+                    });
+                    
+                    // Add local news feeds if local news is selected
+                    if (categories.some(cat => cat.toLowerCase() === 'local news')) {
+                        const localFeeds = await generateLocalNewsFeeds();
+                        feedsToUse = [...feedsToUse, ...localFeeds];
+                    }
+                    
+                    console.log(`Selected categories: ${categories.join(', ')}`);
+                    console.log(`Filtered ${feedsToUse.length} feeds for categories`);
+                    console.log('Feeds to use:', feedsToUse.map(f => f.name));
                 }
 
                 // Fetch articles from RSS feeds
