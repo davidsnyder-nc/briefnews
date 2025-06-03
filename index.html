@@ -3390,27 +3390,28 @@ Write exactly 3 sentences.`;
                     return;
                 }
 
-                document.getElementById('statusMessage').textContent = `Processing ${articles.length} articles with AI...`;
+                // Apply blocked terms filter
+                const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
+                const cleanArticles = filterBlockedTerms(articles, blockedTerms);
 
-                // Add AI processing to articles with breaking news classification
+                // Remove duplicate articles and keep the best version
+                const uniqueArticles = removeDuplicateArticles(cleanArticles);
+
+                // Sort articles with breaking news first
+                const sortedArticles = sortArticlesWithBreakingFirst(uniqueArticles);
+
+                // Limit to max articles
+                const finalArticles = sortedArticles.slice(0, maxArticles);
+
+                // Generate AI summaries
                 console.log('Starting AI processing...');
-                const processedArticles = await processArticlesWithAI(articles, digestLength);
+                const processedArticles = await generateAISummaries(finalArticles, digestLength, 'all');
                 console.log('AI processing completed, articles:', processedArticles.length);
-                
-                // Sort articles (breaking news first, then by publication date)
-                processedArticles.sort((a, b) => {
-                    if (a.isBreaking && !b.isBreaking) return -1;
-                    if (!a.isBreaking && b.isBreaking) return 1;
-                    return new Date(b.pubDate) - new Date(a.pubDate);
-                });
-
-                // Take only the number of articles requested
-                const finalArticles = processedArticles.slice(0, maxArticles);
                 console.log('Final articles to display:', finalArticles.length);
 
                 // Display articles
                 console.log('Starting displayArticles...');
-                displayArticles(finalArticles);
+                displayArticles(processedArticles);
                 console.log('displayArticles completed');
 
                 // Show header and hide welcome section
@@ -3420,14 +3421,14 @@ Write exactly 3 sentences.`;
                 // Create article index, source filter buttons, load more button, and category filter buttons
                 console.log('Creating UI elements...');
                 try {
-                    createArticleIndex(finalArticles);
+                    createArticleIndex(processedArticles);
                     console.log('Article index created');
                 } catch (e) {
                     console.error('Error creating article index:', e);
                 }
                 
                 try {
-                    createSourceFilterButtons(finalArticles);
+                    createSourceFilterButtons(processedArticles);
                     console.log('Source filter buttons created');
                 } catch (e) {
                     console.error('Error creating source filter buttons:', e);
@@ -3449,7 +3450,7 @@ Write exactly 3 sentences.`;
 
                 // Hide loading state
                 document.getElementById('loader').classList.add('hidden');
-                document.getElementById('statusMessage').textContent = `Generated newsletter with ${finalArticles.length} articles`;
+                document.getElementById('statusMessage').textContent = `Generated newsletter with ${processedArticles.length} articles`;
 
             } catch (error) {
                 console.error('Error generating newsletter:', error);
