@@ -3448,11 +3448,6 @@ Write exactly 3 sentences.`;
 
             newsletterText += 'End of newsletter.';
 
-            // Limit text length for TTS (Google TTS has character limits)
-            if (newsletterText.length > 5000) {
-                newsletterText = newsletterText.substring(0, 4900) + '... Newsletter content truncated for audio generation.';
-            }
-
             const apiKey = getApiKey();
             if (!apiKey) {
                 statusDiv.textContent = 'API key required for premium audio. Using browser fallback...';
@@ -3464,49 +3459,159 @@ Write exactly 3 sentences.`;
             statusDiv.textContent = 'Generating premium audio with Google Text-to-Speech...';
 
             try {
-                // Use Google Text-to-Speech API for premium voices
-                const voiceSettings = getVoiceSettings();
+                // Google TTS has a 5000 character limit per request
+                const maxChunkSize = 4000; // Leave buffer for safety
+                const chunks = [];
                 
-                const requestBody = {
-                    input: { text: newsletterText },
-                    voice: {
-                        languageCode: 'en-US',
-                        name: voiceSettings.voiceName || 'en-US-Journey-D', // Cheapest male voice
-                        ssmlGender: 'MALE'
-                    },
-                    audioConfig: {
-                        audioEncoding: 'MP3',
-                        speakingRate: voiceSettings.rate || 1.0,
-                        pitch: voiceSettings.pitch || 0.0,
-                        volumeGainDb: 0.0
+                if (newsletterText.length <= maxChunkSize) {
+                    chunks.push(newsletterText);
+                } else {
+                    // Split by sentences to avoid cutting words
+                    const sentences = newsletterText.split(/[.!?]+/);
+                    let currentChunk = '';
+                    
+                    for (const sentence of sentences) {
+                        if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
+                            chunks.push(currentChunk.trim() + '.');
+                            currentChunk = sentence;
+                        } else {
+                            currentChunk += sentence + '.';
+                        }
                     }
-                };
-
-                const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Google TTS API failed: ' + response.status);
+                    
+                    if (currentChunk.trim()) {
+                        chunks.push(currentChunk.trim());
+                    }
                 }
 
-                const data = await response.json();
-                const audioContent = data.audioContent;
+                statusDiv.textContent = 'Generating ' + chunks.length + ' audio segments with Google TTS...';
 
-                // Create audio element and play
-                const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], {
-                    type: 'audio/mpeg'
-                });
-                const audioUrl = URL.createObjectURL(audioBlob);
+                // Generate audio for each chunk
+                const audioChunks = [];
+                const voiceSettings = getVoiceSettings();
                 
-                currentAudio = new Audio(audioUrl);
-                
+                for (let i = 0; i < chunks.length; i++) {
+                    statusDiv.textContent = 'Generating audio segment ' + (i + 1) + ' of ' + chunks.length + '...';
+                    
+                    const requestBody = {
+                        input: { text: chunks[i] },
+                        voice: {
+                            languageCode: 'en-US',
+                            name: voiceSettings.voiceName || 'en-US-Journey-D', // Cheapest male voice
+                            ssmlGender: 'MALE'
+                        },
+                        audioConfig: {
+                            audioEncoding: 'MP3',
+                            speakingRate: voiceSettings.rate || 1.0,
+                            pitch: voiceSettings.pitch || 0.0,
+                            volumeGainDb: 0.0
+                        }
+                    };
+
+                    const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Google TTS API failed: ' + response.status + ' for chunk ' + (i + 1));
+                    }
+
+                    const data = await response.json();
+                    audioChunks.push(data.audioContent);
+                }
+
+                statusDiv.textContent = 'Combining audio segments...';
+
+                // Combine audio chunks by creating a playlist
+                if (audioChunks.length === 1) {
+                    // Single chunk - play directly
+                    const audioBlob = new Blob([Uint8Array.from(atob(audioChunks[0]), c => c.charCodeAt(0))], {
+                        type: 'audio/mpeg'
+                    });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv);
+                } else {
+                    // Multiple chunks - play sequentially
+                    playAudioChunksSequentially(audioChunks, 0, playButton, stopButton, statusDiv, playerDiv);
+                }
+
+            } catch (error) {
+                console.error('Google TTS error:', error);
+                statusDiv.textContent = 'Premium audio failed (' + error.message + '). Using browser fallback...';
+                // Fallback to browser TTS
+                useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
+            }
+        }
+
+        // Helper function to play single audio URL
+        function playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv) {
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.onloadstart = () => {
+                statusDiv.textContent = 'Loading premium audio...';
+            };
+            
+            currentAudio.oncanplay = () => {
+                statusDiv.textContent = 'Premium audio ready. Starting playback...';
+                currentAudio.play();
+            };
+            
+            currentAudio.onplay = () => {
+                statusDiv.textContent = 'Premium audio is playing...';
+                playButton.innerHTML = '⏸️ Pause';
+                playButton.disabled = false;
+                stopButton.style.display = 'inline-block';
+                playerDiv.style.display = 'block';
+                window.isPlaying = true;
+            };
+            
+            currentAudio.onended = () => {
+                statusDiv.textContent = 'Audio playback completed.';
+                playButton.innerHTML = '🔊 Generate Audio';
+                playButton.disabled = false;
+                stopButton.style.display = 'none';
+                window.isPlaying = false;
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+            };
+            
+            currentAudio.onerror = () => {
+                statusDiv.textContent = 'Premium audio playback failed.';
+                playButton.innerHTML = '🔊 Generate Audio';
+                playButton.disabled = false;
+                stopButton.style.display = 'none';
+                window.isPlaying = false;
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+            };
+        }
+
+        // Helper function to play multiple audio chunks sequentially
+        function playAudioChunksSequentially(audioChunks, currentIndex, playButton, stopButton, statusDiv, playerDiv) {
+            if (currentIndex >= audioChunks.length) {
+                statusDiv.textContent = 'Audio playback completed.';
+                playButton.innerHTML = '🔊 Generate Audio';
+                playButton.disabled = false;
+                stopButton.style.display = 'none';
+                window.isPlaying = false;
+                currentAudio = null;
+                return;
+            }
+
+            const audioBlob = new Blob([Uint8Array.from(atob(audioChunks[currentIndex]), c => c.charCodeAt(0))], {
+                type: 'audio/mpeg'
+            });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            currentAudio = new Audio(audioUrl);
+            
+            if (currentIndex === 0) {
                 currentAudio.onloadstart = () => {
-                    statusDiv.textContent = 'Loading premium audio...';
+                    statusDiv.textContent = 'Loading premium audio segments...';
                 };
                 
                 currentAudio.oncanplay = () => {
@@ -3515,37 +3620,37 @@ Write exactly 3 sentences.`;
                 };
                 
                 currentAudio.onplay = () => {
-                    statusDiv.textContent = 'Premium audio is playing...';
+                    statusDiv.textContent = 'Premium audio is playing (segment ' + (currentIndex + 1) + ' of ' + audioChunks.length + ')...';
                     playButton.innerHTML = '⏸️ Pause';
                     playButton.disabled = false;
                     stopButton.style.display = 'inline-block';
                     playerDiv.style.display = 'block';
                     window.isPlaying = true;
                 };
-                
-                currentAudio.onended = () => {
-                    statusDiv.textContent = 'Audio playback completed.';
-                    playButton.innerHTML = '🔊 Generate Audio';
-                    playButton.disabled = false;
-                    stopButton.style.display = 'none';
-                    window.isPlaying = false;
-                    URL.revokeObjectURL(audioUrl);
-                    currentAudio = null;
+            } else {
+                currentAudio.onplay = () => {
+                    statusDiv.textContent = 'Premium audio is playing (segment ' + (currentIndex + 1) + ' of ' + audioChunks.length + ')...';
                 };
-                
-                currentAudio.onerror = () => {
-                    statusDiv.textContent = 'Premium audio failed. Using browser fallback...';
-                    URL.revokeObjectURL(audioUrl);
-                    currentAudio = null;
-                    // Fallback to browser TTS
-                    useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
-                };
-
-            } catch (error) {
-                console.error('Google TTS error:', error);
-                statusDiv.textContent = 'Premium audio failed. Using browser fallback...';
-                // Fallback to browser TTS
-                useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
+            }
+            
+            currentAudio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                // Play next chunk
+                playAudioChunksSequentially(audioChunks, currentIndex + 1, playButton, stopButton, statusDiv, playerDiv);
+            };
+            
+            currentAudio.onerror = () => {
+                statusDiv.textContent = 'Premium audio segment failed. Trying next segment...';
+                URL.revokeObjectURL(audioUrl);
+                // Try next chunk
+                playAudioChunksSequentially(audioChunks, currentIndex + 1, playButton, stopButton, statusDiv, playerDiv);
+            };
+            
+            if (currentIndex === 0) {
+                // Auto-start first chunk
+            } else {
+                // Auto-play subsequent chunks
+                currentAudio.play();
             }
         }
 
