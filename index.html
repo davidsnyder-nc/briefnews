@@ -277,7 +277,7 @@
                         <p class="text-lg mb-4">Your AI-powered news digest from only trusted sources</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                     <div class="bg-white bg-opacity-95 rounded-lg p-4 shadow-sm border border-white border-opacity-30">
                         <h3 class="font-semibold text-lg text-blue-800">Smart Summaries</h3>
                         <p class="text-sm text-blue-600">Optional AI-generated summaries tailored to your preferences</p>
@@ -289,6 +289,10 @@
                     <div class="bg-white bg-opacity-95 rounded-lg p-4 shadow-sm border border-white border-opacity-30">
                         <h3 class="font-semibold text-lg text-blue-800">Multiple Categories</h3>
                         <p class="text-sm text-blue-600">Technology, Business, Science, Sports, and more</p>
+                    </div>
+                    <div class="bg-white bg-opacity-95 rounded-lg p-4 shadow-sm border border-white border-opacity-30">
+                        <h3 class="font-semibold text-lg text-blue-800">Custom Newsletters</h3>
+                        <p class="text-sm text-blue-600">Export personalized newsletters with audio playback</p>
                     </div>
                 </div>
             </div>
@@ -3344,7 +3348,7 @@ Write exactly 3 sentences.`;
             statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
             // Compile newsletter text from the page
-            let newsletterText = 'Today\'s News Brief. ';
+            let newsletterText = 'Today\\'s News Brief. ';
             
             // Extract all article content from the page
             const articles = document.querySelectorAll('.article');
