@@ -867,6 +867,10 @@ Write ONE sentence summary. Maximum 10 words.`;
                     parseOpml(opmlContent);
                     localStorage.setItem('opmlData', opmlContent);
                     document.getElementById('opmlFileInfo').textContent = `Custom OPML loaded: ${file.name}`;
+                    
+                    // Repopulate categories from the new OPML
+                    populateCategoryDropdown();
+                    
                     showToast('OPML file loaded successfully', 'success');
                 };
                 reader.readAsText(file);
@@ -875,9 +879,17 @@ Write ONE sentence summary. Maximum 10 words.`;
 
         function clearOpml() {
             localStorage.removeItem('opmlData');
-            parseOpml(DEFAULT_OPML);
+            
+            // Restore default feeds array
+            currentRssFeeds = [...DEFAULT_RSS_FEEDS];
+            console.log(`Loaded ${currentRssFeeds.length} RSS feeds`);
+            
             document.getElementById('opmlFile').value = '';
-            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (270+ sources)';
+            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (90+ sources)';
+            
+            // Repopulate categories from default feeds
+            populateCategoryDropdown();
+            
             showToast('Cleared custom OPML, using default feeds', 'info');
         }
 
