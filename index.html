@@ -1898,8 +1898,16 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
-            // Show header controls after articles are loaded
-            document.getElementById('headerControls').style.display = 'flex';
+            // Show news header and header controls after articles are loaded
+            const newsHeader = document.getElementById('newsHeader');
+            if (newsHeader) {
+                newsHeader.style.display = 'block';
+            }
+            
+            const headerControls = document.getElementById('headerControls');
+            if (headerControls) {
+                headerControls.style.display = 'flex';
+            }
             
             // Update floating buttons visibility
             toggleFloatingButtons();
@@ -1927,6 +1935,15 @@ Write exactly 3 sentences.`;
         
         function renderArticlesWithNumbers(articles) {
             const container = document.getElementById('newsletterArea');
+            if (!container) {
+                console.error('Newsletter area container not found');
+                return;
+            }
+            
+            // Ensure the container is visible
+            container.style.display = 'block';
+            container.style.visibility = 'visible';
+            
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
             const viewMode = localStorage.getItem('viewMode') || 'row';
