@@ -173,33 +173,38 @@
 
 
     <div id="newsPage" class="page container mx-auto px-4 py-4">
-        <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
-            <div class="flex gap-4 items-end">
-                <div class="flex-1">
-                    <label for="categorySelect" class="form-label text-gray-700">Category:</label>
-                    <select id="categorySelect" class="form-input w-full">
-                        <option value="all">All Categories</option>
-                        <option value="world news">World News</option>
-                        <option value="technology">Technology</option>
-                        <option value="business">Business</option>
-                        <option value="sports">Sports</option>
-                        <option value="science">Science</option>
-                        <option value="health">Health</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="politics">Politics</option>
-                        <option value="lifestyle">Lifestyle</option>
-                        <option value="education">Education</option>
-                        <option value="environment">Environment</option>
-                        <option value="food">Food & Cooking</option>
-                        <option value="travel">Travel</option>
-                        <option value="finance">Personal Finance</option>
-                        <option value="gaming">Gaming</option>
-                        <option value="general">General</option>
-                    </select>
+        <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-1">briefnews</h1>
+                    <p class="text-gray-600">AI-powered news aggregation</p>
                 </div>
-                <button id="generateNewsletter" class="btn px-8">
-                    Brief Me
-                </button>
+                <div class="flex gap-4 items-center mt-4 md:mt-0">
+                    <div class="flex items-center gap-2">
+                        <label for="categorySelect" class="form-label text-gray-700">Category:</label>
+                        <select id="categorySelect" class="form-input">
+                            <option value="all">All Categories</option>
+                            <option value="world news">World News</option>
+                            <option value="technology">Technology</option>
+                            <option value="business">Business</option>
+                            <option value="sports">Sports</option>
+                            <option value="science">Science</option>
+                            <option value="health">Health</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="politics">Politics</option>
+                            <option value="lifestyle">Lifestyle</option>
+                            <option value="education">Education</option>
+                            <option value="environment">Environment</option>
+                            <option value="food">Food & Cooking</option>
+                            <option value="travel">Travel</option>
+                            <option value="finance">Personal Finance</option>
+                            <option value="gaming">Gaming</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <button id="generateNewsletter" class="btn">Refresh</button>
+                    <button id="startOver" class="btn btn-secondary">Start Over</button>
+                </div>
             </div>
         </header>
 
@@ -211,7 +216,7 @@
         <div id="welcomeSection" class="mb-8">
             <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-6">
                 <h2 class="text-3xl font-bold mb-4">Welcome to briefnews</h2>
-                <p class="text-lg mb-4">Your AI-powered news digest from 139+ trusted sources</p>
+                <p class="text-lg mb-4">Your AI-powered news digest from only trusted sources</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div class="bg-white bg-opacity-20 rounded-lg p-4">
                         <h3 class="font-semibold text-lg">Smart Summaries</h3>
@@ -231,19 +236,26 @@
             <div class="bg-white rounded-lg p-6 shadow-sm">
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Start</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="font-medium text-gray-700 mb-2">Popular Categories</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="quickCategory('technology')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors">Technology</button>
-                            <button onclick="quickCategory('world news')" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm hover:bg-green-200 transition-colors">World News</button>
-                            <button onclick="quickCategory('business')" class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm hover:bg-purple-200 transition-colors">Business</button>
-                            <button onclick="quickCategory('science')" class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm hover:bg-indigo-200 transition-colors">Science</button>
+                    <div class="col-span-full">
+                        <h4 class="font-medium text-gray-700 mb-3">Choose Your News Category</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="categoryButtons">
+                            <button onclick="quickCategory('all')" class="category-button special px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm">All Categories</button>
+                            <button onclick="quickCategory('technology')" class="category-button px-4 py-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors border border-blue-200">Technology</button>
+                            <button onclick="quickCategory('world news')" class="category-button px-4 py-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors border border-green-200">World News</button>
+                            <button onclick="quickCategory('business')" class="category-button px-4 py-3 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors border border-purple-200">Business</button>
+                            <button onclick="quickCategory('science')" class="category-button px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors border border-indigo-200">Science</button>
+                            <button onclick="quickCategory('health')" class="category-button px-4 py-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors border border-red-200">Health</button>
+                            <button onclick="quickCategory('politics')" class="category-button px-4 py-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200">Politics</button>
+                            <button onclick="quickCategory('sports')" class="category-button px-4 py-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors border border-orange-200">Sports</button>
+                            <button onclick="quickCategory('entertainment')" class="category-button px-4 py-3 bg-pink-50 text-pink-700 rounded-lg text-sm font-medium hover:bg-pink-100 transition-colors border border-pink-200">Entertainment</button>
+                            <button onclick="quickCategory('lifestyle')" class="category-button px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-100 transition-colors border border-yellow-200">Lifestyle</button>
+                            <button onclick="quickCategory('education')" class="category-button px-4 py-3 bg-teal-50 text-teal-700 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors border border-teal-200">Education</button>
+                            <button onclick="quickCategory('environment')" class="category-button px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors border border-emerald-200">Environment</button>
+                            <button onclick="quickCategory('food')" class="category-button px-4 py-3 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200">Food & Cooking</button>
+                            <button onclick="quickCategory('travel')" class="category-button px-4 py-3 bg-cyan-50 text-cyan-700 rounded-lg text-sm font-medium hover:bg-cyan-100 transition-colors border border-cyan-200">Travel</button>
+                            <button onclick="quickCategory('finance')" class="category-button px-4 py-3 bg-violet-50 text-violet-700 rounded-lg text-sm font-medium hover:bg-violet-100 transition-colors border border-violet-200">Personal Finance</button>
+                            <button onclick="quickCategory('gaming')" class="category-button px-4 py-3 bg-rose-50 text-rose-700 rounded-lg text-sm font-medium hover:bg-rose-100 transition-colors border border-rose-200">Gaming</button>
                         </div>
-                    </div>
-                    <div>
-                        <h4 class="font-medium text-gray-700 mb-2">Get Started</h4>
-                        <p class="text-sm text-gray-600 mb-3">Select a category above or click "Brief Me" to get news from all categories.</p>
-                        <button onclick="generateNewsletter()" class="btn px-6">Get All News</button>
                     </div>
                 </div>
             </div>
@@ -575,6 +587,7 @@
 
             // Newsletter generation
             document.getElementById('generateNewsletter').addEventListener('click', generateNewsletter);
+            document.getElementById('startOver').addEventListener('click', startOver);
 
             // Settings
             document.getElementById('saveAllSettings').addEventListener('click', saveAllSettings);
@@ -1293,8 +1306,47 @@ ${article.description.substring(0, 400)}`;
         }
 
         function quickCategory(categoryName) {
+            // Set the category in the dropdown
             document.getElementById('categorySelect').value = categoryName.toLowerCase();
+            
+            // Hide welcome section and show header controls
+            const welcomeSection = document.getElementById('welcomeSection');
+            const newsHeader = document.getElementById('newsHeader');
+            
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+            
+            // Only show header controls if "All Categories" is selected
+            if (categoryName.toLowerCase() === 'all') {
+                newsHeader.style.display = 'block';
+            }
+            
+            // Generate newsletter for selected category
             generateNewsletter();
+        }
+
+        function startOver() {
+            // Show welcome section
+            const welcomeSection = document.getElementById('welcomeSection');
+            const newsHeader = document.getElementById('newsHeader');
+            
+            if (welcomeSection) {
+                welcomeSection.style.display = 'block';
+            }
+            
+            if (newsHeader) {
+                newsHeader.style.display = 'none';
+            }
+            
+            // Clear articles
+            document.getElementById('newsletterArea').innerHTML = '';
+            document.getElementById('statusMessage').textContent = '';
+            
+            // Reset category selection
+            document.getElementById('categorySelect').value = 'all';
+            
+            showToast('Ready to start over!', 'info');
         }
 
         function filterByCategory(categoryName) {
