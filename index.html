@@ -1065,10 +1065,30 @@ Write ONE sentence summary. Maximum 10 words.`;
                 // Filter feeds by category
                 let feedsToUse = currentRssFeeds;
                 if (category !== 'all') {
-                    feedsToUse = currentRssFeeds.filter(feed => 
-                        feed.category.toLowerCase().includes(category.toLowerCase()) ||
-                        category.toLowerCase().includes(feed.category.toLowerCase())
-                    );
+                    feedsToUse = currentRssFeeds.filter(feed => {
+                        if (!feed.category) return false;
+                        const feedCat = feed.category.toLowerCase().trim();
+                        const selectedCat = category.toLowerCase().trim();
+                        
+                        // Exact match or partial match
+                        return feedCat === selectedCat || 
+                               feedCat.includes(selectedCat) || 
+                               selectedCat.includes(feedCat) ||
+                               // Handle common category variations
+                               (selectedCat === 'world news' && (feedCat.includes('world') || feedCat.includes('international'))) ||
+                               (selectedCat === 'technology' && (feedCat.includes('tech') || feedCat.includes('technology'))) ||
+                               (selectedCat === 'business' && (feedCat.includes('business') || feedCat.includes('finance') || feedCat.includes('economy'))) ||
+                               (selectedCat === 'science' && (feedCat.includes('science') || feedCat.includes('research'))) ||
+                               (selectedCat === 'sports' && (feedCat.includes('sport') || feedCat.includes('sports'))) ||
+                               (selectedCat === 'entertainment' && (feedCat.includes('entertainment') || feedCat.includes('celebrity') || feedCat.includes('culture'))) ||
+                               (selectedCat === 'health' && (feedCat.includes('health') || feedCat.includes('medical') || feedCat.includes('wellness'))) ||
+                               (selectedCat === 'politics' && (feedCat.includes('politic') || feedCat.includes('government')));
+                    });
+                    
+                    console.log(`Filtered ${feedsToUse.length} feeds for category: ${category}`);
+                    if (feedsToUse.length === 0) {
+                        throw new Error(`No feeds found for category: ${category}`);
+                    }
                 }
 
                 // Fetch articles from RSS feeds (fetch more to account for filtering)
@@ -1903,9 +1923,8 @@ Write exactly 3 sentences.`;
                 const audioBlob = await generateTTSAudio(textContent, geminiApiKey);
                 
                 if (audioBlob) {
-                    // Replace button with audio player
-                    replaceButtonWithAudioPlayer(articleNumber, audioBlob);
-                    showToast('Audio generated successfully!', 'success');
+                    // Replace button with audio player and auto-play
+                    replaceButtonWithAudioPlayer(articleNumber, audioBlob, true);
                 } else {
                     throw new Error('Failed to generate audio');
                 }
@@ -2024,7 +2043,7 @@ Write exactly 3 sentences.`;
             }
         }
 
-        function replaceButtonWithAudioPlayer(articleNumber, audioBlob) {
+        function replaceButtonWithAudioPlayer(articleNumber, audioBlob, autoPlay = false) {
             const article = document.getElementById(`article-${articleNumber}`);
             if (!article) return;
 
@@ -2047,6 +2066,13 @@ Write exactly 3 sentences.`;
                     <span class="text-sm text-green-700">Listen to Article ${articleNumber}</span>
                 </div>
             `;
+
+            // Auto-play if requested
+            if (autoPlay) {
+                setTimeout(() => {
+                    toggleSingleAudio(articleNumber);
+                }, 100);
+            }
         }
 
         function toggleSingleAudio(articleNumber) {
