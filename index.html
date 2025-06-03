@@ -3332,12 +3332,79 @@ Write exactly 3 sentences.`;
         </div>
     </div>
     
+    <script>
+        function generateAudio() {
+            const button = event.target;
+            const statusDiv = document.getElementById('audioStatus');
+            const playerDiv = document.getElementById('audioPlayer');
+            
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = '⏳ Generating...';
+            statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
+            // Compile newsletter text from the page
+            let newsletterText = 'Today\\'s News Brief. ';
+            
+            // Extract all article content from the page
+            const articles = document.querySelectorAll('.article');
+            articles.forEach((article, index) => {
+                const title = article.querySelector('.article-title');
+                const summary = article.querySelector('.article-summary');
+                const source = article.querySelector('.article-meta');
+                
+                if (title) {
+                    newsletterText += 'Article ' + (index + 1) + '. ' + title.textContent.trim() + '. ';
+                }
+                if (summary) {
+                    newsletterText += summary.textContent.trim() + ' ';
+                }
+                if (source) {
+                    newsletterText += 'Source: ' + source.textContent.trim() + '. ';
+                }
+            });
+
+            newsletterText += 'End of newsletter.';
+
+            // Limit text length for TTS
+            if (newsletterText.length > 5000) {
+                newsletterText = newsletterText.substring(0, 4900) + '... Newsletter content truncated for audio generation.';
+            }
+
+            statusDiv.textContent = 'Generating audio with Google Text-to-Speech...';
+
+            // Generate audio using Google TTS
+            const encodedText = encodeURIComponent(newsletterText);
+            const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=en&client=tw-ob';
+            
+            // Setup audio player
+            const audioElement = playerDiv.querySelector('audio');
+            const audioSource = document.getElementById('audioSource');
+            
+            audioSource.src = ttsUrl;
+            audioElement.load();
+            
+            // Show player and auto-play
+            playerDiv.style.display = 'block';
+            statusDiv.textContent = 'Audio generated successfully! Playing now...';
+            
+            // Auto-play the audio
+            audioElement.play().then(() => {
+                statusDiv.textContent = 'Audio is playing...';
+            }).catch(() => {
+                statusDiv.textContent = 'Audio ready! Click play to listen.';
+            });
+
+            // Update button
+            button.innerHTML = '✅ Audio Generated';
+            button.disabled = false;
+        }
+    </script>
 </body>
 </html>`;
 
             // Show newsletter in modal
-            showNewsletterModal(newsletterHTML, window.currentDisplayedArticles.length);
+            showNewsletterModal(newsletterHTML, visibleArticles.length);
         }
 
         function showNewsletterModal(newsletterHTML, articleCount) {
