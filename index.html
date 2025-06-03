@@ -793,6 +793,11 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
             } else {
                 parseOpml(DEFAULT_OPML);
                 document.getElementById('opmlFileInfo').textContent = 'Using default feeds (270+ sources)';
+                
+                // Ensure categories are populated after parsing is complete
+                setTimeout(() => {
+                    populateCategoryDropdown();
+                }, 100);
             }
 
             // Load AI provider and API keys
