@@ -39,8 +39,8 @@
             font-weight: bold; text-transform: uppercase;
         }
         .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #1a73e8;
-            border-radius: 50%; width: 30px; height: 30px;
+            border: 8px solid #f3f3f3; border-top: 8px solid #1a73e8;
+            border-radius: 50%; width: 80px; height: 80px;
             animation: spin 1s linear infinite; margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -136,7 +136,7 @@
     <div id="newsPage" class="page container mx-auto px-4 py-4">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
             <div class="flex gap-4 items-center justify-center">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2" id="categoryDropdownContainer" style="display: none;">
                     <label for="categorySelect" class="form-label text-gray-700">Category:</label>
                     <select id="categorySelect" class="form-input">
                         <option value="all">All Categories</option>
@@ -158,8 +158,8 @@
                         <option value="general">General</option>
                     </select>
                 </div>
-                <button id="generateNewsletter" class="btn">Refresh</button>
-                <button id="startOver" class="btn btn-secondary">Start Over</button>
+                <button id="generateNewsletter" class="btn" style="display: none;">Refresh</button>
+                <button id="startOver" class="btn btn-secondary" style="display: none;">Start Over</button>
             </div>
         </header>
 
@@ -226,6 +226,13 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Article Index (hidden by default) -->
+        <div id="articleIndex" class="bg-gray-50 rounded-lg p-3 mb-4 text-xs" style="display: none;">
+            <h3 class="font-semibold text-gray-700 mb-2">Article Index:</h3>
+            <div id="indexList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 text-gray-600">
             </div>
         </div>
 
@@ -1464,6 +1471,14 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
+            // Show category dropdown and controls after articles are loaded
+            document.getElementById('categoryDropdownContainer').style.display = 'flex';
+            document.getElementById('generateNewsletter').style.display = 'inline-block';
+            document.getElementById('startOver').style.display = 'inline-block';
+            
+            // Create article index
+            createArticleIndex(articles);
+            
             // Create source filter buttons
             createSourceFilterButtons(articles);
             
@@ -1733,6 +1748,39 @@ Write exactly 3 sentences.`;
                         </article>`;
                 }
             }).join('');
+        }
+
+        function createArticleIndex(articles) {
+            const indexContainer = document.getElementById('articleIndex');
+            const indexList = document.getElementById('indexList');
+            
+            if (articles.length === 0) {
+                indexContainer.style.display = 'none';
+                return;
+            }
+            
+            indexList.innerHTML = articles.map((article, index) => {
+                const articleNumber = index + 1;
+                return `
+                    <div class="cursor-pointer hover:text-blue-600 transition-colors" onclick="scrollToArticle(${articleNumber})">
+                        <span class="font-medium">${articleNumber}.</span> ${article.title.substring(0, 60)}${article.title.length > 60 ? '...' : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            indexContainer.style.display = 'block';
+        }
+        
+        function scrollToArticle(articleNumber) {
+            const article = document.getElementById(`article-${articleNumber}`);
+            if (article) {
+                article.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Briefly highlight the article
+                article.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.3)';
+                setTimeout(() => {
+                    article.style.boxShadow = '';
+                }, 2000);
+            }
         }
 
         function createLoadMoreButton() {
