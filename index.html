@@ -822,7 +822,7 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
             // Load custom AI prompt with default value
             const defaultPrompt = `{article.title}
 
-Write ONE sentence summary. Maximum 10 words.`;
+Write ONE paragraph summary.`;
             const customPrompt = localStorage.getItem('customPrompt') || defaultPrompt;
             document.getElementById('customPrompt').value = customPrompt;
 
@@ -936,6 +936,12 @@ Write ONE sentence summary. Maximum 10 words.`;
         function startOver() {
             // Clear all content and reset to welcome screen
             clearPreviousContent();
+            
+            // Remove category filter container if it exists
+            const categoryFilterContainer = document.getElementById('categoryFilterContainer');
+            if (categoryFilterContainer) {
+                categoryFilterContainer.remove();
+            }
             
             // Hide header and show welcome section
             document.getElementById('newsHeader').style.display = 'none';
@@ -3209,6 +3215,12 @@ Write exactly 3 sentences.`;
             const sourceFilterContainer = document.getElementById('sourceFilterContainer');
             if (sourceFilterContainer) {
                 sourceFilterContainer.remove();
+            }
+            
+            // Clear category filter container
+            const categoryFilterContainer = document.getElementById('categoryFilterContainer');
+            if (categoryFilterContainer) {
+                categoryFilterContainer.remove();
             }
             
             // Clear load more button
