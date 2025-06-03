@@ -257,17 +257,17 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                        <h3 class="font-semibold text-lg">Smart Summaries</h3>
-                        <p class="text-sm opacity-90">AI-generated summaries tailored to your preferences</p>
+                    <div class="bg-white bg-opacity-90 rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-lg text-blue-800">Smart Summaries</h3>
+                        <p class="text-sm text-blue-700">AI-generated summaries tailored to your preferences</p>
                     </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                        <h3 class="font-semibold text-lg">Breaking News Priority</h3>
-                        <p class="text-sm opacity-90">Important updates appear first automatically</p>
+                    <div class="bg-white bg-opacity-90 rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-lg text-blue-800">Breaking News Priority</h3>
+                        <p class="text-sm text-blue-700">Important updates appear first automatically</p>
                     </div>
-                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                        <h3 class="font-semibold text-lg">Multiple Categories</h3>
-                        <p class="text-sm opacity-90">Technology, Business, Science, Sports, and more</p>
+                    <div class="bg-white bg-opacity-90 rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-lg text-blue-800">Multiple Categories</h3>
+                        <p class="text-sm text-blue-700">Technology, Business, Science, Sports, and more</p>
                     </div>
                 </div>
             </div>
@@ -314,13 +314,13 @@
                 </div>
                 <div id="geminiConfig">
                     <label for="geminiApiKey" class="form-label">Gemini API Key:</label>
-                    <input type="password" id="geminiApiKey" class="form-input" placeholder="Enter your Gemini API Key">
+                    <input type="password" id="geminiApiKey" class="form-input" placeholder="Enter your Gemini API Key" autocomplete="off" data-form-type="other">
                     <p class="text-xs text-gray-500 mt-1">Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">Google AI Studio</a></p>
                     <p class="text-xs text-blue-600 mt-1">Note: This API key will also be used for Google Text-to-Speech features</p>
                 </div>
                 <div id="openaiConfig" style="display: none;">
                     <label for="openaiApiKey" class="form-label">OpenAI API Key:</label>
-                    <input type="password" id="openaiApiKey" class="form-input" placeholder="Enter your OpenAI API Key">
+                    <input type="password" id="openaiApiKey" class="form-input" placeholder="Enter your OpenAI API Key" autocomplete="off" data-form-type="other">
                     <p class="text-xs text-gray-500 mt-1">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline">OpenAI Platform</a></p>
                 </div>
             </div>
@@ -846,17 +846,47 @@ Write ONE paragraph summary.`;
                 localStorage.setItem('openaiApiKey', openaiApiKey);
             }
 
-            // Save other settings
-            localStorage.setItem('showSourceInfo', document.getElementById('showSourceInfo').checked);
-            localStorage.setItem('showCategories', document.getElementById('showCategories').checked);
+            // Save other settings with null checks
+            const showSourceInfo = document.getElementById('showSourceInfo');
+            if (showSourceInfo) {
+                localStorage.setItem('showSourceInfo', showSourceInfo.checked);
+            }
             
-            // Save AI rewrite settings
-            localStorage.setItem('aiRewrite', document.getElementById('aiRewrite').checked);
-            localStorage.setItem('aiStyle', document.getElementById('aiStyle').value);
-            localStorage.setItem('addContext', document.getElementById('addContext').checked);
-            localStorage.setItem('includeImpact', document.getElementById('includeImpact').checked);
-            localStorage.setItem('addQuestions', document.getElementById('addQuestions').checked);
-            localStorage.setItem('customPrompt', document.getElementById('customPrompt').value.trim());
+            const showCategories = document.getElementById('showCategories');
+            if (showCategories) {
+                localStorage.setItem('showCategories', showCategories.checked);
+            }
+            
+            // Save AI rewrite settings with null checks
+            const aiRewrite = document.getElementById('aiRewrite');
+            if (aiRewrite) {
+                localStorage.setItem('aiRewrite', aiRewrite.checked);
+            }
+            
+            const aiStyle = document.getElementById('aiStyle');
+            if (aiStyle) {
+                localStorage.setItem('aiStyle', aiStyle.value);
+            }
+            
+            const addContext = document.getElementById('addContext');
+            if (addContext) {
+                localStorage.setItem('addContext', addContext.checked);
+            }
+            
+            const includeImpact = document.getElementById('includeImpact');
+            if (includeImpact) {
+                localStorage.setItem('includeImpact', includeImpact.checked);
+            }
+            
+            const addQuestions = document.getElementById('addQuestions');
+            if (addQuestions) {
+                localStorage.setItem('addQuestions', addQuestions.checked);
+            }
+            
+            const customPrompt = document.getElementById('customPrompt');
+            if (customPrompt) {
+                localStorage.setItem('customPrompt', customPrompt.value.trim());
+            }
 
             // Save zip code for local news
             const zipCode = document.getElementById('zipCode').value.trim();
@@ -864,7 +894,10 @@ Write ONE paragraph summary.`;
 
             // Show toast notification and navigate to home
             showToast('Settings saved successfully!', 'success');
-            setTimeout(() => showNews(), 500);
+            setTimeout(() => {
+                document.getElementById('newsPage').classList.add('active');
+                document.getElementById('settingsPage').classList.remove('active');
+            }, 500);
         }
 
         function handleAiProviderChange() {
