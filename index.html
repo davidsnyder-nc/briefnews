@@ -3455,8 +3455,7 @@ Write exactly 3 sentences.`;
 
             const apiKey = getApiKey();
             if (!apiKey) {
-                statusDiv.textContent = 'API key required for premium audio. Using browser fallback...';
-                // Fallback to browser TTS
+                statusDiv.textContent = 'No API key found. Using browser text-to-speech...';
                 useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
                 return;
             }
@@ -3464,14 +3463,24 @@ Write exactly 3 sentences.`;
             statusDiv.textContent = 'Generating premium audio with Google Text-to-Speech...';
 
             try {
-                // Google TTS has a 5000 character limit per request
-                const maxChunkSize = 4000; // Leave buffer for safety
+                // Use the main app's generateAudioFromText function if available (from parent window)
+                if (window.opener && window.opener.generateAudioFromText) {
+                    statusDiv.textContent = 'Requesting premium audio generation from main app...';
+                    
+                    const audioUrl = await window.opener.generateAudioFromText(newsletterText);
+                    if (audioUrl) {
+                        playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv);
+                        return;
+                    }
+                }
+                
+                // Fallback: Try direct Google TTS API call with CORS proxy
+                const maxChunkSize = 4000;
                 const chunks = [];
                 
                 if (newsletterText.length <= maxChunkSize) {
                     chunks.push(newsletterText);
                 } else {
-                    // Split by sentences to avoid cutting words
                     const sentences = newsletterText.split(/[.!?]+/);
                     let currentChunk = '';
                     
@@ -3489,9 +3498,8 @@ Write exactly 3 sentences.`;
                     }
                 }
 
-                statusDiv.textContent = 'Generating ' + chunks.length + ' audio segments with Google TTS...';
+                statusDiv.textContent = 'Generating ' + chunks.length + ' audio segments...';
 
-                // Generate audio for each chunk
                 const audioChunks = [];
                 const voiceSettings = getVoiceSettings();
                 
@@ -3502,7 +3510,7 @@ Write exactly 3 sentences.`;
                         input: { text: chunks[i] },
                         voice: {
                             languageCode: 'en-US',
-                            name: voiceSettings.voiceName || 'en-US-Journey-D', // Cheapest male voice
+                            name: voiceSettings.voiceName || 'en-US-Journey-D',
                             ssmlGender: 'MALE'
                         },
                         audioConfig: {
@@ -3513,7 +3521,11 @@ Write exactly 3 sentences.`;
                         }
                     };
 
-                    const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey, {
+                    // Try using a CORS proxy
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const targetUrl = encodeURIComponent('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey);
+                    
+                    const response = await fetch(proxyUrl + targetUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -3522,9 +3534,7 @@ Write exactly 3 sentences.`;
                     });
 
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Google TTS API error:', response.status, errorText);
-                        throw new Error('Google TTS API failed: ' + response.status + ' - ' + errorText);
+                        throw new Error('TTS API failed: ' + response.status);
                     }
 
                     const data = await response.json();
@@ -3533,23 +3543,19 @@ Write exactly 3 sentences.`;
 
                 statusDiv.textContent = 'Combining audio segments...';
 
-                // Combine audio chunks by creating a playlist
                 if (audioChunks.length === 1) {
-                    // Single chunk - play directly
                     const audioBlob = new Blob([Uint8Array.from(atob(audioChunks[0]), c => c.charCodeAt(0))], {
                         type: 'audio/mpeg'
                     });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     playAudioFromUrl(audioUrl, playButton, stopButton, statusDiv, playerDiv);
                 } else {
-                    // Multiple chunks - play sequentially
                     playAudioChunksSequentially(audioChunks, 0, playButton, stopButton, statusDiv, playerDiv);
                 }
 
             } catch (error) {
                 console.error('Google TTS error:', error);
-                statusDiv.textContent = 'Premium audio failed (' + error.message + '). Using browser fallback...';
-                // Fallback to browser TTS
+                statusDiv.textContent = 'Premium audio failed. Using browser text-to-speech...';
                 useBrowserTTS(newsletterText, playButton, stopButton, statusDiv, playerDiv);
             }
         }
