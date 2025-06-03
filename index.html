@@ -101,6 +101,13 @@
         
         .app-title-brief { color: #a0d2eb; }
         .app-title-news { color: #ffffff; }
+        
+        .category-button.selected {
+            background: linear-gradient(to right, #059669, #065f46) !important;
+            color: white !important;
+            border-color: #065f46 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
 
     </style>
@@ -1584,6 +1591,77 @@ Write exactly 3 sentences.`;
             }
             
             generateNewsletterForCategories(selectedCategories);
+        }
+
+        async function generateNewsletterForCategories(categories) {
+            const maxArticles = 20;
+            const digestLength = 'brief';
+
+            // Check if API key is configured before starting
+            const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
+            const geminiApiKey = localStorage.getItem('geminiApiKey');
+            const openaiApiKey = localStorage.getItem('openaiApiKey');
+            const apiKey = aiProvider === 'gemini' ? geminiApiKey : openaiApiKey;
+            
+            if (!apiKey) {
+                showToast(`Please configure your ${aiProvider === 'gemini' ? 'Gemini' : 'OpenAI'} API key in settings`, 'error');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('statusMessage').textContent = 'Fetching and analyzing news articles...';
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('newsletterArea').innerHTML = '';
+
+            try {
+                // Filter feeds by categories
+                let feedsToUse = currentRssFeeds;
+                if (!categories.includes('all') && categories.length > 0) {
+                    feedsToUse = currentRssFeeds.filter(feed => 
+                        categories.some(category => 
+                            feed.category.toLowerCase().includes(category.toLowerCase()) ||
+                            category.toLowerCase().includes(feed.category.toLowerCase())
+                        )
+                    );
+                }
+
+                // Fetch articles from RSS feeds
+                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 2);
+                
+                if (articles.length === 0) {
+                    document.getElementById('statusMessage').textContent = 'No articles found. Please try again or check your feeds.';
+                    document.getElementById('loader').classList.add('hidden');
+                    return;
+                }
+
+                document.getElementById('statusMessage').textContent = `Processing ${articles.length} articles with AI...`;
+
+                // Add AI processing to articles with breaking news classification
+                const processedArticles = await processArticlesWithAI(articles, digestLength);
+                
+                // Sort articles (breaking news first, then by publication date)
+                processedArticles.sort((a, b) => {
+                    if (a.isBreaking && !b.isBreaking) return -1;
+                    if (!a.isBreaking && b.isBreaking) return 1;
+                    return new Date(b.pubDate) - new Date(a.pubDate);
+                });
+
+                // Take only the number of articles requested
+                const finalArticles = processedArticles.slice(0, maxArticles);
+
+                // Display articles
+                displayArticles(finalArticles);
+
+                // Hide loading state
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('statusMessage').textContent = `Generated newsletter with ${finalArticles.length} articles`;
+
+            } catch (error) {
+                console.error('Error generating newsletter:', error);
+                document.getElementById('statusMessage').textContent = 'Error generating newsletter. Please try again.';
+                document.getElementById('loader').classList.add('hidden');
+                showToast('Error generating newsletter', 'error');
+            }
         }
 
         function startOver() {
