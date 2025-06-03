@@ -215,7 +215,7 @@
             <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button id="headerNewsletterBtn" onclick="generateCustomNewsletter()" 
                         class="hidden px-2 py-1 bg-green-600 text-white rounded text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors whitespace-nowrap">
-                    Newsletter
+                    Generate Newsletter
                 </button>
                 <a href="https://github.com/davidsnyder-nc/briefnews" target="_blank" rel="noopener noreferrer" 
                    class="flex items-center p-2 rounded-md hover:bg-blue-800 transition-colors" 
@@ -3344,7 +3344,7 @@ Write exactly 3 sentences.`;
             statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
             // Compile newsletter text from the page
-            let newsletterText = 'Today\\'s News Brief. ';
+            let newsletterText = 'Today\'s News Brief. ';
             
             // Extract all article content from the page
             const articles = document.querySelectorAll('.article');
