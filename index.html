@@ -3393,7 +3393,9 @@ Write exactly 3 sentences.`;
                 document.getElementById('statusMessage').textContent = `Processing ${articles.length} articles with AI...`;
 
                 // Add AI processing to articles with breaking news classification
+                console.log('Starting AI processing...');
                 const processedArticles = await processArticlesWithAI(articles, digestLength);
+                console.log('AI processing completed, articles:', processedArticles.length);
                 
                 // Sort articles (breaking news first, then by publication date)
                 processedArticles.sort((a, b) => {
@@ -3404,19 +3406,46 @@ Write exactly 3 sentences.`;
 
                 // Take only the number of articles requested
                 const finalArticles = processedArticles.slice(0, maxArticles);
+                console.log('Final articles to display:', finalArticles.length);
 
                 // Display articles
+                console.log('Starting displayArticles...');
                 displayArticles(finalArticles);
+                console.log('displayArticles completed');
 
                 // Show header and hide welcome section
                 document.getElementById('newsHeader').style.display = 'block';
                 document.getElementById('welcomeSection').style.display = 'none';
 
                 // Create article index, source filter buttons, load more button, and category filter buttons
-                createArticleIndex(finalArticles);
-                createSourceFilterButtons(finalArticles);
-                createLoadMoreButton();
-                createCategoryFilterButtons();
+                console.log('Creating UI elements...');
+                try {
+                    createArticleIndex(finalArticles);
+                    console.log('Article index created');
+                } catch (e) {
+                    console.error('Error creating article index:', e);
+                }
+                
+                try {
+                    createSourceFilterButtons(finalArticles);
+                    console.log('Source filter buttons created');
+                } catch (e) {
+                    console.error('Error creating source filter buttons:', e);
+                }
+                
+                try {
+                    createLoadMoreButton();
+                    console.log('Load more button created');
+                } catch (e) {
+                    console.error('Error creating load more button:', e);
+                }
+                
+                try {
+                    createCategoryFilterButtons();
+                    console.log('Category filter buttons created');
+                } catch (e) {
+                    console.error('Error creating category filter buttons:', e);
+                }
 
                 // Hide loading state
                 document.getElementById('loader').classList.add('hidden');
@@ -3424,9 +3453,10 @@ Write exactly 3 sentences.`;
 
             } catch (error) {
                 console.error('Error generating newsletter:', error);
+                console.error('Error details:', error.message, error.stack);
                 document.getElementById('statusMessage').textContent = 'Error generating newsletter. Please try again.';
                 document.getElementById('loader').classList.add('hidden');
-                showToast('Error generating newsletter', 'error');
+                showToast(`Error: ${error.message || 'Unknown error'}`, 'error');
             }
         }
 
