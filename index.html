@@ -3340,6 +3340,31 @@ Write exactly 3 sentences.`;
             margin-bottom: 30px;
             text-align: center;
         }
+        .audio-controls {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .audio-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .audio-button:hover {
+            background: #1d4ed8;
+        }
+        .audio-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -3347,6 +3372,22 @@ Write exactly 3 sentences.`;
         <div class="header">
             <div class="logo">📰 News Brief</div>
             <div class="date">${dateStr}</div>
+        </div>
+        
+        <!-- Audio Controls for Newsletter -->
+        <div class="audio-controls">
+            <h3 style="margin: 0 0 10px 0; color: #1e40af;">🎧 Listen to Newsletter</h3>
+            <p style="margin: 0 0 15px 0; font-size: 12px; color: #6b7280;">AI-generated audio of your complete newsletter</p>
+            <button id="generateAudio" class="audio-button" onclick="generateNewsletterAudio()">
+                🔊 Generate Audio
+            </button>
+            <div id="audioPlayer" style="display: none; margin-top: 15px;">
+                <audio controls style="width: 100%; max-width: 400px;">
+                    <source id="audioSource" src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <div id="audioStatus" style="font-size: 12px; color: #6b7280; margin-top: 10px;"></div>
         </div>
         
         <div class="stats">
@@ -3398,6 +3439,86 @@ Write exactly 3 sentences.`;
             Powered by News Brief • AI-Enhanced News Curation
         </div>
     </div>
+    
+    <script>
+        async function generateNewsletterAudio() {
+            const button = document.getElementById('generateAudio');
+            const statusDiv = document.getElementById('audioStatus');
+            const playerDiv = document.getElementById('audioPlayer');
+            
+            try {
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = '⏳ Generating...';
+                statusDiv.textContent = 'Preparing newsletter content for audio generation...';
+
+                // Compile newsletter text from the page
+                let newsletterText = 'Today\\'s News Brief. ';
+                
+                // Extract all article content from the page
+                const articles = document.querySelectorAll('.article');
+                articles.forEach((article, index) => {
+                    const title = article.querySelector('.article-title');
+                    const summary = article.querySelector('.article-summary');
+                    const source = article.querySelector('.article-meta');
+                    
+                    if (title) {
+                        newsletterText += \`Article \${index + 1}. \${title.textContent.trim()}. \`;
+                    }
+                    if (summary) {
+                        newsletterText += \`\${summary.textContent.trim()} \`;
+                    }
+                    if (source) {
+                        newsletterText += \`Source: \${source.textContent.trim()}. \`;
+                    }
+                });
+
+                newsletterText += 'End of newsletter.';
+
+                // Limit text length for TTS
+                if (newsletterText.length > 5000) {
+                    newsletterText = newsletterText.substring(0, 4900) + '... Newsletter content truncated for audio generation.';
+                }
+
+                statusDiv.textContent = 'Generating audio with Google Text-to-Speech...';
+
+                // Generate audio using Google TTS
+                const encodedText = encodeURIComponent(newsletterText);
+                const ttsUrl = \`https://translate.google.com/translate_tts?ie=UTF-8&q=\${encodedText}&tl=en&client=tw-ob\`;
+                
+                // Setup audio player
+                const audioElement = playerDiv.querySelector('audio');
+                const audioSource = document.getElementById('audioSource');
+                
+                audioSource.src = ttsUrl;
+                audioElement.load();
+                
+                // Show player and auto-play
+                playerDiv.style.display = 'block';
+                statusDiv.textContent = 'Audio generated successfully! Playing now...';
+                
+                // Auto-play the audio
+                try {
+                    await audioElement.play();
+                } catch (playError) {
+                    console.log('Auto-play prevented by browser, user must click play manually');
+                    statusDiv.textContent = 'Audio ready! Click play to listen.';
+                }
+
+                // Update button
+                button.innerHTML = '✅ Audio Generated';
+
+            } catch (error) {
+                console.error('Error generating newsletter audio:', error);
+                statusDiv.textContent = 'Error generating audio. Please try again.';
+                
+                // Reset button
+                button.innerHTML = '🔊 Generate Audio';
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>`;
 
@@ -3853,9 +3974,6 @@ Write exactly 3 sentences.`;
                 // Show header and hide welcome section
                 document.getElementById('newsHeader').style.display = 'block';
                 document.getElementById('welcomeSection').style.display = 'none';
-                
-                // Show newsletter audio controls
-                document.getElementById('newsletterAudioControls').style.display = 'block';
 
                 // Create article index, source filter buttons, load more button, and category filter buttons
                 console.log('Creating UI elements...');
