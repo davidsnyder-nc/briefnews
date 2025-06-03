@@ -1658,6 +1658,9 @@ Write exactly 3 sentences.`;
             // Create source filter buttons
             createSourceFilterButtons(articles);
             
+            // Create category filter buttons in header
+            createCategoryFilterButtons();
+            
             // Create load more button
             createLoadMoreButton();
             
@@ -2290,6 +2293,117 @@ Write exactly 3 sentences.`;
         // Add scroll event listener for floating buttons
         window.addEventListener('scroll', toggleFloatingButtons);
         window.addEventListener('resize', toggleFloatingButtons);
+
+        function createCategoryFilterButtons() {
+            // Remove existing category filter container if it exists
+            const existingContainer = document.getElementById('categoryFilterContainer');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+            
+            // Get all available categories
+            const categories = [...new Set(currentRssFeeds.map(feed => feed.category).filter(Boolean))].sort();
+            
+            if (categories.length === 0) return;
+            
+            // Create category filter container
+            const categoryFilterContainer = document.createElement('div');
+            categoryFilterContainer.id = 'categoryFilterContainer';
+            categoryFilterContainer.className = 'mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg';
+            
+            // Create category filter buttons
+            const categoryButtons = categories.map(category => 
+                `<button onclick="toggleCategoryFilter('${category.toLowerCase()}')" 
+                         class="category-filter-btn px-3 py-2 m-1 bg-white border border-blue-300 rounded-lg text-sm hover:bg-blue-100 transition-colors"
+                         data-category="${category.toLowerCase()}">
+                    ${category}
+                </button>`
+            ).join('');
+            
+            categoryFilterContainer.innerHTML = `
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="text-sm font-medium text-blue-800 mr-2">Refresh with different categories:</span>
+                    <div class="flex flex-wrap gap-1">
+                        ${categoryButtons}
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="refreshSelectedCategories" onclick="refreshWithSelectedCategories()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors" style="display: none;">
+                        Refresh with Selected Categories
+                    </button>
+                    <button onclick="clearCategorySelection()" 
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors">
+                        Clear Selection
+                    </button>
+                </div>
+            `;
+            
+            // Insert before newsletter area
+            const newsletterArea = document.getElementById('newsletterArea');
+            if (newsletterArea && newsletterArea.parentNode) {
+                newsletterArea.parentNode.insertBefore(categoryFilterContainer, newsletterArea);
+            }
+        }
+        
+        let selectedFilterCategories = [];
+        
+        function toggleCategoryFilter(categoryName) {
+            const button = event.target;
+            
+            if (selectedFilterCategories.includes(categoryName)) {
+                // Remove category
+                selectedFilterCategories = selectedFilterCategories.filter(cat => cat !== categoryName);
+                button.classList.remove('bg-blue-600', 'text-white');
+                button.classList.add('bg-white', 'border-blue-300');
+            } else {
+                // Add category
+                selectedFilterCategories.push(categoryName);
+                button.classList.remove('bg-white', 'border-blue-300');
+                button.classList.add('bg-blue-600', 'text-white');
+            }
+            
+            // Show/hide refresh button
+            const refreshBtn = document.getElementById('refreshSelectedCategories');
+            if (refreshBtn) {
+                if (selectedFilterCategories.length > 0) {
+                    refreshBtn.style.display = 'inline-block';
+                    refreshBtn.textContent = `Refresh with ${selectedFilterCategories.length} Categories`;
+                } else {
+                    refreshBtn.style.display = 'none';
+                }
+            }
+        }
+        
+        function clearCategorySelection() {
+            selectedFilterCategories = [];
+            document.querySelectorAll('.category-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'border-blue-300');
+            });
+            
+            const refreshBtn = document.getElementById('refreshSelectedCategories');
+            if (refreshBtn) {
+                refreshBtn.style.display = 'none';
+            }
+        }
+        
+        function refreshWithSelectedCategories() {
+            if (selectedFilterCategories.length === 0) return;
+            
+            // Clear previous content
+            clearPreviousContent();
+            
+            // Generate newsletter with selected categories
+            if (selectedFilterCategories.length === 1) {
+                // Single category - use existing dropdown logic
+                document.getElementById('categorySelect').value = selectedFilterCategories[0];
+                generateNewsletter();
+            } else {
+                // Multiple categories - use custom filtering
+                generateNewsletterForCategories(selectedFilterCategories);
+            }
+        }
 
         function createLoadMoreButton() {
             // Remove existing load more button if it exists
@@ -2951,17 +3065,16 @@ Write exactly 3 sentences.`;
                 articleIndex.style.display = 'none';
             }
             
-            // Clear source filter buttons
-            const sourceFilters = document.getElementById('sourceFilters');
-            if (sourceFilters) {
-                sourceFilters.innerHTML = '';
-                sourceFilters.style.display = 'none';
+            // Clear source filter buttons and container
+            const sourceFilterContainer = document.getElementById('sourceFilterContainer');
+            if (sourceFilterContainer) {
+                sourceFilterContainer.remove();
             }
             
             // Clear load more button
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             if (loadMoreContainer) {
-                loadMoreContainer.innerHTML = '';
+                loadMoreContainer.remove();
             }
             
             // Clear any global variables
@@ -2972,6 +3085,12 @@ Write exactly 3 sentences.`;
             const audioFab = document.getElementById('audioFab');
             if (audioFab) {
                 audioFab.style.display = 'none';
+            }
+            
+            // Reset category filter buttons in header
+            const categoryFilterContainer = document.getElementById('categoryFilterContainer');
+            if (categoryFilterContainer) {
+                categoryFilterContainer.remove();
             }
         }
 
