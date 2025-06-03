@@ -731,8 +731,11 @@
                 const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
                 const cleanArticles = filterBlockedTerms(filteredArticles, blockedTerms);
 
+                // Remove duplicate articles and keep the best version
+                const uniqueArticles = removeDuplicateArticles(cleanArticles);
+
                 // Sort articles with breaking news first - ALWAYS prioritize breaking news
-                const sortedArticles = sortArticlesWithBreakingFirst(cleanArticles);
+                const sortedArticles = sortArticlesWithBreakingFirst(uniqueArticles);
 
                 // Limit to max articles
                 const finalArticles = sortedArticles.slice(0, maxArticles);
@@ -783,23 +786,31 @@
         }
 
         function isBreakingNews(article) {
+            // Only apply breaking news to general news and world news categories
+            const allowedCategories = ['general news', 'world news', 'general'];
+            const isAllowedCategory = allowedCategories.some(cat => 
+                article.category.toLowerCase().includes(cat.toLowerCase())
+            );
+            
+            if (!isAllowedCategory) {
+                return false;
+            }
+            
             const breakingKeywords = [
                 'breaking', 'urgent', 'alert', 'developing', 'live', 'just in',
-                'emergency', 'crisis', 'major breakthrough', 'significant development',
-                'important update', 'exclusive', 'confirmed', 'reports', 'happening now',
-                'latest', 'update', 'announced', 'reveals', 'confirmed dead', 'killed',
-                'attack', 'explosion', 'crash', 'disaster', 'warning', 'critical'
+                'emergency', 'crisis', 'explosion', 'attack', 'disaster', 
+                'confirmed dead', 'killed', 'warning', 'critical situation'
             ];
             
-            const text = (article.title + ' ' + (article.description || '') + ' ' + (article.fullContent || '')).toLowerCase();
+            const text = (article.title + ' ' + (article.description || '')).toLowerCase();
             const hasBreakingKeyword = breakingKeywords.some(keyword => text.includes(keyword));
             
-            // Also check if published within last 2 hours for recency
+            // Only mark as breaking if it has explicit breaking keywords AND is recent (last 4 hours)
             const articleDate = new Date(article.pubDate);
-            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-            const isRecent = articleDate > twoHoursAgo;
+            const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+            const isRecent = articleDate > fourHoursAgo;
             
-            return hasBreakingKeyword || isRecent;
+            return hasBreakingKeyword && isRecent;
         }
 
         function filterBlockedTerms(articles, blockedTerms) {
@@ -809,6 +820,51 @@
                 const text = (article.title + ' ' + article.description).toLowerCase();
                 return !blockedTerms.some(term => text.includes(term));
             });
+        }
+
+        function removeDuplicateArticles(articles) {
+            const uniqueArticles = [];
+            const seenTitles = new Set();
+            
+            // Sort by source quality and recency to pick the best version
+            const sortedArticles = articles.sort((a, b) => {
+                // Prefer sources with longer content
+                const aLength = (a.fullContent || a.description || '').length;
+                const bLength = (b.fullContent || b.description || '').length;
+                if (aLength !== bLength) return bLength - aLength;
+                
+                // Then prefer more recent articles
+                return new Date(b.pubDate) - new Date(a.pubDate);
+            });
+            
+            for (const article of sortedArticles) {
+                const titleWords = article.title.toLowerCase().split(' ').filter(word => word.length > 3);
+                const titleKey = titleWords.slice(0, 5).join(' '); // Use first 5 significant words
+                
+                // Check if we've seen a similar title
+                let isDuplicate = false;
+                for (const seenTitle of seenTitles) {
+                    const similarity = calculateSimilarity(titleKey, seenTitle);
+                    if (similarity > 0.7) { // 70% similarity threshold
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                
+                if (!isDuplicate) {
+                    seenTitles.add(titleKey);
+                    uniqueArticles.push(article);
+                }
+            }
+            
+            return uniqueArticles;
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const words1 = str1.split(' ');
+            const words2 = str2.split(' ');
+            const commonWords = words1.filter(word => words2.includes(word));
+            return commonWords.length / Math.max(words1.length, words2.length);
         }
 
         function cleanHtmlContent(text) {
