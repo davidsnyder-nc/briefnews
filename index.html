@@ -829,9 +829,28 @@ Write ONE paragraph summary.</textarea>
             selectedCategories = [];
             selectedFilterCategories = [];
             
+            // Hide header controls
+            const headerControls = document.getElementById('headerControls');
+            if (headerControls) {
+                headerControls.style.display = 'none';
+            }
+            
             // Reset category buttons
             document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
             document.getElementById('generateFromSelection').style.display = 'none';
+            
+            // Clear global state
+            window.currentDisplayedArticles = [];
+            
+            // Force welcome section visibility
+            setTimeout(() => {
+                const welcomeSectionCheck = document.getElementById('welcomeSection');
+                if (welcomeSectionCheck) {
+                    welcomeSectionCheck.style.display = 'block';
+                    welcomeSectionCheck.style.visibility = 'visible';
+                    welcomeSectionCheck.style.opacity = '1';
+                }
+            }, 50);
         }
 
         function showNews() {
