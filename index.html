@@ -243,14 +243,6 @@
     <div id="newsPage" class="page w-full max-w-full px-2 sm:px-4 py-4 overflow-x-hidden">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
             <div class="flex gap-4 items-center justify-center">
-                <div class="flex items-center gap-2" id="headerControls" style="display: none;">
-                    <button id="generateNewsletter" onclick="generateNewsletter()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
-                        Refresh Articles
-                    </button>
-                    <button id="startOver" onclick="startOver()" class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors">
-                        Start Over
-                    </button>
-                </div>
                 <!-- Hidden select for backward compatibility -->
                 <select id="categorySelect" style="display: none;">
                     <option value="all">All Categories</option>
@@ -1922,15 +1914,10 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
-            // Show news header and header controls after articles are loaded
+            // Show news header after articles are loaded
             const newsHeader = document.getElementById('newsHeader');
             if (newsHeader) {
                 newsHeader.style.display = 'block';
-            }
-            
-            const headerControls = document.getElementById('headerControls');
-            if (headerControls) {
-                headerControls.style.display = 'flex';
             }
             
             // Update floating buttons visibility
