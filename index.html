@@ -1086,8 +1086,11 @@ Write ONE sentence summary. Maximum 10 words.`;
                     });
                     
                     console.log(`Filtered ${feedsToUse.length} feeds for category: ${category}`);
+                    console.log('Available feed categories:', currentRssFeeds.map(f => f.category).filter(Boolean));
+                    console.log('Looking for category:', selectedCat);
+                    
                     if (feedsToUse.length === 0) {
-                        throw new Error(`No feeds found for category: ${category}`);
+                        throw new Error(`No feeds found for category: ${category}. Available categories: ${[...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))].join(', ')}`);
                     }
                 }
 
