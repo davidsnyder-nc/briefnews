@@ -208,6 +208,47 @@
             <div id="loader" class="loader hidden"></div>
         </div>
 
+        <div id="welcomeSection" class="mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-6">
+                <h2 class="text-3xl font-bold mb-4">Welcome to briefnews</h2>
+                <p class="text-lg mb-4">Your AI-powered news digest from 139+ trusted sources</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                        <h3 class="font-semibold text-lg">Smart Summaries</h3>
+                        <p class="text-sm opacity-90">AI-generated summaries tailored to your preferences</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                        <h3 class="font-semibold text-lg">Breaking News Priority</h3>
+                        <p class="text-sm opacity-90">Important updates appear first automatically</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                        <h3 class="font-semibold text-lg">Multiple Categories</h3>
+                        <p class="text-sm opacity-90">Technology, Business, Science, Sports, and more</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Start</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Popular Categories</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="quickCategory('technology')" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors">Technology</button>
+                            <button onclick="quickCategory('world news')" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm hover:bg-green-200 transition-colors">World News</button>
+                            <button onclick="quickCategory('business')" class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm hover:bg-purple-200 transition-colors">Business</button>
+                            <button onclick="quickCategory('science')" class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm hover:bg-indigo-200 transition-colors">Science</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Get Started</h4>
+                        <p class="text-sm text-gray-600 mb-3">Select a category above or click "Brief Me" to get news from all categories.</p>
+                        <button onclick="generateNewsletter()" class="btn px-6">Get All News</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <main id="newsletterArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </main>
     </div>
@@ -997,6 +1038,12 @@ ${article.description.substring(0, 400)}`;
             // Store articles globally for category filtering
             window.currentDisplayedArticles = articles;
             
+            // Hide welcome section when articles are displayed
+            const welcomeSection = document.getElementById('welcomeSection');
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+            
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
@@ -1042,6 +1089,11 @@ ${article.description.substring(0, 400)}`;
                     </article>
                 `;
             }).join('');
+        }
+
+        function quickCategory(categoryName) {
+            document.getElementById('categorySelect').value = categoryName.toLowerCase();
+            generateNewsletter();
         }
 
         function filterByCategory(categoryName) {
