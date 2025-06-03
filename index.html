@@ -350,8 +350,8 @@
                 <div>
                     <label for="aiStyle" class="form-label">Writing Style:</label>
                     <select id="aiStyle" class="form-input">
-                        <option value="professional">Professional & Neutral</option>
-                        <option value="conversational" selected>Conversational & Engaging</option>
+                        <option value="professional" selected>Professional & Neutral</option>
+                        <option value="conversational">Conversational & Engaging</option>
                         <option value="analytical">Analytical & In-depth</option>
                         <option value="simple">Simple & Easy to Read</option>
                     </select>
@@ -370,23 +370,7 @@ Write ONE paragraph summary.</textarea>
                 </div>
             </div>
         </section>
-        <section class="settings-section">
-            <h3 class="text-lg font-medium mb-3 text-gray-600">Content Enhancement</h3>
-            <div class="grid grid-cols-1 gap-4">
-                <label class="flex items-center">
-                    <input type="checkbox" id="addContext" class="mr-2" checked>
-                    <span>Add background context to stories</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" id="includeImpact" class="mr-2" checked>
-                    <span>Include impact analysis and implications</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" id="addQuestions" class="mr-2">
-                    <span>Add thought-provoking questions</span>
-                </label>
-            </div>
-        </section>
+
         <section class="settings-section">
             <h3 class="text-lg font-medium mb-3 text-gray-600">Local News Configuration</h3>
             <div class="grid grid-cols-1 gap-4">
@@ -807,7 +791,7 @@ Write ONE paragraph summary.</textarea>
             const aiRewrite = localStorage.getItem('aiRewrite');
             document.getElementById('aiRewrite').checked = aiRewrite === 'true';
             
-            const aiStyle = localStorage.getItem('aiStyle') || 'conversational';
+            const aiStyle = localStorage.getItem('aiStyle') || 'professional';
             document.getElementById('aiStyle').value = aiStyle;
             
             const addContext = localStorage.getItem('addContext');
@@ -1604,7 +1588,7 @@ Write ONE paragraph summary.`;
             
             // Get AI rewrite settings
             const aiRewrite = localStorage.getItem('aiRewrite') === 'true';
-            const aiStyle = localStorage.getItem('aiStyle') || 'conversational';
+            const aiStyle = localStorage.getItem('aiStyle') || 'professional';
             const addContext = localStorage.getItem('addContext') !== 'false';
             const includeImpact = localStorage.getItem('includeImpact') !== 'false';
             const addQuestions = localStorage.getItem('addQuestions') === 'true';
