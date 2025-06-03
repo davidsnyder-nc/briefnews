@@ -806,6 +806,17 @@
             const maxArticles = parseInt(localStorage.getItem('maxArticles') || '20');
             const digestLength = localStorage.getItem('digestLength') || 'brief';
 
+            // Check if API key is configured before starting
+            const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
+            const geminiApiKey = localStorage.getItem('geminiApiKey');
+            const openaiApiKey = localStorage.getItem('openaiApiKey');
+            const apiKey = aiProvider === 'gemini' ? geminiApiKey : openaiApiKey;
+            
+            if (!apiKey) {
+                showToast(`Please configure your ${aiProvider === 'gemini' ? 'Gemini' : 'OpenAI'} API key in settings`, 'error');
+                return;
+            }
+
             // Show loading state
             document.getElementById('statusMessage').textContent = 'Fetching and analyzing news articles...';
             document.getElementById('loader').classList.remove('hidden');
@@ -852,7 +863,8 @@
             } catch (error) {
                 console.error('Error generating newsletter:', error);
                 document.getElementById('statusMessage').textContent = 'Error generating newsletter';
-                showToast('Error: ' + error.message, 'error');
+                const errorMessage = error.message || 'An unexpected error occurred';
+                showToast(`Error: ${errorMessage}`, 'error');
             } finally {
                 document.getElementById('loader').classList.add('hidden');
             }
@@ -1061,9 +1073,6 @@
                     console.warn(`Failed to fetch from ${feed.title}:`, error.message);
                     return [];
                 }
-            }).catch(error => {
-                console.warn('Feed processing error:', error.message);
-                return [];
             });
             
             // Wait for all with timeout
@@ -1199,7 +1208,9 @@ ${article.description.substring(0, 400)}`;
                             });
 
                             if (!response.ok) {
-                                throw new Error(`OpenAI API Error: ${response.status}`);
+                                const errorData = await response.text();
+                                console.error('OpenAI API Error:', response.status, errorData);
+                                throw new Error(`OpenAI API Error: ${response.status} - ${errorData}`);
                             }
 
                             data = await response.json();
