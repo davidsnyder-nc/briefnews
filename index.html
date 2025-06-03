@@ -1401,13 +1401,14 @@ Write exactly 3 sentences.`;
                                     ${article.aiSummary}
                                 </div>
                             </div>
-                        <footer class="mt-4 pt-4 border-t border-gray-100">
-                            <p class="text-xs text-gray-400">
-                                Published: ${new Date(article.pubDate).toLocaleDateString()}
-                            </p>
-                        </footer>
-                    </article>
-                `;
+                            <footer class="mt-4 pt-4 border-t border-gray-100">
+                                <p class="text-xs text-gray-400">
+                                    Published: ${new Date(article.pubDate).toLocaleDateString()}
+                                </p>
+                            </footer>
+                        </article>
+                    `;
+                }
             }).join('');
         }
 
