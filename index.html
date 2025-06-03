@@ -3406,11 +3406,57 @@ Write exactly 3 sentences.`;
                 // Remove duplicate articles and keep the best version
                 const uniqueArticles = removeDuplicateArticles(cleanArticles);
 
-                // Sort articles with breaking news first
-                const sortedArticles = sortArticlesWithBreakingFirst(uniqueArticles);
+                // For multiple categories, ensure balanced representation
+                let finalArticles;
+                if (categories.length > 1 && !categories.includes('all')) {
+                    // Group articles by category
+                    const articlesByCategory = {};
+                    uniqueArticles.forEach(article => {
+                        const feed = feedsToUse.find(f => f.name === article.source);
+                        const category = feed ? feed.category : 'Unknown';
+                        if (!articlesByCategory[category]) {
+                            articlesByCategory[category] = [];
+                        }
+                        articlesByCategory[category].push(article);
+                    });
 
-                // Limit to max articles
-                const finalArticles = sortedArticles.slice(0, maxArticles);
+                    // Take articles proportionally from each category
+                    const articlesPerCategory = Math.max(2, Math.floor(maxArticles / categories.length));
+                    const balancedArticles = [];
+                    
+                    // First pass: take articlesPerCategory from each category
+                    categories.forEach(category => {
+                        const categoryKey = category.charAt(0).toUpperCase() + category.slice(1);
+                        const categoryArticles = articlesByCategory[categoryKey] || [];
+                        const sorted = sortArticlesWithBreakingFirst(categoryArticles);
+                        balancedArticles.push(...sorted.slice(0, articlesPerCategory));
+                    });
+
+                    // Second pass: fill remaining slots with any available articles
+                    const remainingSlots = maxArticles - balancedArticles.length;
+                    if (remainingSlots > 0) {
+                        const remainingArticles = uniqueArticles.filter(article => 
+                            !balancedArticles.some(existing => existing.id === article.id)
+                        );
+                        const sortedRemaining = sortArticlesWithBreakingFirst(remainingArticles);
+                        balancedArticles.push(...sortedRemaining.slice(0, remainingSlots));
+                    }
+
+                    finalArticles = balancedArticles.slice(0, maxArticles);
+                    console.log('Balanced article distribution:', 
+                        categories.map(cat => {
+                            const count = finalArticles.filter(article => {
+                                const feed = feedsToUse.find(f => f.name === article.source);
+                                return feed && feed.category.toLowerCase() === cat.toLowerCase();
+                            }).length;
+                            return `${cat}: ${count}`;
+                        }).join(', ')
+                    );
+                } else {
+                    // Sort articles with breaking news first
+                    const sortedArticles = sortArticlesWithBreakingFirst(uniqueArticles);
+                    finalArticles = sortedArticles.slice(0, maxArticles);
+                }
 
                 // Generate AI summaries
                 console.log('Starting AI processing...');
