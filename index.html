@@ -1602,6 +1602,11 @@ Write exactly 3 sentences.`;
                                         <div class="text-gray-700 leading-relaxed">
                                             ${article.aiSummary}
                                         </div>
+                                        <div class="mt-4 pt-3 border-t border-gray-100">
+                                            <button onclick="generateSingleArticleAudio(${articleNumber})" class="single-audio-btn px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+                                                🎵 Generate Audio
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1646,6 +1651,11 @@ Write exactly 3 sentences.`;
                                 </div>` : ''}
                                 <div class="text-gray-700 leading-relaxed">
                                     ${article.aiSummary}
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-gray-100">
+                                    <button onclick="generateSingleArticleAudio(${articleNumber})" class="single-audio-btn px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+                                        🎵 Generate Audio
+                                    </button>
                                 </div>
                             </div>
                             <footer class="mt-4 pt-4 border-t border-gray-100">
@@ -1860,21 +1870,54 @@ Write exactly 3 sentences.`;
             }
         }
 
-        async function generateNewsletterWithTTS() {
+        async function generateSingleArticleAudio(articleNumber) {
             const geminiApiKey = localStorage.getItem('geminiApiKey');
             if (!geminiApiKey) {
                 showToast('Please configure your Google API key in settings for Text-to-Speech', 'error');
                 return;
             }
 
-            // Generate regular newsletter first
-            await generateNewsletter();
-            
-            // Wait for articles to be displayed
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Generate audio for articles
-            await generateAudioForArticles();
+            const articles = window.currentDisplayedArticles;
+            if (!articles || articles.length === 0) {
+                showToast('No articles available', 'error');
+                return;
+            }
+
+            const article = articles[articleNumber - 1];
+            if (!article) {
+                showToast('Article not found', 'error');
+                return;
+            }
+
+            const button = document.querySelector(`article#article-${articleNumber} .single-audio-btn`);
+            if (!button) return;
+
+            // Update button state
+            button.disabled = true;
+            button.innerHTML = '⏳ Generating...';
+
+            try {
+                // Create text content for TTS
+                const textContent = `${article.title}. ${article.aiSummary}`;
+                
+                // Generate audio using Google TTS
+                const audioBlob = await generateTTSAudio(textContent, geminiApiKey);
+                
+                if (audioBlob) {
+                    // Replace button with audio player
+                    replaceButtonWithAudioPlayer(articleNumber, audioBlob);
+                    showToast('Audio generated successfully!', 'success');
+                } else {
+                    throw new Error('Failed to generate audio');
+                }
+            } catch (error) {
+                console.error('Error generating audio:', error);
+                showToast('Error generating audio. Please check your API key.', 'error');
+                
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = '🎵 Generate Audio';
+            }
         }
 
         async function generateAudioForArticles() {
@@ -1982,20 +2025,19 @@ Write exactly 3 sentences.`;
             }
         }
 
-        function addAudioPlayerToArticle(articleNumber, audioBlob) {
+        function replaceButtonWithAudioPlayer(articleNumber, audioBlob) {
             const article = document.getElementById(`article-${articleNumber}`);
             if (!article) return;
 
             const audioUrl = URL.createObjectURL(audioBlob);
+            const buttonContainer = article.querySelector('.single-audio-btn').parentElement;
             
-            // Check if audio player already exists
-            if (article.querySelector('.audio-player')) return;
+            if (!buttonContainer) return;
 
-            const audioPlayer = document.createElement('div');
-            audioPlayer.className = 'audio-player mt-3 p-3 bg-green-50 border border-green-200 rounded-lg';
-            audioPlayer.innerHTML = `
+            // Replace the button with audio player
+            buttonContainer.innerHTML = `
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleAudio(${articleNumber})" class="audio-play-btn w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700">
+                    <button onclick="toggleSingleAudio(${articleNumber})" class="audio-play-btn w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-700">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 5v10l7-5z"/>
                         </svg>
@@ -2006,27 +2048,35 @@ Write exactly 3 sentences.`;
                     <span class="text-sm text-green-700">Listen to Article ${articleNumber}</span>
                 </div>
             `;
-
-            // Add to article content area
-            const contentArea = article.querySelector('.content-area');
-            if (contentArea) {
-                contentArea.appendChild(audioPlayer);
-            }
         }
 
-        function toggleAudio(articleNumber) {
+        function toggleSingleAudio(articleNumber) {
             const audio = document.getElementById(`audio-${articleNumber}`);
             const button = audio.parentElement.querySelector('.audio-play-btn');
             
             if (audio.paused) {
                 // Stop all other audio first
-                stopAllAudio();
+                stopAllSingleAudio();
                 audio.play();
                 button.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 4h2v12H6V4zm6 0h2v12h-2V4z"/></svg>';
             } else {
                 audio.pause();
                 button.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8 5v10l7-5z"/></svg>';
             }
+        }
+
+        function stopAllSingleAudio() {
+            const audioElements = document.querySelectorAll('[id^="audio-"]');
+            audioElements.forEach(audio => {
+                if (!audio.paused) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    const button = audio.parentElement?.querySelector('.audio-play-btn');
+                    if (button) {
+                        button.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8 5v10l7-5z"/></svg>';
+                    }
+                }
+            });
         }
 
         function playAllAudio() {
@@ -2082,21 +2132,12 @@ Write exactly 3 sentences.`;
 
         function toggleFloatingButtons() {
             const scrollButton = document.getElementById('scrollToTop');
-            const audioButton = document.getElementById('audioFab');
-            const articles = window.currentDisplayedArticles;
             
             // Show scroll button when scrolled down
             if (window.scrollY > 300) {
                 scrollButton.style.display = 'flex';
             } else {
                 scrollButton.style.display = 'none';
-            }
-            
-            // Show audio button when articles are loaded
-            if (articles && articles.length > 0) {
-                audioButton.style.display = 'flex';
-            } else {
-                audioButton.style.display = 'none';
             }
         }
 
@@ -3019,9 +3060,7 @@ Write exactly 3 sentences.`;
         </svg>
     </button>
     
-    <button id="audioFab" class="audio-fab" onclick="generateNewsletterWithTTS()" title="Generate with Audio">
-        🎵
-    </button>
+
     
     <div id="toastContainer"></div>
 </body>
