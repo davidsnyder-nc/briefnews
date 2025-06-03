@@ -3282,10 +3282,9 @@ Write exactly 3 sentences.`;
                 🔊 Generate Audio
             </button>
             <div id="audioPlayer" style="display: none; margin-top: 15px;">
-                <audio controls style="width: 100%; max-width: 400px;">
-                    <source id="audioSource" src="" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
+                <div style="padding: 15px; background: #f3f4f6; border-radius: 6px;">
+                    <p style="margin: 0; font-size: 14px; color: #374151;">Audio will play using your browser's built-in text-to-speech.</p>
+                </div>
             </div>
             <div id="audioStatus" style="font-size: 12px; color: #6b7280; margin-top: 10px;"></div>
         </div>
@@ -3375,33 +3374,49 @@ Write exactly 3 sentences.`;
                 newsletterText = newsletterText.substring(0, 4900) + '... Newsletter content truncated for audio generation.';
             }
 
-            statusDiv.textContent = 'Generating audio with Google Text-to-Speech...';
+            statusDiv.textContent = 'Generating audio with Web Speech API...';
 
-            // Generate audio using Google TTS
-            const encodedText = encodeURIComponent(newsletterText);
-            const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=en&client=tw-ob';
-            
-            // Setup audio player
-            const audioElement = playerDiv.querySelector('audio');
-            const audioSource = document.getElementById('audioSource');
-            
-            audioSource.src = ttsUrl;
-            audioElement.load();
-            
-            // Show player and auto-play
-            playerDiv.style.display = 'block';
-            statusDiv.textContent = 'Audio generated successfully! Playing now...';
-            
-            // Auto-play the audio
-            audioElement.play().then(() => {
-                statusDiv.textContent = 'Audio is playing...';
-            }).catch(() => {
-                statusDiv.textContent = 'Audio ready! Click play to listen.';
-            });
-
-            // Update button
-            button.innerHTML = '✅ Audio Generated';
-            button.disabled = false;
+            // Use Web Speech API for text-to-speech
+            if ('speechSynthesis' in window) {
+                // Cancel any existing speech
+                speechSynthesis.cancel();
+                
+                // Create speech utterance
+                const utterance = new SpeechSynthesisUtterance(newsletterText);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // Set up event handlers
+                utterance.onstart = () => {
+                    statusDiv.textContent = 'Audio is playing...';
+                    button.innerHTML = '⏸️ Playing';
+                };
+                
+                utterance.onend = () => {
+                    statusDiv.textContent = 'Audio playback completed.';
+                    button.innerHTML = '🔊 Generate Audio';
+                    button.disabled = false;
+                };
+                
+                utterance.onerror = () => {
+                    statusDiv.textContent = 'Audio playback failed. Try again.';
+                    button.innerHTML = '🔊 Generate Audio';
+                    button.disabled = false;
+                };
+                
+                // Show player controls and start speech
+                playerDiv.style.display = 'block';
+                statusDiv.textContent = 'Starting audio playback...';
+                speechSynthesis.speak(utterance);
+                
+                // Store utterance for potential controls
+                window.currentUtterance = utterance;
+            } else {
+                statusDiv.textContent = 'Text-to-speech not supported in this browser.';
+                button.innerHTML = '❌ Not Supported';
+                button.disabled = false;
+            }
         }
     <\/script>
 </body>
