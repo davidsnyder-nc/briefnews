@@ -953,7 +953,7 @@ Write ONE sentence summary. Maximum 10 words.`;
                 const outlines = xmlDoc.querySelectorAll('outline[type="rss"]');
                 
                 currentRssFeeds = Array.from(outlines).map(outline => ({
-                    title: outline.getAttribute('text'),
+                    name: outline.getAttribute('text'),
                     url: outline.getAttribute('xmlUrl'),
                     category: outline.parentElement.getAttribute('text') || 'general'
                 }));
