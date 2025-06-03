@@ -562,9 +562,15 @@
                 document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
             }
 
-            // Load settings
-            const apiKey = localStorage.getItem('geminiApiKey');
-            if (apiKey) document.getElementById('geminiApiKey').value = apiKey;
+            // Load settings - prefer environment variable, fallback to localStorage
+            const envApiKey = '${GEMINI_API_KEY}';
+            const localApiKey = localStorage.getItem('geminiApiKey');
+            const apiKey = (envApiKey && envApiKey !== '${GEMINI_API_KEY}') ? envApiKey : localApiKey;
+            
+            if (apiKey) {
+                document.getElementById('geminiApiKey').value = apiKey;
+                localStorage.setItem('geminiApiKey', apiKey);
+            }
 
             const maxArticles = localStorage.getItem('maxArticles');
             if (maxArticles) document.getElementById('maxArticles').value = maxArticles;
@@ -717,8 +723,8 @@
                     );
                 }
 
-                // Fetch articles from RSS feeds
-                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 2);
+                // Fetch articles from RSS feeds (fetch more to account for filtering)
+                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 3);
                 
                 if (articles.length === 0) {
                     throw new Error('No articles found for the selected criteria');
@@ -877,39 +883,56 @@
 
         async function fetchArticlesFromFeeds(feeds, maxArticles) {
             const articles = [];
-            const corsProxy = 'https://api.allorigins.win/raw?url=';
+            const corsProxy = 'https://api.allorigins.win/get?url=';
             
-            // Process feeds in parallel for better performance
-            const feedPromises = feeds.slice(0, 10).map(async (feed) => {
+            // Process more feeds to get enough articles
+            const feedPromises = feeds.slice(0, 15).map(async (feed) => {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
                     
                     const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
                         signal: controller.signal
                     });
                     clearTimeout(timeoutId);
                     
-                    const xmlText = await response.text();
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const xmlText = data.contents;
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                     
                     const items = xmlDoc.querySelectorAll('item');
                     const feedArticles = [];
                     
-                    for (const item of Array.from(items).slice(0, 2)) { // Max 2 articles per feed
+                    for (const item of Array.from(items).slice(0, 3)) { // Max 3 articles per feed
                         const rawTitle = item.querySelector('title')?.textContent || 'No Title';
                         const rawDescription = item.querySelector('description')?.textContent || '';
                         const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
                         
-                        // Extract image from RSS if available
+                        // Enhanced image extraction
                         let imageUrl = '';
+                        
+                        // Try enclosure first
                         const enclosure = item.querySelector('enclosure[type^="image"]');
                         if (enclosure) {
                             imageUrl = enclosure.getAttribute('url');
-                        } else {
-                            // Try to extract image from content
-                            const imgMatch = rawContent.match(/<img[^>]+src="([^"]+)"/i);
+                        }
+                        
+                        // Try media:content
+                        if (!imageUrl) {
+                            const mediaContent = item.querySelector('media\\:content[medium="image"]');
+                            if (mediaContent) {
+                                imageUrl = mediaContent.getAttribute('url');
+                            }
+                        }
+                        
+                        // Try image from content/description
+                        if (!imageUrl) {
+                            const imgMatch = (rawContent || rawDescription).match(/<img[^>]+src=["']([^"']+)["']/i);
                             if (imgMatch) {
                                 imageUrl = imgMatch[1];
                             }
@@ -917,20 +940,22 @@
                         
                         const cleanContent = cleanHtmlContent(rawContent || rawDescription);
                         
-                        const article = {
-                            title: cleanHtmlContent(rawTitle),
-                            description: cleanContent,
-                            fullContent: cleanContent, // Store full content for reading time calculation
-                            link: item.querySelector('link')?.textContent || '',
-                            pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
-                            source: feed.title,
-                            category: feed.category,
-                            imageUrl: imageUrl,
-                            isBreaking: false
-                        };
-                        
-                        article.isBreaking = isBreakingNews(article);
-                        feedArticles.push(article);
+                        if (cleanContent.length > 50) { // Only include articles with substantial content
+                            const article = {
+                                title: cleanHtmlContent(rawTitle),
+                                description: cleanContent.substring(0, 500), // Limit for processing
+                                fullContent: cleanContent,
+                                link: item.querySelector('link')?.textContent || '',
+                                pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
+                                source: feed.title,
+                                category: feed.category,
+                                imageUrl: imageUrl,
+                                isBreaking: false
+                            };
+                            
+                            article.isBreaking = isBreakingNews(article);
+                            feedArticles.push(article);
+                        }
                     }
                     
                     return feedArticles;
@@ -950,6 +975,7 @@
                 }
             });
             
+            console.log(`Fetched ${articles.length} articles from feeds`);
             return articles;
         }
 
