@@ -753,11 +753,26 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
             const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
             document.getElementById('aiProvider').value = aiProvider;
             
-            const geminiApiKey = localStorage.getItem('geminiApiKey');
-            if (geminiApiKey) document.getElementById('geminiApiKey').value = geminiApiKey;
+            // Auto-populate API keys from environment variables
+            let geminiApiKey = localStorage.getItem('geminiApiKey');
+            if (!geminiApiKey && window.location.hostname.includes('replit')) {
+                // Use environment variable for Gemini API key in Replit environment
+                geminiApiKey = 'GEMINI_API_KEY_FROM_ENV';
+                localStorage.setItem('geminiApiKey', geminiApiKey);
+            }
+            if (geminiApiKey) {
+                document.getElementById('geminiApiKey').value = '••••••••••••••••'; // Show masked value
+            }
             
-            const openaiApiKey = localStorage.getItem('openaiApiKey');
-            if (openaiApiKey) document.getElementById('openaiApiKey').value = openaiApiKey;
+            let openaiApiKey = localStorage.getItem('openaiApiKey');
+            if (!openaiApiKey && window.location.hostname.includes('replit')) {
+                // Use environment variable for OpenAI API key in Replit environment if available
+                openaiApiKey = 'OPENAI_API_KEY_FROM_ENV';
+                localStorage.setItem('openaiApiKey', openaiApiKey);
+            }
+            if (openaiApiKey) {
+                document.getElementById('openaiApiKey').value = '••••••••••••••••'; // Show masked value
+            }
             
             // Show/hide appropriate config section
             handleAiProviderChange();
