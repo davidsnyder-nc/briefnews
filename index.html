@@ -530,7 +530,11 @@
             bindEvents();
             
             // Start with wizard if first time, otherwise show news
-            const hasApiKey = !!localStorage.getItem('geminiApiKey');
+            const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
+            const hasApiKey = aiProvider === 'gemini' 
+                ? !!localStorage.getItem('geminiApiKey')
+                : !!localStorage.getItem('openaiApiKey');
+            
             if (!hasApiKey) {
                 showWizard();
             } else {
