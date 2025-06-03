@@ -49,10 +49,18 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 - **Real-time Status**: Loading indicators and progress tracking
 
 ### Audio Features
-- **Individual Article Audio**: Generate speech for specific articles
-- **Batch Audio Generation**: Create audio for all articles
-- **Audio Controls**: Play, pause, and sequential playback
-- **Voice Selection**: Multiple voice options for text-to-speech
+- **Individual Article Audio**: Generate speech for specific articles using Google TTS
+- **Newsletter Audio**: Premium text-to-speech for exported newsletters using Google TTS API
+- **Audio Controls**: Play, pause, stop, and sequential playback
+- **Voice Selection**: Defaults to cheapest male voice (en-US-Journey-D) with fallback to browser voices
+- **Export Integration**: Audio player included only in downloaded newsletter HTML
+
+### Newsletter Generation
+- **Custom Newsletters**: Export personalized newsletters with filtered articles
+- **Multiple Export Formats**: Copy text, download HTML, or print newsletters
+- **Audio Integration**: Downloadable newsletters include text-to-speech player
+- **NotebookLM Integration**: One-click copy and open in Google NotebookLM
+- **Clean Export**: Print and copy versions exclude audio player for clean presentation
 
 ### Data Management
 - **OPML Support**: Import custom RSS feed collections
@@ -103,6 +111,8 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 3. **Browse Articles**: Read AI-generated summaries with source links
 4. **Audio Playback**: Generate and listen to article audio
 5. **Filter & Sort**: Use source filters and view options
+6. **Create Newsletter**: Click "Generate Newsletter" to export filtered articles
+7. **Export Options**: Download HTML (with audio), copy text, or print newsletter
 
 ### Advanced Usage
 1. **Custom OPML**: Upload your own RSS feed collections
