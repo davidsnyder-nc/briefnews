@@ -1065,30 +1065,8 @@ Write ONE paragraph summary.`;
         }
 
         function startOver() {
-            // Clear all content and reset to welcome screen
-            clearPreviousContent();
-            
-            // Remove category filter container if it exists
-            const existingCategoryFilter = document.getElementById('categoryFilterContainer');
-            if (existingCategoryFilter) {
-                existingCategoryFilter.remove();
-            }
-            
-            // Hide header and show welcome section
-            document.getElementById('newsHeader').style.display = 'none';
-            document.getElementById('welcomeSection').style.display = 'block';
-            
-            // Reset category selections
-            selectedCategories = [];
-            selectedFilterCategories = [];
-            
-            // Reset category buttons
-            document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById('generateFromSelection').style.display = 'none';
-            
-            // Clear status message
-            document.getElementById('statusMessage').textContent = '';
-            
+            // Use the comprehensive home navigation function
+            navigateToHome();
             showToast('Reset to start page', 'info');
         }
 
