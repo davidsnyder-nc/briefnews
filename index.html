@@ -785,11 +785,21 @@
         function isBreakingNews(article) {
             const breakingKeywords = [
                 'breaking', 'urgent', 'alert', 'developing', 'live', 'just in',
-                'emergency', 'crisis', 'major', 'significant', 'important'
+                'emergency', 'crisis', 'major breakthrough', 'significant development',
+                'important update', 'exclusive', 'confirmed', 'reports', 'happening now',
+                'latest', 'update', 'announced', 'reveals', 'confirmed dead', 'killed',
+                'attack', 'explosion', 'crash', 'disaster', 'warning', 'critical'
             ];
             
-            const text = (article.title + ' ' + article.description).toLowerCase();
-            return breakingKeywords.some(keyword => text.includes(keyword));
+            const text = (article.title + ' ' + (article.description || '') + ' ' + (article.fullContent || '')).toLowerCase();
+            const hasBreakingKeyword = breakingKeywords.some(keyword => text.includes(keyword));
+            
+            // Also check if published within last 2 hours for recency
+            const articleDate = new Date(article.pubDate);
+            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+            const isRecent = articleDate > twoHoursAgo;
+            
+            return hasBreakingKeyword || isRecent;
         }
 
         function filterBlockedTerms(articles, blockedTerms) {
@@ -834,14 +844,32 @@
                     for (const item of Array.from(items).slice(0, 2)) { // Max 2 articles per feed
                         const rawTitle = item.querySelector('title')?.textContent || 'No Title';
                         const rawDescription = item.querySelector('description')?.textContent || '';
+                        const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
+                        
+                        // Extract image from RSS if available
+                        let imageUrl = '';
+                        const enclosure = item.querySelector('enclosure[type^="image"]');
+                        if (enclosure) {
+                            imageUrl = enclosure.getAttribute('url');
+                        } else {
+                            // Try to extract image from content
+                            const imgMatch = rawContent.match(/<img[^>]+src="([^"]+)"/i);
+                            if (imgMatch) {
+                                imageUrl = imgMatch[1];
+                            }
+                        }
+                        
+                        const cleanContent = cleanHtmlContent(rawContent || rawDescription);
                         
                         const article = {
                             title: cleanHtmlContent(rawTitle),
-                            description: cleanHtmlContent(rawDescription).substring(0, 300), // Limit description length
+                            description: cleanContent,
+                            fullContent: cleanContent, // Store full content for reading time calculation
                             link: item.querySelector('link')?.textContent || '',
                             pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
                             source: feed.title,
                             category: feed.category,
+                            imageUrl: imageUrl,
                             isBreaking: false
                         };
                         
@@ -877,13 +905,14 @@
                 const batch = articles.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (article) => {
                     try {
-                        const prompt = `Summarize this news article in ${digestLength} style for ${category === 'all' ? 'general audience' : category} category.
+                        const prompt = `Create an engaging news summary for this article in ${digestLength} style.
 
 Title: ${article.title}
-Content: ${article.description.substring(0, 500)}
+Content: ${article.description.substring(0, 800)}
 Source: ${article.source}
+Category: ${article.category}
 
-Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4' : '4-5'} sentence summary focusing on key facts and relevance.`;
+Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5' : '6-7'} sentence summary that captures the essential facts, context, and why this matters. Focus on clarity and readability.`;
 
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -921,7 +950,7 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4'
                         console.error(`Error generating summary for ${article.title}:`, error);
                         return {
                             ...article,
-                            aiSummary: article.description || 'Summary unavailable'
+                            aiSummary: article.description || 'Unable to generate AI summary at this time'
                         };
                     }
                 });
@@ -950,9 +979,16 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4'
             const showCategories = localStorage.getItem('showCategories') !== 'false';
 
             container.innerHTML = articles.map(article => {
-                const readingTime = showReadingTime ? Math.ceil(article.aiSummary.length / 200) : 0;
+                // Calculate reading time based on full content, assuming 200 words per minute
+                const wordCount = (article.fullContent || article.aiSummary || '').split(' ').length;
+                const readingTime = showReadingTime ? Math.max(1, Math.ceil(wordCount / 200)) : 0;
                 const breakingClass = article.isBreaking ? 'breaking-news' : '';
                 const breakingBadge = article.isBreaking ? '<span class="breaking-tag">Breaking</span>' : '';
+                
+                const imageHtml = article.imageUrl ? 
+                    `<div class="mb-4">
+                        <img src="${article.imageUrl}" alt="${article.title}" class="w-full h-48 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
+                    </div>` : '';
                 
                 return `
                     <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
@@ -973,6 +1009,7 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4'
                             </div>
                             ` : ''}
                         </header>
+                        ${imageHtml}
                         <div class="flex-grow">
                             <div class="text-gray-700 leading-relaxed">
                                 ${article.aiSummary}
