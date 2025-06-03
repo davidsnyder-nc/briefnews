@@ -237,13 +237,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="maxArticles" class="form-label">Max Articles (2-20):</label>
-                    <input type="number" id="maxArticles" class="form-input" min="2" max="20" value="8">
+                    <input type="number" id="maxArticles" class="form-input" min="2" max="20" value="20">
                 </div>
                 <div>
                     <label for="digestLength" class="form-label">AI Digest Length:</label>
                     <select id="digestLength" class="form-input">
-                        <option value="brief">Brief</option>
-                        <option value="medium" selected>Medium</option>
+                        <option value="brief" selected>Brief</option>
+                        <option value="medium">Medium</option>
                         <option value="detailed">Detailed</option>
                     </select>
                 </div>
@@ -519,17 +519,17 @@
             const apiKey = localStorage.getItem('geminiApiKey');
             if (apiKey) document.getElementById('geminiApiKey').value = apiKey;
 
-            const maxArticles = localStorage.getItem('maxArticles');
-            if (maxArticles) document.getElementById('maxArticles').value = maxArticles;
+            const maxArticles = localStorage.getItem('maxArticles') || '20';
+            document.getElementById('maxArticles').value = maxArticles;
 
-            const digestLength = localStorage.getItem('digestLength');
-            if (digestLength) document.getElementById('digestLength').value = digestLength;
+            const digestLength = localStorage.getItem('digestLength') || 'brief';
+            document.getElementById('digestLength').value = digestLength;
 
             const showSourceInfo = localStorage.getItem('showSourceInfo');
-            if (showSourceInfo !== null) document.getElementById('showSourceInfo').checked = showSourceInfo === 'true';
+            document.getElementById('showSourceInfo').checked = showSourceInfo !== 'false';
 
             const showCategories = localStorage.getItem('showCategories');
-            if (showCategories !== null) document.getElementById('showCategories').checked = showCategories === 'true';
+            document.getElementById('showCategories').checked = showCategories !== 'false';
 
             // Load blocked terms
             const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
@@ -647,8 +647,8 @@
             }
 
             const category = document.getElementById('categorySelect').value;
-            const maxArticles = parseInt(localStorage.getItem('maxArticles') || '8');
-            const digestLength = localStorage.getItem('digestLength') || 'medium';
+            const maxArticles = parseInt(localStorage.getItem('maxArticles') || '20');
+            const digestLength = localStorage.getItem('digestLength') || 'brief';
 
             // Show loading state
             document.getElementById('statusMessage').textContent = 'Fetching and analyzing news articles...';
