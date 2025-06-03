@@ -3452,38 +3452,75 @@ Write exactly 3 sentences.`;
                     // Find the best male voice
                     let selectedVoice = null;
                     
-                    // Priority 1: Look for explicitly male voices
+                    // Priority 1: Look for explicitly male voices in Google voices
                     selectedVoice = voices.find(voice => 
                         voice.lang.startsWith('en') && 
-                        (voice.name.toLowerCase().includes('male') || 
-                         voice.name.toLowerCase().includes('david') ||
-                         voice.name.toLowerCase().includes('mark'))
+                        voice.name.toLowerCase().includes('male') &&
+                        !voice.name.toLowerCase().includes('female')
                     );
                     
-                    // Priority 2: Look for common male voice names
+                    // Priority 2: Look for Google UK English Male specifically
                     if (!selectedVoice) {
                         selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('en') && 
-                            (voice.name.toLowerCase().includes('alex') ||
-                             voice.name.toLowerCase().includes('daniel') ||
-                             voice.name.toLowerCase().includes('tom') ||
-                             voice.name.toLowerCase().includes('paul') ||
-                             voice.name.toLowerCase().includes('richard') ||
-                             voice.name.toLowerCase().includes('john'))
+                            voice.name.toLowerCase().includes('google') &&
+                            voice.name.toLowerCase().includes('male') &&
+                            voice.lang.startsWith('en')
                         );
                     }
                     
-                    // Priority 3: Use any available English voice and adjust pitch
+                    // Priority 3: Look for US male voices
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang === 'en-US' && 
+                            (voice.name.toLowerCase().includes('male') ||
+                             voice.name.toLowerCase().includes('david') ||
+                             voice.name.toLowerCase().includes('mark') ||
+                             voice.name.toLowerCase().includes('alex'))
+                        );
+                    }
+                    
+                    // Priority 4: Look for any male names in English voices
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            (voice.name.toLowerCase().includes('daniel') ||
+                             voice.name.toLowerCase().includes('tom') ||
+                             voice.name.toLowerCase().includes('paul') ||
+                             voice.name.toLowerCase().includes('richard') ||
+                             voice.name.toLowerCase().includes('john') ||
+                             voice.name.toLowerCase().includes('james') ||
+                             voice.name.toLowerCase().includes('michael'))
+                        );
+                    }
+                    
+                    // Priority 5: Avoid female voices explicitly
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            !voice.name.toLowerCase().includes('female') &&
+                            !voice.name.toLowerCase().includes('woman')
+                        );
+                    }
+                    
+                    // Priority 6: Last resort - use any English voice and lower pitch significantly
                     if (!selectedVoice) {
                         selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
-                        if (selectedVoice) {
-                            utterance.pitch = 0.7; // Even lower pitch for female-to-male effect
+                        if (selectedVoice && selectedVoice.name.toLowerCase().includes('female')) {
+                            utterance.pitch = 0.6; // Very low pitch for female-to-male effect
+                            utterance.rate = 0.8; // Slower rate too
                         }
                     }
                     
                     if (selectedVoice) {
                         utterance.voice = selectedVoice;
                         console.log('Selected voice:', selectedVoice.name);
+                        
+                        // If we ended up with a female voice, adjust pitch more aggressively
+                        if (selectedVoice.name.toLowerCase().includes('female')) {
+                            utterance.pitch = 0.6;
+                            utterance.rate = 0.8;
+                            console.log('Applied male pitch adjustment to female voice');
+                        }
                     }
                 };
                 
