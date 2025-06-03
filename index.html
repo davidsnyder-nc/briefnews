@@ -1365,7 +1365,7 @@ Write ONE sentence summary. Maximum 10 words.`;
                                 fullContent: cleanContent,
                                 link: item.querySelector('link')?.textContent || '',
                                 pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
-                                source: feed.title,
+                                source: feed.name,
                                 category: feed.category,
                                 imageUrl: imageUrl,
                                 isBreaking: false
@@ -1378,7 +1378,7 @@ Write ONE sentence summary. Maximum 10 words.`;
                     
                     return feedArticles;
                 } catch (error) {
-                    console.warn(`Failed to fetch from ${feed.title}:`, error.message);
+                    console.warn(`Failed to fetch from ${feed.name}:`, error.message);
                     return [];
                 }
             });
