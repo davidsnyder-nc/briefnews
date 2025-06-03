@@ -280,7 +280,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div class="bg-white bg-opacity-95 rounded-lg p-4 shadow-sm border border-white border-opacity-30">
                         <h3 class="font-semibold text-lg text-blue-800">Smart Summaries</h3>
-                        <p class="text-sm text-blue-600">AI-generated summaries tailored to your preferences</p>
+                        <p class="text-sm text-blue-600">Optional AI-generated summaries tailored to your preferences</p>
                     </div>
                     <div class="bg-white bg-opacity-95 rounded-lg p-4 shadow-sm border border-white border-opacity-30">
                         <h3 class="font-semibold text-lg text-blue-800">Breaking News Priority</h3>
@@ -3027,10 +3027,31 @@ Write exactly 3 sentences.`;
             }
         }
 
-
+        function getCurrentlyVisibleArticles() {
+            // Get articles that are currently visible in the DOM
+            const visibleArticleElements = document.querySelectorAll('#newsletterArea .article-card:not([style*="display: none"])');
+            const visibleArticles = [];
+            
+            visibleArticleElements.forEach((element, index) => {
+                // Find the corresponding article data
+                if (window.currentDisplayedArticles && window.currentDisplayedArticles[index]) {
+                    visibleArticles.push(window.currentDisplayedArticles[index]);
+                }
+            });
+            
+            // If no visible articles found through DOM, fall back to currentDisplayedArticles
+            if (visibleArticles.length === 0 && window.currentDisplayedArticles) {
+                return window.currentDisplayedArticles;
+            }
+            
+            return visibleArticles;
+        }
 
         async function generateCustomNewsletter() {
-            if (!window.currentDisplayedArticles || window.currentDisplayedArticles.length === 0) {
+            // Get currently visible articles (filtered articles)
+            const visibleArticles = getCurrentlyVisibleArticles();
+            
+            if (!visibleArticles || visibleArticles.length === 0) {
                 showToast('No articles to export', 'error');
                 return;
             }
@@ -3038,7 +3059,7 @@ Write exactly 3 sentences.`;
             showToast('Generating newsletter...', 'info');
 
             // Calculate date range from articles
-            const articleDates = window.currentDisplayedArticles
+            const articleDates = visibleArticles
                 .map(article => new Date(article.pubDate))
                 .filter(date => !isNaN(date))
                 .sort((a, b) => a - b);
@@ -3081,12 +3102,12 @@ Write exactly 3 sentences.`;
             }
 
             // Get unique categories for header
-            const categories = [...new Set(window.currentDisplayedArticles.map(article => article.category || 'General'))];
+            const categories = [...new Set(visibleArticles.map(article => article.category || 'General'))];
             const categoryText = categories.join(', ');
 
             // Group articles by category
             const articlesByCategory = {};
-            window.currentDisplayedArticles.forEach(article => {
+            visibleArticles.forEach(article => {
                 const category = article.category || 'General';
                 if (!articlesByCategory[category]) {
                     articlesByCategory[category] = [];
@@ -3246,7 +3267,23 @@ Write exactly 3 sentences.`;
 
         
         <div class="stats">
-            <strong>${window.currentDisplayedArticles.length} articles</strong> from <strong>${categoryText}</strong>
+            <strong>${visibleArticles.length} articles</strong> from <strong>${categoryText}</strong>
+        </div>
+        
+        <!-- Simple Audio Player -->
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 20px; margin-bottom: 30px; text-align: center;">
+            <h3 style="margin: 0 0 10px 0; color: #1e40af;">🎧 Listen to Newsletter</h3>
+            <p style="margin: 0 0 15px 0; font-size: 12px; color: #6b7280;">AI-generated audio of your complete newsletter</p>
+            <button onclick="generateAudio()" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 15px;">
+                🔊 Generate Audio
+            </button>
+            <div id="audioPlayer" style="display: none; margin-top: 15px;">
+                <audio controls style="width: 100%; max-width: 400px;">
+                    <source id="audioSource" src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <div id="audioStatus" style="font-size: 12px; color: #6b7280; margin-top: 10px;"></div>
         </div>
 `;
 
