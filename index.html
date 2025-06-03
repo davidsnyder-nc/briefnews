@@ -998,7 +998,7 @@
             const feedPromises = feeds.slice(0, 15).map(async (feed) => {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased to 8 seconds
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // Balanced timeout
                     
                     const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
                         signal: controller.signal
@@ -1153,13 +1153,12 @@ Write the complete rewritten article:`;
                         } else {
                             // Standard summary mode - keep very concise
                             if (digestLength === 'brief') {
-                                prompt = `Write ONE SHORT sentence summarizing this news:
+                                prompt = `Summarize in 15 words or less:
 
 ${article.title}
-${article.description.substring(0, 300)}
 
-Respond with only ONE sentence under 25 words.`;
-                                maxTokens = 40;
+Answer with exactly one short sentence.`;
+                                maxTokens = 25;
                             } else if (digestLength === 'medium') {
                                 prompt = `Write exactly 2 sentences summarizing this news:
 
@@ -1198,7 +1197,7 @@ Respond with exactly 3-4 sentences.`;
                                     }],
                                     generationConfig: {
                                         maxOutputTokens: maxTokens,
-                                        temperature: aiRewrite ? 0.7 : 0.3
+                                        temperature: digestLength === 'brief' && !aiRewrite ? 0.1 : (aiRewrite ? 0.7 : 0.3)
                                     }
                                 }),
                                 signal: controller.signal
@@ -1225,7 +1224,7 @@ Respond with exactly 3-4 sentences.`;
                                         content: prompt
                                     }],
                                     max_tokens: maxTokens,
-                                    temperature: aiRewrite ? 0.7 : 0.3
+                                    temperature: digestLength === 'brief' && !aiRewrite ? 0.1 : (aiRewrite ? 0.7 : 0.3)
                                 }),
                                 signal: controller.signal
                             });
