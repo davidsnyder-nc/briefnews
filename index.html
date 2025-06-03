@@ -1952,49 +1952,39 @@ Write exactly 3 sentences.`;
         }
 
         function generateArticleIcon(article) {
-            // Generate a unique SVG icon based on article content
-            const title = article.title.toLowerCase();
+            // Generate clean, simple icons based on article category
             const category = article.category.toLowerCase();
             
-            // Define icon styles based on content
-            let iconPath, iconColor, iconBg;
+            // Define simple geometric icons with clean colors
+            let iconShape, iconColor;
             
             if (category.includes('technology') || category.includes('tech')) {
-                iconPath = `<path d="M12 2l3.09 6.26L22 9l-5 4.87L18.18 20 12 16.77 5.82 20 7 13.87 2 9l6.91-.74L12 2z"/>`;
+                iconShape = `<rect x="8" y="8" width="8" height="8" rx="2" fill="currentColor"/>`;
                 iconColor = '#3B82F6';
-                iconBg = '#EFF6FF';
             } else if (category.includes('business') || category.includes('finance')) {
-                iconPath = `<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>`;
+                iconShape = `<circle cx="12" cy="8" r="3" fill="currentColor"/><circle cx="12" cy="16" r="3" fill="currentColor"/>`;
                 iconColor = '#059669';
-                iconBg = '#ECFDF5';
             } else if (category.includes('sports')) {
-                iconPath = `<circle cx="12" cy="12" r="10"/><path d="m12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>`;
+                iconShape = `<circle cx="12" cy="12" r="6" fill="currentColor"/>`;
                 iconColor = '#DC2626';
-                iconBg = '#FEF2F2';
             } else if (category.includes('health') || category.includes('science')) {
-                iconPath = `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>`;
+                iconShape = `<polygon points="12,6 18,12 12,18 6,12" fill="currentColor"/>`;
                 iconColor = '#7C3AED';
-                iconBg = '#F3F4F6';
             } else if (category.includes('entertainment') || category.includes('culture')) {
-                iconPath = `<polygon points="23 7 16 12 23 17 23 7"/><rect width="15" height="14" x="1" y="5" rx="2" ry="2"/>`;
+                iconShape = `<polygon points="8,6 16,6 18,12 16,18 8,18 6,12" fill="currentColor"/>`;
                 iconColor = '#F59E0B';
-                iconBg = '#FFFBEB';
             } else if (category.includes('politics') || category.includes('world')) {
-                iconPath = `<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>`;
+                iconShape = `<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor"/>`;
                 iconColor = '#6366F1';
-                iconBg = '#EEF2FF';
             } else {
-                // Default news icon
-                iconPath = `<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>`;
+                // Default simple square
+                iconShape = `<rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor"/>`;
                 iconColor = '#6B7280';
-                iconBg = '#F9FAFB';
             }
             
             return `
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="background: ${iconBg}; border-radius: 6px; padding: 4px;">
-                    <g fill="${iconColor}" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        ${iconPath}
-                    </g>
+                <svg width="24" height="24" viewBox="0 0 24 24" style="color: ${iconColor};">
+                    ${iconShape}
                 </svg>
             `;
         }
@@ -2196,18 +2186,124 @@ Write exactly 3 sentences.`;
 </body>
 </html>`;
 
-            // Create and download the newsletter
-            const blob = new Blob([newsletterHTML], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `newsletter-${today.toISOString().split('T')[0]}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // Show newsletter in modal
+            showNewsletterModal(newsletterHTML, window.currentDisplayedArticles.length);
+        }
 
-            showToast(`Newsletter exported with ${window.currentDisplayedArticles.length} articles`, 'success');
+        function showNewsletterModal(newsletterHTML, articleCount) {
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('newsletterModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'newsletterModal';
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold">Newsletter Generated</h2>
+                            <button onclick="closeNewsletterModal()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Newsletter with <strong id="modalArticleCount"></strong> articles ready for export.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <button onclick="copyNewsletterText()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Copy Text
+                            </button>
+                            <button onclick="copyAndOpenNotebookLM()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                Copy & Open NotebookLM
+                            </button>
+                            <button onclick="downloadNewsletter()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                Download HTML
+                            </button>
+                        </div>
+                        <div class="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+                            <iframe id="newsletterPreview" style="width: 100%; height: 400px; border: none;" srcdoc=""></iframe>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Store newsletter HTML globally
+            window.currentNewsletterHTML = newsletterHTML;
+            
+            // Update modal content
+            document.getElementById('modalArticleCount').textContent = articleCount;
+            document.getElementById('newsletterPreview').srcdoc = newsletterHTML;
+            
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeNewsletterModal() {
+            const modal = document.getElementById('newsletterModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function copyNewsletterText() {
+            if (!window.currentNewsletterHTML) {
+                showToast('No newsletter to copy', 'error');
+                return;
+            }
+
+            // Extract text content from HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = window.currentNewsletterHTML;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                showToast('Newsletter text copied to clipboard', 'success');
+            }).catch(() => {
+                showToast('Failed to copy text', 'error');
+            });
+        }
+
+        function copyAndOpenNotebookLM() {
+            if (!window.currentNewsletterHTML) {
+                showToast('No newsletter to copy', 'error');
+                return;
+            }
+
+            // Extract text content from HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = window.currentNewsletterHTML;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                showToast('Newsletter copied! Opening NotebookLM...', 'success');
+                // Open NotebookLM in new tab
+                window.open('https://notebooklm.google.com/', '_blank');
+            }).catch(() => {
+                showToast('Failed to copy text', 'error');
+            });
+        }
+
+        function downloadNewsletter() {
+            if (!window.currentNewsletterHTML) {
+                showToast('No newsletter to download', 'error');
+                return;
+            }
+
+            const today = new Date();
+            const blob = new Blob([window.currentNewsletterHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            // Open in new tab instead of downloading
+            window.open(url, '_blank');
+            
+            showToast('Newsletter opened in new tab', 'success');
+            
+            // Clean up after a delay
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 1000);
         }
 
         let selectedCategories = [];
