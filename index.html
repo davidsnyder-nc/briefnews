@@ -551,7 +551,133 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
 </body>
 </opml>`;
 
-        let currentRssFeeds = [];
+        // Default RSS feeds with categories
+        const DEFAULT_RSS_FEEDS = [
+            // General News
+            { name: "The New York Times", url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", category: "General News" },
+            { name: "CNN Top Stories", url: "http://rss.cnn.com/rss/cnn_topstories.rss", category: "General News" },
+            { name: "NPR News", url: "https://feeds.npr.org/1001/rss.xml", category: "General News" },
+            { name: "CBS News", url: "https://www.cbsnews.com/latest/rss/main", category: "General News" },
+            { name: "Associated Press", url: "https://feeds.apnews.com/rss/apf-topnews", category: "General News" },
+            
+            // Technology
+            { name: "TechCrunch", url: "https://techcrunch.com/feed/", category: "Technology" },
+            { name: "WIRED", url: "https://www.wired.com/feed/rss", category: "Technology" },
+            { name: "The Verge", url: "https://www.theverge.com/rss/index.xml", category: "Technology" },
+            { name: "CNET News", url: "https://www.cnet.com/rss/news/", category: "Technology" },
+            { name: "Ars Technica", url: "http://feeds.arstechnica.com/arstechnica/index", category: "Technology" },
+            { name: "VentureBeat", url: "https://venturebeat.com/feed/", category: "Technology" },
+            { name: "Gizmodo", url: "https://gizmodo.com/rss", category: "Technology" },
+            { name: "Digital Trends", url: "https://www.digitaltrends.com/feed/", category: "Technology" },
+            { name: "Engadget", url: "https://www.engadget.com/rss.xml", category: "Technology" },
+            { name: "How-To Geek", url: "https://www.howtogeek.com/feed/", category: "Technology" },
+            { name: "Hacker News", url: "https://news.ycombinator.com/rss", category: "Technology" },
+            { name: "Slashdot", url: "http://rss.slashdot.org/Slashdot/slashdotMain", category: "Technology" },
+            
+            // Business
+            { name: "Wall Street Journal", url: "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", category: "Business" },
+            { name: "Forbes", url: "https://www.forbes.com/innovation/feed/", category: "Business" },
+            { name: "Reuters Business", url: "https://feeds.reuters.com/reuters/businessNews", category: "Business" },
+            { name: "Financial Times", url: "https://www.ft.com/rss/home", category: "Business" },
+            { name: "MarketWatch", url: "https://feeds.content.dowjones.io/public/rss/mw_topstories", category: "Business" },
+            { name: "Bloomberg", url: "https://feeds.bloomberg.com/markets/news.rss", category: "Business" },
+            { name: "Harvard Business Review", url: "https://hbr.org/rss/regular", category: "Business" },
+            
+            // Science
+            { name: "Live Science", url: "https://www.livescience.com/feeds/all", category: "Science" },
+            { name: "Space.com", url: "https://www.space.com/feeds/all", category: "Science" },
+            { name: "Phys.org", url: "https://phys.org/rss-feed/", category: "Science" },
+            { name: "New Scientist", url: "https://www.newscientist.com/feed/home/", category: "Science" },
+            { name: "Scientific American", url: "http://rss.sciam.com/ScientificAmerican-Global", category: "Science" },
+            { name: "Nature", url: "https://www.nature.com/nature/current-issue/rss", category: "Science" },
+            { name: "ScienceDaily", url: "https://www.sciencedaily.com/rss/all.xml", category: "Science" },
+            
+            // Health
+            { name: "MedlinePlus What's New", url: "https://medlineplus.gov/feeds/whatsnew.xml", category: "Health" },
+            { name: "Harvard Health Publishing", url: "https://www.health.harvard.edu/blog/rss", category: "Health" },
+            { name: "Mayo Clinic News Network", url: "https://newsnetwork.mayoclinic.org/feed/", category: "Health" },
+            { name: "WebMD Health", url: "https://rssfeeds.webmd.com/rss/rss.aspx?RSSSource=RSS_PUBLIC", category: "Health" },
+            { name: "Kaiser Health News", url: "https://khn.org/feed/", category: "Health" },
+            
+            // Politics
+            { name: "Politico", url: "https://www.politico.com/rss/politicopicks.xml", category: "Politics" },
+            { name: "The Hill", url: "https://thehill.com/rss/syndicator/19109", category: "Politics" },
+            { name: "Washington Post Politics", url: "http://feeds.washingtonpost.com/rss/politics", category: "Politics" },
+            { name: "NPR Politics", url: "https://www.npr.org/rss/rss.php?id=1014", category: "Politics" },
+            { name: "CNN Politics", url: "http://rss.cnn.com/rss/cnn_allpolitics.rss", category: "Politics" },
+            
+            // Sports
+            { name: "ESPN", url: "https://www.espn.com/espn/rss/news", category: "Sports" },
+            { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines", category: "Sports" },
+            { name: "Yahoo Sports", url: "https://sports.yahoo.com/rss/", category: "Sports" },
+            { name: "Sports Illustrated", url: "https://www.si.com/rss/si_topstories.rss", category: "Sports" },
+            { name: "NBC Sports", url: "https://scores.nbcsports.com/rss/headlines.asp", category: "Sports" },
+            
+            // Entertainment
+            { name: "Variety", url: "https://variety.com/feed/", category: "Entertainment" },
+            { name: "Rolling Stone", url: "https://www.rollingstone.com/music/music-news/feed/", category: "Entertainment" },
+            { name: "Hollywood Reporter", url: "https://www.hollywoodreporter.com/t/rss", category: "Entertainment" },
+            { name: "Entertainment Weekly", url: "https://ew.com/feed/", category: "Entertainment" },
+            { name: "TMZ", url: "https://www.tmz.com/rss.xml", category: "Entertainment" },
+            
+            // Lifestyle
+            { name: "Lifehacker", url: "https://lifehacker.com/rss", category: "Lifestyle" },
+            { name: "Apartment Therapy", url: "https://www.apartmenttherapy.com/main.rss", category: "Lifestyle" },
+            { name: "The Spruce", url: "https://www.thespruce.com/rss", category: "Lifestyle" },
+            { name: "Better Homes & Gardens", url: "https://www.bhg.com/rss/all/", category: "Lifestyle" },
+            { name: "Real Simple", url: "https://www.realsimple.com/rss/all/", category: "Lifestyle" },
+            
+            // Education
+            { name: "Education Week", url: "https://feeds.edweek.org/edweek/topstories", category: "Education" },
+            { name: "Inside Higher Ed", url: "https://www.insidehighered.com/rss/news", category: "Education" },
+            { name: "Chronicle of Higher Education", url: "https://www.chronicle.com/section/Home/5/rss", category: "Education" },
+            { name: "The Hechinger Report", url: "https://hechingerreport.org/feed/", category: "Education" },
+            { name: "EdSurge", url: "https://www.edsurge.com/rss", category: "Education" },
+            
+            // Environment
+            { name: "TreeHugger", url: "https://www.treehugger.com/rss", category: "Environment" },
+            { name: "Grist", url: "https://grist.org/feed/", category: "Environment" },
+            { name: "Inside Climate News", url: "https://insideclimatenews.org/feed/", category: "Environment" },
+            { name: "Yale Environment 360", url: "https://e360.yale.edu/rss", category: "Environment" },
+            { name: "Environmental Defense Fund", url: "https://www.edf.org/rss.xml", category: "Environment" },
+            
+            // World News
+            { name: "BBC World", url: "http://feeds.bbci.co.uk/news/world/rss.xml", category: "World News" },
+            { name: "Al Jazeera", url: "https://www.aljazeera.com/xml/rss/all.xml", category: "World News" },
+            { name: "The Guardian World", url: "https://www.theguardian.com/world/rss", category: "World News" },
+            { name: "Reuters World News", url: "https://feeds.reuters.com/reuters/worldnews", category: "World News" },
+            { name: "NPR World", url: "https://feeds.npr.org/1004/rss.xml", category: "World News" },
+            
+            // Local News
+            { name: "Google News - North Carolina", url: "https://news.google.com/rss/search?q=North+Carolina+news&hl=en&gl=US&ceid=US:en", category: "Local News" },
+            { name: "ABC11 Raleigh", url: "https://abc11.com/feed/", category: "Local News" },
+            
+            // Food & Cooking
+            { name: "Serious Eats", url: "https://www.seriouseats.com/feeds/latest", category: "Food & Cooking" },
+            { name: "Allrecipes", url: "https://www.allrecipes.com/feeds/all", category: "Food & Cooking" },
+            { name: "Bon Appétit", url: "https://www.bonappetit.com/feed/recipes-rss-2.0/site", category: "Food & Cooking" },
+            
+            // Travel
+            { name: "Condé Nast Traveler", url: "https://www.cntraveler.com/rss", category: "Travel" },
+            { name: "Travel + Leisure", url: "https://www.travelandleisure.com/feeds/all/rss", category: "Travel" },
+            { name: "Nomadic Matt", url: "https://www.nomadicmatt.com/feed/", category: "Travel" },
+            
+            // Personal Finance
+            { name: "NerdWallet", url: "https://www.nerdwallet.com/feed", category: "Personal Finance" },
+            { name: "The Motley Fool", url: "https://www.fool.com/feed/atom", category: "Personal Finance" },
+            { name: "Money Under 30", url: "https://www.moneyunder30.com/feed/", category: "Personal Finance" },
+            
+            // Gaming
+            { name: "IGN", url: "https://feeds.ign.com/ign/all", category: "Gaming" },
+            { name: "GameSpot", url: "https://www.gamespot.com/feeds/mashup/", category: "Gaming" },
+            { name: "Kotaku", url: "https://kotaku.com/rss", category: "Gaming" },
+            
+            // Podcasts
+            { name: "This American Life", url: "http://feed.thisamericanlife.org/talpodcast", category: "Podcasts" },
+            { name: "Radiolab", url: "http://feeds.wnyc.org/radiolab", category: "Podcasts" },
+            { name: "Freakonomics Radio", url: "http://feeds.feedburner.com/freakonomicsradio", category: "Podcasts" }
+        ];
+
         let currentRssFeeds = [];
 
         // Initialize the app
@@ -606,19 +732,17 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
         }
 
         function loadSettings() {
-            // Load and parse OPML feeds
+            // Load RSS feeds
             const storedOpml = localStorage.getItem('opmlData');
             if (storedOpml) {
                 parseOpml(storedOpml);
                 document.getElementById('opmlFileInfo').textContent = 'Custom OPML loaded';
             } else {
-                parseOpml(DEFAULT_OPML);
-                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (270+ sources)';
-                
-                // Ensure categories are populated after parsing is complete
-                setTimeout(() => {
-                    populateCategoryDropdown();
-                }, 100);
+                // Use default feeds array directly
+                currentRssFeeds = [...DEFAULT_RSS_FEEDS];
+                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (90+ sources)';
+                console.log(`Loaded ${currentRssFeeds.length} RSS feeds`);
+                populateCategoryDropdown();
             }
 
             // Load AI provider and API keys
