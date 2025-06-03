@@ -2577,10 +2577,8 @@ Write exactly 3 sentences.`;
                 return;
             }
 
-            // Extract text content from HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = window.currentNewsletterHTML;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            // Create a clean text version without CSS
+            const textContent = generateCleanNewsletterText();
 
             navigator.clipboard.writeText(textContent).then(() => {
                 showToast('Newsletter copied! Opening NotebookLM...', 'success');
@@ -2589,6 +2587,59 @@ Write exactly 3 sentences.`;
             }).catch(() => {
                 showToast('Failed to copy text', 'error');
             });
+        }
+
+        function generateCleanNewsletterText() {
+            if (!window.currentDisplayedArticles) {
+                return 'No articles available';
+            }
+
+            const articles = window.currentDisplayedArticles;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            let newsletterText = `News Brief - ${dateStr}\n`;
+            newsletterText += `=`.repeat(50) + '\n\n';
+            newsletterText += `${articles.length} articles from trusted news sources\n\n`;
+
+            // Group articles by category
+            const articlesByCategory = {};
+            articles.forEach(article => {
+                const category = article.category || 'General';
+                if (!articlesByCategory[category]) {
+                    articlesByCategory[category] = [];
+                }
+                articlesByCategory[category].push(article);
+            });
+
+            // Add articles by category
+            for (const [category, categoryArticles] of Object.entries(articlesByCategory)) {
+                newsletterText += `${category.toUpperCase()}\n`;
+                newsletterText += `-`.repeat(category.length) + '\n\n';
+                
+                categoryArticles.forEach((article, index) => {
+                    const articleNumber = articles.indexOf(article) + 1;
+                    const breakingBadge = article.isBreaking ? ' [BREAKING]' : '';
+                    const pubDate = new Date(article.pubDate).toLocaleDateString();
+                    
+                    newsletterText += `${articleNumber}. ${article.title}${breakingBadge}\n`;
+                    newsletterText += `Source: ${article.source} | ${pubDate}\n`;
+                    newsletterText += `${article.aiSummary}\n`;
+                    if (article.link) {
+                        newsletterText += `Read more: ${article.link}\n`;
+                    }
+                    newsletterText += '\n';
+                });
+                
+                newsletterText += '\n';
+            }
+
+            newsletterText += `Generated on ${dateStr} by News Brief\n`;
+            return newsletterText;
         }
 
         function downloadNewsletter() {
