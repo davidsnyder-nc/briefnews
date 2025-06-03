@@ -822,104 +822,98 @@
 
         async function fetchArticlesFromFeeds(feeds, maxArticles) {
             const articles = [];
-            const corsProxies = [
-                'https://api.allorigins.win/get?url=',
-                'https://corsproxy.io/?',
-                'https://api.codetabs.com/v1/proxy?quest='
-            ];
+            const corsProxy = 'https://api.allorigins.win/get?url=';
             
-            // Process more feeds to get enough articles
-            for (let i = 0; i < Math.min(feeds.length, 25); i++) {
-                const feed = feeds[i];
-                let success = false;
-                
-                for (const corsProxy of corsProxies) {
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000);
+            // Process feeds in parallel with shorter timeouts
+            const feedPromises = feeds.slice(0, 20).map(async (feed) => {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000); // Reduced to 4 seconds
+                    
+                    const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) return [];
+                    
+                    const data = await response.json();
+                    const xmlText = data.contents;
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                    
+                    if (xmlDoc.querySelector('parsererror')) return [];
+                    
+                    const items = xmlDoc.querySelectorAll('item');
+                    const feedArticles = [];
+                    
+                    for (const item of Array.from(items).slice(0, 3)) {
+                        const rawTitle = item.querySelector('title')?.textContent || 'No Title';
+                        const rawDescription = item.querySelector('description')?.textContent || '';
+                        const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
                         
-                        const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
-                            signal: controller.signal
-                        });
-                        clearTimeout(timeoutId);
+                        // Improved image extraction with fallback filtering
+                        let imageUrl = '';
                         
-                        if (!response.ok) continue;
-                        
-                        let xmlText;
-                        if (corsProxy.includes('allorigins')) {
-                            const data = await response.json();
-                            xmlText = data.contents;
-                        } else {
-                            xmlText = await response.text();
+                        const enclosure = item.querySelector('enclosure[type^="image"]');
+                        if (enclosure) {
+                            imageUrl = enclosure.getAttribute('url');
                         }
                         
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-                        
-                        if (xmlDoc.querySelector('parsererror')) continue;
-                        
-                        const items = xmlDoc.querySelectorAll('item');
-                        
-                        for (const item of Array.from(items).slice(0, 4)) {
-                            const rawTitle = item.querySelector('title')?.textContent || 'No Title';
-                            const rawDescription = item.querySelector('description')?.textContent || '';
-                            const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
-                            
-                            // Enhanced image extraction
-                            let imageUrl = '';
-                            
-                            const enclosure = item.querySelector('enclosure[type^="image"]');
-                            if (enclosure) {
-                                imageUrl = enclosure.getAttribute('url');
-                            }
-                            
-                            if (!imageUrl) {
-                                const mediaContent = item.querySelector('media\\:content[medium="image"], media\\:content[type^="image"]');
-                                if (mediaContent) {
-                                    imageUrl = mediaContent.getAttribute('url');
-                                }
-                            }
-                            
-                            if (!imageUrl) {
-                                const imgMatch = (rawContent || rawDescription).match(/<img[^>]+src=["']([^"']+)["']/i);
-                                if (imgMatch) {
-                                    imageUrl = imgMatch[1];
-                                }
-                            }
-                            
-                            const cleanContent = cleanHtmlContent(rawContent || rawDescription);
-                            
-                            if (cleanContent.length > 100) {
-                                const article = {
-                                    title: cleanHtmlContent(rawTitle),
-                                    description: cleanContent.substring(0, 600),
-                                    fullContent: cleanContent,
-                                    link: item.querySelector('link')?.textContent || '',
-                                    pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
-                                    source: feed.title,
-                                    category: feed.category,
-                                    imageUrl: imageUrl,
-                                    isBreaking: false
-                                };
-                                
-                                article.isBreaking = isBreakingNews(article);
-                                articles.push(article);
+                        if (!imageUrl) {
+                            const mediaContent = item.querySelector('media\\:content[medium="image"], media\\:content[type^="image"]');
+                            if (mediaContent) {
+                                imageUrl = mediaContent.getAttribute('url');
                             }
                         }
                         
-                        success = true;
-                        break;
-                    } catch (error) {
-                        continue;
+                        if (!imageUrl) {
+                            const imgMatch = (rawContent || rawDescription).match(/<img[^>]+src=["']([^"']+)["']/i);
+                            if (imgMatch) {
+                                const imgSrc = imgMatch[1];
+                                // Filter out social media icons and generic images
+                                if (!imgSrc.includes('twitter.com') && !imgSrc.includes('facebook.com') && 
+                                    !imgSrc.includes('icon') && !imgSrc.includes('logo') && 
+                                    !imgSrc.includes('avatar') && imgSrc.length > 30) {
+                                    imageUrl = imgSrc;
+                                }
+                            }
+                        }
+                        
+                        const cleanContent = cleanHtmlContent(rawContent || rawDescription);
+                        
+                        if (cleanContent.length > 100) {
+                            const article = {
+                                title: cleanHtmlContent(rawTitle),
+                                description: cleanContent.substring(0, 500),
+                                fullContent: cleanContent,
+                                link: item.querySelector('link')?.textContent || '',
+                                pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
+                                source: feed.title,
+                                category: feed.category,
+                                imageUrl: imageUrl,
+                                isBreaking: false
+                            };
+                            
+                            article.isBreaking = isBreakingNews(article);
+                            feedArticles.push(article);
+                        }
                     }
+                    
+                    return feedArticles;
+                } catch (error) {
+                    return [];
                 }
-                
-                if (!success) {
-                    console.error(`Failed to fetch from ${feed.title} with all proxies`);
+            });
+            
+            // Wait for all with timeout
+            const feedResults = await Promise.allSettled(feedPromises);
+            
+            feedResults.forEach(result => {
+                if (result.status === 'fulfilled') {
+                    articles.push(...result.value);
                 }
-                
-                if (articles.length >= maxArticles) break;
-            }
+            });
             
             console.log(`Fetched ${articles.length} articles from feeds`);
             return articles;
@@ -927,23 +921,19 @@
 
         async function generateAISummaries(articles, apiKey, digestLength, category) {
             const processedArticles = [];
-            const batchSize = 3; // Process in smaller batches
+            const batchSize = 5; // Increased batch size for speed
             
             for (let i = 0; i < articles.length; i += batchSize) {
                 const batch = articles.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (article) => {
                     try {
-                        const prompt = `Create an engaging news summary for this article in ${digestLength} style.
+                        const prompt = `Summarize in ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4' : '4-5'} sentences:
 
-Title: ${article.title}
-Content: ${article.description.substring(0, 800)}
-Source: ${article.source}
-Category: ${article.category}
-
-Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5' : '6-7'} sentence summary that captures the essential facts, context, and why this matters. Focus on clarity and readability.`;
+${article.title}
+${article.description.substring(0, 400)}`;
 
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                        const timeoutId = setTimeout(() => controller.abort(), 8000); // Reduced timeout
 
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
                             method: 'POST',
@@ -955,7 +945,11 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5'
                                     parts: [{
                                         text: prompt
                                     }]
-                                }]
+                                }],
+                                generationConfig: {
+                                    maxOutputTokens: 200,
+                                    temperature: 0.3
+                                }
                             }),
                             signal: controller.signal
                         });
@@ -975,15 +969,14 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5'
                         };
 
                     } catch (error) {
-                        console.error(`Error generating summary for ${article.title}:`, error);
                         return {
                             ...article,
-                            aiSummary: article.description || 'Unable to generate AI summary at this time'
+                            aiSummary: article.description || 'Summary unavailable'
                         };
                     }
                 });
 
-                // Process batch and add delay between batches
+                // Process batch with reduced delay
                 const batchResults = await Promise.allSettled(batchPromises);
                 batchResults.forEach(result => {
                     if (result.status === 'fulfilled') {
@@ -991,9 +984,9 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5'
                     }
                 });
 
-                // Small delay between batches to avoid rate limits
+                // Minimal delay between batches
                 if (i + batchSize < articles.length) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
             
