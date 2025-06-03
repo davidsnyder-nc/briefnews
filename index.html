@@ -3566,28 +3566,7 @@ Write exactly 3 sentences.`;
             }
         }
 
-        function showNews() {
-            // Show news page and hide settings page
-            document.getElementById('newsPage').style.display = 'block';
-            document.getElementById('settingsPage').style.display = 'none';
-            
-            // Show welcome section and hide header controls
-            const welcomeSection = document.getElementById('welcomeSection');
-            const newsHeader = document.getElementById('newsHeader');
-            const headerNewsletterBtn = document.getElementById('headerNewsletterBtn');
-            
-            if (welcomeSection) {
-                welcomeSection.style.display = 'block';
-            }
-            
-            if (newsHeader) {
-                newsHeader.style.display = 'none';
-            }
-            
-            // Hide newsletter button in header
-            if (headerNewsletterBtn) {
-                headerNewsletterBtn.classList.add('hidden');
-            }
+
             
             // Clear articles and filters
             document.getElementById('newsletterArea').innerHTML = '';
