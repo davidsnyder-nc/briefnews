@@ -562,15 +562,9 @@
                 document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
             }
 
-            // Load settings - prefer environment variable, fallback to localStorage
-            const envApiKey = '${GEMINI_API_KEY}';
-            const localApiKey = localStorage.getItem('geminiApiKey');
-            const apiKey = (envApiKey && envApiKey !== '${GEMINI_API_KEY}') ? envApiKey : localApiKey;
-            
-            if (apiKey) {
-                document.getElementById('geminiApiKey').value = apiKey;
-                localStorage.setItem('geminiApiKey', apiKey);
-            }
+            // Load settings
+            const apiKey = localStorage.getItem('geminiApiKey');
+            if (apiKey) document.getElementById('geminiApiKey').value = apiKey;
 
             const maxArticles = localStorage.getItem('maxArticles');
             if (maxArticles) document.getElementById('maxArticles').value = maxArticles;
