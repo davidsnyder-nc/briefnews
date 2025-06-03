@@ -794,20 +794,19 @@ Write ONE paragraph summary.</textarea>
             const aiStyle = localStorage.getItem('aiStyle') || 'professional';
             document.getElementById('aiStyle').value = aiStyle;
             
-            const addContext = localStorage.getItem('addContext');
-            document.getElementById('addContext').checked = addContext !== 'false';
-            
-            const includeImpact = localStorage.getItem('includeImpact');
-            document.getElementById('includeImpact').checked = includeImpact !== 'false';
-            
-            const addQuestions = localStorage.getItem('addQuestions');
-            document.getElementById('addQuestions').checked = addQuestions === 'true';
+            // Content Enhancement settings removed - only used in AI Rewrite mode
 
-            // Load custom AI prompt with default value
+            // Load custom AI prompt with updated default value
             const defaultPrompt = `{article.title}
 
 Write ONE paragraph summary.`;
-            const customPrompt = localStorage.getItem('customPrompt') || defaultPrompt;
+            
+            // Force update for existing users who might have old prompt
+            let customPrompt = localStorage.getItem('customPrompt');
+            if (!customPrompt || customPrompt.includes('Write ONE sentence summary. Maximum 10 words.')) {
+                customPrompt = defaultPrompt;
+                localStorage.setItem('customPrompt', defaultPrompt);
+            }
             document.getElementById('customPrompt').value = customPrompt;
 
             // Load view mode preference - default to row view
