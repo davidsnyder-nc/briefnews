@@ -191,24 +191,27 @@
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Start</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="col-span-full">
-                        <h4 class="font-medium text-gray-700 mb-3">Choose Your News Category</h4>
+                        <h4 class="font-medium text-gray-700 mb-3">Choose Your News Categories</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="categoryButtons">
                             <button onclick="quickCategory('all')" class="category-button special px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm">All Categories</button>
-                            <button onclick="quickCategory('technology')" class="category-button px-4 py-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors border border-blue-200">Technology</button>
-                            <button onclick="quickCategory('world news')" class="category-button px-4 py-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors border border-green-200">World News</button>
-                            <button onclick="quickCategory('business')" class="category-button px-4 py-3 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors border border-purple-200">Business</button>
-                            <button onclick="quickCategory('science')" class="category-button px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors border border-indigo-200">Science</button>
-                            <button onclick="quickCategory('health')" class="category-button px-4 py-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors border border-red-200">Health</button>
-                            <button onclick="quickCategory('politics')" class="category-button px-4 py-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200">Politics</button>
-                            <button onclick="quickCategory('sports')" class="category-button px-4 py-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors border border-orange-200">Sports</button>
-                            <button onclick="quickCategory('entertainment')" class="category-button px-4 py-3 bg-pink-50 text-pink-700 rounded-lg text-sm font-medium hover:bg-pink-100 transition-colors border border-pink-200">Entertainment</button>
-                            <button onclick="quickCategory('lifestyle')" class="category-button px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-100 transition-colors border border-yellow-200">Lifestyle</button>
-                            <button onclick="quickCategory('education')" class="category-button px-4 py-3 bg-teal-50 text-teal-700 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors border border-teal-200">Education</button>
-                            <button onclick="quickCategory('environment')" class="category-button px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors border border-emerald-200">Environment</button>
-                            <button onclick="quickCategory('food')" class="category-button px-4 py-3 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200">Food & Cooking</button>
-                            <button onclick="quickCategory('travel')" class="category-button px-4 py-3 bg-cyan-50 text-cyan-700 rounded-lg text-sm font-medium hover:bg-cyan-100 transition-colors border border-cyan-200">Travel</button>
-                            <button onclick="quickCategory('finance')" class="category-button px-4 py-3 bg-violet-50 text-violet-700 rounded-lg text-sm font-medium hover:bg-violet-100 transition-colors border border-violet-200">Personal Finance</button>
-                            <button onclick="quickCategory('gaming')" class="category-button px-4 py-3 bg-rose-50 text-rose-700 rounded-lg text-sm font-medium hover:bg-rose-100 transition-colors border border-rose-200">Gaming</button>
+                            <button onclick="toggleCategory('technology')" class="category-button px-4 py-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors border border-blue-200">Technology</button>
+                            <button onclick="toggleCategory('world news')" class="category-button px-4 py-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors border border-green-200">World News</button>
+                            <button onclick="toggleCategory('business')" class="category-button px-4 py-3 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors border border-purple-200">Business</button>
+                            <button onclick="toggleCategory('science')" class="category-button px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors border border-indigo-200">Science</button>
+                            <button onclick="toggleCategory('health')" class="category-button px-4 py-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors border border-red-200">Health</button>
+                            <button onclick="toggleCategory('politics')" class="category-button px-4 py-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200">Politics</button>
+                            <button onclick="toggleCategory('sports')" class="category-button px-4 py-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors border border-orange-200">Sports</button>
+                            <button onclick="toggleCategory('entertainment')" class="category-button px-4 py-3 bg-pink-50 text-pink-700 rounded-lg text-sm font-medium hover:bg-pink-100 transition-colors border border-pink-200">Entertainment</button>
+                            <button onclick="toggleCategory('lifestyle')" class="category-button px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-100 transition-colors border border-yellow-200">Lifestyle</button>
+                            <button onclick="toggleCategory('education')" class="category-button px-4 py-3 bg-teal-50 text-teal-700 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors border border-teal-200">Education</button>
+                            <button onclick="toggleCategory('environment')" class="category-button px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors border border-emerald-200">Environment</button>
+                            <button onclick="toggleCategory('food')" class="category-button px-4 py-3 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors border border-amber-200">Food & Cooking</button>
+                            <button onclick="toggleCategory('travel')" class="category-button px-4 py-3 bg-cyan-50 text-cyan-700 rounded-lg text-sm font-medium hover:bg-cyan-100 transition-colors border border-cyan-200">Travel</button>
+                            <button onclick="toggleCategory('finance')" class="category-button px-4 py-3 bg-violet-50 text-violet-700 rounded-lg text-sm font-medium hover:bg-violet-100 transition-colors border border-violet-200">Personal Finance</button>
+                            <button onclick="toggleCategory('gaming')" class="category-button px-4 py-3 bg-rose-50 text-rose-700 rounded-lg text-sm font-medium hover:bg-rose-100 transition-colors border border-rose-200">Gaming</button>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button id="generateFromSelection" onclick="generateFromSelectedCategories()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm" style="display: none;">Generate News from Selected Categories</button>
                         </div>
                     </div>
                 </div>
@@ -278,6 +281,18 @@
                         <option value="analytical">Analytical & In-depth</option>
                         <option value="simple">Simple & Easy to Read</option>
                     </select>
+                </div>
+            </div>
+        </section>
+        <section class="settings-section">
+            <h3 class="text-lg font-medium mb-3 text-gray-600">Custom AI Prompt</h3>
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label for="customPrompt" class="form-label">AI Prompt Template:</label>
+                    <textarea id="customPrompt" class="form-input h-24" placeholder="Enter custom AI prompt template...">{article.title}
+
+Write ONE sentence summary. Maximum 10 words.</textarea>
+                    <p class="text-xs text-gray-500 mt-1">Use {article.title} and {article.description} as placeholders. Leave blank to use default prompts.</p>
                 </div>
             </div>
         </section>
@@ -764,6 +779,10 @@
             const addQuestions = localStorage.getItem('addQuestions');
             document.getElementById('addQuestions').checked = addQuestions === 'true';
 
+            // Load custom AI prompt
+            const customPrompt = localStorage.getItem('customPrompt') || '';
+            document.getElementById('customPrompt').value = customPrompt;
+
             // Load view mode preference - default to row view
             const viewMode = localStorage.getItem('viewMode') || 'row';
             if (viewMode === 'row') {
@@ -802,6 +821,7 @@
             localStorage.setItem('addContext', document.getElementById('addContext').checked);
             localStorage.setItem('includeImpact', document.getElementById('includeImpact').checked);
             localStorage.setItem('addQuestions', document.getElementById('addQuestions').checked);
+            localStorage.setItem('customPrompt', document.getElementById('customPrompt').value.trim());
 
             // Show toast notification and navigate to home
             showToast('Settings saved successfully!', 'success');
@@ -1268,7 +1288,14 @@ Write the complete rewritten article:`;
                             maxTokens = digestLength === 'brief' ? 300 : digestLength === 'medium' ? 500 : 700;
                         } else {
                             // Standard summary mode - keep very concise
-                            if (digestLength === 'brief') {
+                            // Check for custom prompt first
+                            const customPrompt = localStorage.getItem('customPrompt');
+                            if (customPrompt && customPrompt.trim()) {
+                                prompt = customPrompt
+                                    .replace('{article.title}', article.title)
+                                    .replace('{article.description}', article.description || '');
+                                maxTokens = 50; // Reasonable default for custom prompts
+                            } else if (digestLength === 'brief') {
                                 prompt = `${article.title}
 
 Write ONE sentence summary. Maximum 10 words.`;
@@ -1491,7 +1518,14 @@ Write exactly 3 sentences.`;
             }).join('');
         }
 
+        let selectedCategories = [];
+
         function quickCategory(categoryName) {
+            // Clear any selected categories
+            selectedCategories = [];
+            document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('generateFromSelection').style.display = 'none';
+            
             // Set the category in the dropdown
             document.getElementById('categorySelect').value = categoryName.toLowerCase();
             
@@ -1510,6 +1544,46 @@ Write exactly 3 sentences.`;
             
             // Generate newsletter for selected category
             generateNewsletter();
+        }
+
+        function toggleCategory(categoryName) {
+            const button = event.target;
+            
+            if (selectedCategories.includes(categoryName)) {
+                // Remove category
+                selectedCategories = selectedCategories.filter(cat => cat !== categoryName);
+                button.classList.remove('selected');
+            } else {
+                // Add category
+                selectedCategories.push(categoryName);
+                button.classList.add('selected');
+            }
+            
+            // Show/hide generate button
+            const generateBtn = document.getElementById('generateFromSelection');
+            if (selectedCategories.length > 0) {
+                generateBtn.style.display = 'block';
+                generateBtn.textContent = `Generate News from ${selectedCategories.length} Categories`;
+            } else {
+                generateBtn.style.display = 'none';
+            }
+        }
+
+        function generateFromSelectedCategories() {
+            if (selectedCategories.length === 0) return;
+            
+            // Hide welcome section and show header controls
+            const welcomeSection = document.getElementById('welcomeSection');
+            const newsHeader = document.getElementById('newsHeader');
+            
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+            if (newsHeader) {
+                newsHeader.style.display = 'block';
+            }
+            
+            generateNewsletterForCategories(selectedCategories);
         }
 
         function startOver() {
