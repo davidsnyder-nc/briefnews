@@ -1043,6 +1043,9 @@ Write ONE sentence summary. Maximum 10 words.`;
             const maxArticles = 20; // Fixed to 20 articles
             const digestLength = 'brief'; // Always brief summaries
 
+            // Clear previous content when generating new newsletter
+            clearPreviousContent();
+
             // Check if API key is configured before starting
             const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
             const geminiApiKey = localStorage.getItem('geminiApiKey');
@@ -2907,11 +2910,49 @@ Write exactly 3 sentences.`;
 
         let selectedCategories = [];
 
+        function clearPreviousContent() {
+            // Clear article content
+            document.getElementById('newsletterArea').innerHTML = '';
+            
+            // Clear article index
+            const articleIndex = document.getElementById('articleIndex');
+            if (articleIndex) {
+                articleIndex.innerHTML = '';
+                articleIndex.style.display = 'none';
+            }
+            
+            // Clear source filter buttons
+            const sourceFilters = document.getElementById('sourceFilters');
+            if (sourceFilters) {
+                sourceFilters.innerHTML = '';
+                sourceFilters.style.display = 'none';
+            }
+            
+            // Clear load more button
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            if (loadMoreContainer) {
+                loadMoreContainer.innerHTML = '';
+            }
+            
+            // Clear any global variables
+            window.currentDisplayedArticles = [];
+            window.currentNewsletterHTML = '';
+            
+            // Hide floating buttons
+            const audioFab = document.getElementById('audioFab');
+            if (audioFab) {
+                audioFab.style.display = 'none';
+            }
+        }
+
         function quickCategory(categoryName) {
             // Clear any selected categories
             selectedCategories = [];
             document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
             document.getElementById('generateFromSelection').style.display = 'none';
+            
+            // Clear previous content and filters
+            clearPreviousContent();
             
             // Set the category in the dropdown
             document.getElementById('categorySelect').value = categoryName.toLowerCase();
@@ -2969,6 +3010,9 @@ Write exactly 3 sentences.`;
 
         function generateFromSelectedCategories() {
             if (selectedCategories.length === 0) return;
+            
+            // Clear previous content when generating from selected categories
+            clearPreviousContent();
             
             // Hide welcome section and show header controls
             const welcomeSection = document.getElementById('welcomeSection');
