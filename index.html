@@ -1441,6 +1441,9 @@ Write exactly 3 sentences.`;
             // Create load more button
             createLoadMoreButton();
             
+            // Create newsletter export button
+            createNewsletterExportButton();
+            
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
@@ -1917,6 +1920,294 @@ Write exactly 3 sentences.`;
             
             // Append new articles to existing content
             container.innerHTML += newArticlesHtml;
+        }
+
+        function createNewsletterExportButton() {
+            // Remove existing export button if it exists
+            const existingButton = document.getElementById('exportNewsletterContainer');
+            if (existingButton) {
+                existingButton.remove();
+            }
+            
+            // Create export button container
+            const exportContainer = document.createElement('div');
+            exportContainer.id = 'exportNewsletterContainer';
+            exportContainer.className = 'mb-6 text-center';
+            
+            exportContainer.innerHTML = `
+                <button onclick="generateCustomNewsletter()" 
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                    Generate Newsletter
+                </button>
+            `;
+            
+            // Insert after source filter
+            const sourceFilter = document.getElementById('sourceFilterContainer');
+            if (sourceFilter) {
+                sourceFilter.parentNode.insertBefore(exportContainer, sourceFilter.nextSibling);
+            }
+        }
+
+        function generateArticleIcon(article) {
+            // Generate a unique SVG icon based on article content
+            const title = article.title.toLowerCase();
+            const category = article.category.toLowerCase();
+            
+            // Define icon styles based on content
+            let iconPath, iconColor, iconBg;
+            
+            if (category.includes('technology') || category.includes('tech')) {
+                iconPath = `<path d="M12 2l3.09 6.26L22 9l-5 4.87L18.18 20 12 16.77 5.82 20 7 13.87 2 9l6.91-.74L12 2z"/>`;
+                iconColor = '#3B82F6';
+                iconBg = '#EFF6FF';
+            } else if (category.includes('business') || category.includes('finance')) {
+                iconPath = `<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>`;
+                iconColor = '#059669';
+                iconBg = '#ECFDF5';
+            } else if (category.includes('sports')) {
+                iconPath = `<circle cx="12" cy="12" r="10"/><path d="m12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>`;
+                iconColor = '#DC2626';
+                iconBg = '#FEF2F2';
+            } else if (category.includes('health') || category.includes('science')) {
+                iconPath = `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>`;
+                iconColor = '#7C3AED';
+                iconBg = '#F3F4F6';
+            } else if (category.includes('entertainment') || category.includes('culture')) {
+                iconPath = `<polygon points="23 7 16 12 23 17 23 7"/><rect width="15" height="14" x="1" y="5" rx="2" ry="2"/>`;
+                iconColor = '#F59E0B';
+                iconBg = '#FFFBEB';
+            } else if (category.includes('politics') || category.includes('world')) {
+                iconPath = `<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>`;
+                iconColor = '#6366F1';
+                iconBg = '#EEF2FF';
+            } else {
+                // Default news icon
+                iconPath = `<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>`;
+                iconColor = '#6B7280';
+                iconBg = '#F9FAFB';
+            }
+            
+            return `
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="background: ${iconBg}; border-radius: 6px; padding: 4px;">
+                    <g fill="${iconColor}" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        ${iconPath}
+                    </g>
+                </svg>
+            `;
+        }
+
+        async function generateCustomNewsletter() {
+            if (!window.currentDisplayedArticles || window.currentDisplayedArticles.length === 0) {
+                showToast('No articles to export', 'error');
+                return;
+            }
+
+            showToast('Generating newsletter...', 'info');
+
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            // Group articles by category
+            const articlesByCategory = {};
+            window.currentDisplayedArticles.forEach(article => {
+                const category = article.category || 'General';
+                if (!articlesByCategory[category]) {
+                    articlesByCategory[category] = [];
+                }
+                articlesByCategory[category].push(article);
+            });
+
+            // Generate newsletter HTML
+            let newsletterHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Brief - ${dateStr}</title>
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .newsletter-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+        .date {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .category-section {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            border-left: 4px solid #2563eb;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .article {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        .article-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .article-icon {
+            margin-right: 15px;
+            margin-top: 2px;
+        }
+        .article-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f2937;
+            line-height: 1.4;
+            flex: 1;
+        }
+        .article-title a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .article-title a:hover {
+            text-decoration: underline;
+        }
+        .article-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        .article-summary {
+            color: #374151;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .breaking-badge {
+            background: #dc2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .stats {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="newsletter-container">
+        <div class="header">
+            <div class="logo">📰 News Brief</div>
+            <div class="date">${dateStr}</div>
+        </div>
+        
+        <div class="stats">
+            <strong>${window.currentDisplayedArticles.length} articles</strong> from <strong>${Object.keys(articlesByCategory).length} categories</strong>
+        </div>
+`;
+
+            // Add articles by category
+            for (const [category, articles] of Object.entries(articlesByCategory)) {
+                newsletterHTML += `
+        <div class="category-section">
+            <div class="category-title">${category}</div>
+`;
+                
+                articles.forEach(article => {
+                    const icon = generateArticleIcon(article);
+                    const breakingBadge = article.isBreaking ? '<span class="breaking-badge">BREAKING</span>' : '';
+                    const pubDate = new Date(article.pubDate).toLocaleDateString();
+                    
+                    newsletterHTML += `
+            <div class="article">
+                <div class="article-header">
+                    <div class="article-icon">${icon}</div>
+                    <div class="article-title">
+                        <a href="${article.link}" target="_blank">${article.title}</a>${breakingBadge}
+                    </div>
+                </div>
+                <div class="article-meta">
+                    ${article.source} • ${pubDate}
+                </div>
+                <div class="article-summary">
+                    ${article.aiSummary || article.description}
+                </div>
+            </div>
+`;
+                });
+                
+                newsletterHTML += `        </div>`;
+            }
+
+            newsletterHTML += `
+        <div class="footer">
+            Generated on ${new Date().toLocaleString()}<br>
+            Powered by News Brief • AI-Enhanced News Curation
+        </div>
+    </div>
+</body>
+</html>`;
+
+            // Create and download the newsletter
+            const blob = new Blob([newsletterHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `newsletter-${today.toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`Newsletter exported with ${window.currentDisplayedArticles.length} articles`, 'success');
         }
 
         let selectedCategories = [];
