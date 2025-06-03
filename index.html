@@ -162,9 +162,15 @@
             }
             
             .news-card .flex-shrink-0:has(img) {
+                margin-left: 0 !important;
                 margin-right: 0 !important;
                 margin-bottom: 1rem;
                 width: 100%;
+                order: 2;
+            }
+            
+            .news-card .flex-grow {
+                order: 1;
             }
             
             .news-card img {
@@ -1667,9 +1673,9 @@ Write exactly 3 sentences.`;
                 const articleNumber = index + 1;
                 
                 if (viewMode === 'row') {
-                    // Row view - horizontal layout with image on the left
+                    // Row view - horizontal layout with image on the right
                     const imageHtml = article.imageUrl ? 
-                        `<div class="flex-shrink-0 mr-6">
+                        `<div class="flex-shrink-0 ml-6 md:ml-6">
                             <img src="${article.imageUrl}" alt="${article.title}" class="w-32 h-24 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
                         </div>` : '';
                     
@@ -1681,8 +1687,7 @@ Write exactly 3 sentences.`;
                                         ${articleNumber}
                                     </div>
                                 </div>
-                                ${imageHtml}
-                                <div class="flex-grow">
+                                <div class="flex-grow min-w-0">
                                     <header class="mb-3">
                                         <div class="flex flex-wrap gap-2 mb-2">
                                             ${breakingBadge}
@@ -1716,6 +1721,7 @@ Write exactly 3 sentences.`;
                                         </div>
                                     </div>
                                 </div>
+                                ${imageHtml}
                             </div>
                         </article>`;
                 } else {
