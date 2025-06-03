@@ -3913,6 +3913,12 @@ Write exactly 3 sentences.`;
                 articleIndex.style.display = 'none';
             }
             
+            // Hide newsletter audio controls
+            const newsletterAudioControls = document.getElementById('newsletterAudioControls');
+            if (newsletterAudioControls) {
+                newsletterAudioControls.style.display = 'none';
+            }
+            
             // Remove source filter, load more buttons, category filter, and audio controls if they exist
             const sourceFilter = document.getElementById('sourceFilterContainer');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
