@@ -1438,6 +1438,9 @@ Write exactly 3 sentences.`;
             // Create source filter buttons
             createSourceFilterButtons(articles);
             
+            // Create load more button
+            createLoadMoreButton();
+            
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
@@ -1695,6 +1698,225 @@ Write exactly 3 sentences.`;
                         </article>`;
                 }
             }).join('');
+        }
+
+        function createLoadMoreButton() {
+            // Remove existing load more button if it exists
+            const existingButton = document.getElementById('loadMoreContainer');
+            if (existingButton) {
+                existingButton.remove();
+            }
+            
+            // Create load more container
+            const loadMoreContainer = document.createElement('div');
+            loadMoreContainer.id = 'loadMoreContainer';
+            loadMoreContainer.className = 'mt-8 text-center';
+            
+            loadMoreContainer.innerHTML = `
+                <button id="loadMoreBtn" onclick="loadMoreArticles()" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Load More Articles
+                </button>
+                <div id="loadMoreLoader" class="hidden mt-4">
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span class="ml-2 text-gray-600">Loading more articles...</span>
+                </div>
+            `;
+            
+            // Insert after newsletter area
+            const newsletterArea = document.getElementById('newsletterArea');
+            newsletterArea.parentNode.insertBefore(loadMoreContainer, newsletterArea.nextSibling);
+        }
+
+        async function loadMoreArticles() {
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const loadMoreLoader = document.getElementById('loadMoreLoader');
+            
+            // Show loading state
+            loadMoreBtn.style.display = 'none';
+            loadMoreLoader.classList.remove('hidden');
+            
+            try {
+                // Get current category and settings
+                const category = document.getElementById('categorySelect').value;
+                const maxArticles = 20;
+                const digestLength = 'brief';
+                
+                // Filter feeds by category
+                let feedsToUse = currentRssFeeds;
+                if (category !== 'all') {
+                    feedsToUse = currentRssFeeds.filter(feed => 
+                        feed.category.toLowerCase().includes(category.toLowerCase()) ||
+                        category.toLowerCase().includes(feed.category.toLowerCase())
+                    );
+                }
+
+                // Fetch new articles (fetch more to account for filtering and duplicates)
+                const newArticles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 6);
+                
+                if (newArticles.length === 0) {
+                    showToast('No more articles available', 'info');
+                    loadMoreBtn.textContent = 'No More Articles';
+                    loadMoreBtn.disabled = true;
+                    loadMoreBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    loadMoreBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    loadMoreBtn.style.display = 'block';
+                    loadMoreLoader.classList.add('hidden');
+                    return;
+                }
+
+                // Filter out articles that are already displayed (check by title and link)
+                const currentTitles = new Set(window.currentDisplayedArticles.map(a => a.title.toLowerCase()));
+                const currentLinks = new Set(window.currentDisplayedArticles.map(a => a.link));
+                
+                const uniqueNewArticles = newArticles.filter(article => 
+                    !currentTitles.has(article.title.toLowerCase()) && 
+                    !currentLinks.has(article.link)
+                );
+
+                if (uniqueNewArticles.length === 0) {
+                    showToast('No new unique articles found', 'info');
+                    loadMoreBtn.textContent = 'No More Articles';
+                    loadMoreBtn.disabled = true;
+                    loadMoreBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    loadMoreBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    loadMoreBtn.style.display = 'block';
+                    loadMoreLoader.classList.add('hidden');
+                    return;
+                }
+
+                // Apply blocked terms filter
+                const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
+                const cleanArticles = filterBlockedTerms(uniqueNewArticles, blockedTerms);
+
+                // Remove duplicate articles within the new batch
+                const uniqueCleanArticles = removeDuplicateArticles(cleanArticles);
+
+                // Sort articles with breaking news first
+                const sortedArticles = sortArticlesWithBreakingFirst(uniqueCleanArticles);
+
+                // Limit to maxArticles
+                const finalNewArticles = sortedArticles.slice(0, maxArticles);
+
+                // Generate AI summaries for new articles
+                const processedNewArticles = await generateAISummaries(finalNewArticles, digestLength, category);
+
+                // Add new articles to the current displayed articles
+                window.currentDisplayedArticles = [...window.currentDisplayedArticles, ...processedNewArticles];
+
+                // Append new articles to the display
+                appendNewArticles(processedNewArticles);
+                
+                // Update source filter buttons to include new sources
+                createSourceFilterButtons(window.currentDisplayedArticles);
+
+                showToast(`Loaded ${processedNewArticles.length} new articles`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading more articles:', error);
+                showToast('Error loading more articles', 'error');
+            } finally {
+                // Hide loading state and show button again
+                loadMoreBtn.style.display = 'block';
+                loadMoreLoader.classList.add('hidden');
+            }
+        }
+
+        function appendNewArticles(newArticles) {
+            const container = document.getElementById('newsletterArea');
+            const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
+            const showCategories = localStorage.getItem('showCategories') !== 'false';
+            const viewMode = localStorage.getItem('viewMode') || 'row';
+
+            const newArticlesHtml = newArticles.map(article => {
+                const breakingClass = article.isBreaking ? 'breaking-news' : '';
+                const breakingBadge = article.isBreaking ? '<span class="breaking-tag">Breaking</span>' : '';
+                
+                if (viewMode === 'row') {
+                    // Row view - horizontal layout with image on the left
+                    const imageHtml = article.imageUrl ? 
+                        `<div class="flex-shrink-0 mr-6">
+                            <img src="${article.imageUrl}" alt="${article.title}" class="w-32 h-24 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
+                        </div>` : '';
+                    
+                    return `
+                        <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
+                            <div class="flex">
+                                ${imageHtml}
+                                <div class="flex-grow">
+                                    <header class="mb-3">
+                                        <div class="flex flex-wrap gap-2 mb-2">
+                                            ${breakingBadge}
+                                            ${showCategories ? `<span class="category-tag cursor-pointer hover:bg-blue-200" onclick="filterByCategory('${article.category}')">${article.category}</span>` : ''}
+                                        </div>
+                                        <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                                            <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                                ${article.title}
+                                            </a>
+                                        </h2>
+                                        ${showSourceInfo ? `
+                                        <div class="text-sm text-gray-500">
+                                            <span class="feed-source">${article.source}</span>
+                                        </div>
+                                        ` : ''}
+                                    </header>
+                                    <div class="content-area">
+                                        ${article.isRewritten ? `<div class="text-xs text-blue-600 mb-2 flex items-center">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.828-2.828z"/>
+                                            </svg>
+                                            AI Rewritten Story
+                                        </div>` : ''}
+                                        <div class="text-gray-700 leading-relaxed">
+                                            ${article.aiSummary}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>`;
+                } else {
+                    // Grid view - vertical layout with image on top
+                    const imageHtml = article.imageUrl ? 
+                        `<div class="mb-4">
+                            <img src="${article.imageUrl}" alt="${article.title}" class="w-full h-48 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
+                        </div>` : '';
+                    
+                    return `
+                        <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
+                            ${imageHtml}
+                            <header class="mb-3">
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    ${breakingBadge}
+                                    ${showCategories ? `<span class="category-tag cursor-pointer hover:bg-blue-200" onclick="filterByCategory('${article.category}')">${article.category}</span>` : ''}
+                                </div>
+                                <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                                    <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                        ${article.title}
+                                    </a>
+                                </h2>
+                                ${showSourceInfo ? `
+                                <div class="text-sm text-gray-500">
+                                    <span class="feed-source">${article.source}</span>
+                                </div>
+                                ` : ''}
+                            </header>
+                            <div class="content-area">
+                                ${article.isRewritten ? `<div class="text-xs text-blue-600 mb-2 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.828-2.828z"/>
+                                    </svg>
+                                    AI Rewritten Story
+                                </div>` : ''}
+                                <div class="text-gray-700 leading-relaxed">
+                                    ${article.aiSummary}
+                                </div>
+                            </div>
+                        </article>`;
+                }
+            }).join('');
+            
+            // Append new articles to existing content
+            container.innerHTML += newArticlesHtml;
         }
 
         let selectedCategories = [];
