@@ -233,7 +233,7 @@
             </main>
     </div>
 
-    <div id="settingsPage" class="page container mx-auto px-4 py-4">
+    <div id="settingsPage" class="page container mx-auto px-4 py-4" style="display: none;">
         <h2 class="text-2xl font-semibold mb-6 text-gray-700">Settings</h2>
         <section class="settings-section">
             <h3 class="text-lg font-medium mb-3 text-gray-600">AI Provider Configuration</h3>
@@ -2512,6 +2512,29 @@ Write exactly 3 sentences.`;
                 setTimeout(() => container.removeChild(toast), 400);
             }, 4000);
         }
+
+        function showSettings() {
+            document.getElementById('newsPage').style.display = 'none';
+            document.getElementById('settingsPage').style.display = 'block';
+        }
+
+        // Initialize page navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up navigation buttons
+            document.getElementById('navSettings').addEventListener('click', showSettings);
+            
+            // Set up all settings functionality
+            document.getElementById('aiProvider').addEventListener('change', handleAiProviderChange);
+            document.getElementById('saveAllSettings').addEventListener('click', saveAllSettings);
+            document.getElementById('opmlFile').addEventListener('change', handleOpmlUpload);
+            document.getElementById('clearOpml').addEventListener('click', clearOpml);
+            document.getElementById('blockedTermInput').addEventListener('keypress', handleBlockedTermInput);
+            document.getElementById('generateNewsletter').addEventListener('click', generateNewsletter);
+            document.getElementById('startOver').addEventListener('click', startOver);
+            
+            // Load saved settings
+            loadSettings();
+        });
     </script>
 </body>
 </html>
