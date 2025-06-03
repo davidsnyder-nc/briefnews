@@ -2453,9 +2453,9 @@ Write exactly 3 sentences.`;
             if (categories.length === 0) return;
             
             // Create category filter container
-            const categoryFilterContainer = document.createElement('div');
-            categoryFilterContainer.id = 'categoryFilterContainer';
-            categoryFilterContainer.className = 'mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg';
+            const filterContainer = document.createElement('div');
+            filterContainer.id = 'categoryFilterContainer';
+            filterContainer.className = 'mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg';
             
             // Create category filter buttons
             const categoryButtons = categories.map(category => 
@@ -2466,7 +2466,7 @@ Write exactly 3 sentences.`;
                 </button>`
             ).join('');
             
-            categoryFilterContainer.innerHTML = `
+            filterContainer.innerHTML = `
                 <div class="flex flex-wrap items-center gap-2 mb-3">
                     <span class="text-sm font-medium text-blue-800 mr-2">Refresh with different categories:</span>
                     <div class="flex flex-wrap gap-1">
@@ -2488,7 +2488,7 @@ Write exactly 3 sentences.`;
             // Insert before newsletter area
             const newsletterArea = document.getElementById('newsletterArea');
             if (newsletterArea && newsletterArea.parentNode) {
-                newsletterArea.parentNode.insertBefore(categoryFilterContainer, newsletterArea);
+                newsletterArea.parentNode.insertBefore(filterContainer, newsletterArea);
             }
         }
         
