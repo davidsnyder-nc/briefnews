@@ -3676,8 +3676,8 @@ Write exactly 3 sentences.`;
         }
 
         function startOver() {
-            // Alias for showNews for backward compatibility
-            showNews();
+            // Use the same cleanup as homepage navigation
+            navigateToHome();
             showToast('Ready to start over!', 'info');
         }
 
