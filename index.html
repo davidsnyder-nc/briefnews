@@ -3019,13 +3019,19 @@ Write exactly 3 sentences.`;
 `;
                 
                 articles.forEach(article => {
-                    const icon = generateArticleIcon(article);
+                    const standardIcon = `<svg width="24" height="24" viewBox="0 0 24 24" style="color: #2563eb;">
+                        <rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" opacity="0.1"/>
+                        <rect x="6" y="6" width="12" height="2" rx="1" fill="currentColor"/>
+                        <rect x="6" y="9" width="8" height="2" rx="1" fill="currentColor"/>
+                        <rect x="6" y="12" width="10" height="2" rx="1" fill="currentColor"/>
+                        <rect x="6" y="15" width="6" height="2" rx="1" fill="currentColor"/>
+                    </svg>`;
                     const breakingBadge = article.isBreaking ? '<span class="breaking-badge">BREAKING</span>' : '';
                     
                     newsletterHTML += `
             <div class="article">
                 <div class="article-header">
-                    <div class="article-icon">${icon}</div>
+                    <div class="article-icon">${standardIcon}</div>
                     <div class="article-title">
                         <a href="${article.link}" target="_blank">${article.title}</a>${breakingBadge}
                     </div>
@@ -3104,10 +3110,17 @@ Write exactly 3 sentences.`;
             
             // Update modal content
             document.getElementById('modalArticleCount').textContent = articleCount;
-            document.getElementById('newsletterPreview').srcdoc = newsletterHTML;
             
-            // Show modal
+            // Show modal first
             modal.classList.remove('hidden');
+            
+            // Set iframe content with a small delay to ensure proper loading
+            setTimeout(() => {
+                const iframe = document.getElementById('newsletterPreview');
+                if (iframe) {
+                    iframe.srcdoc = newsletterHTML;
+                }
+            }, 100);
         }
 
         function printNewsletter() {
