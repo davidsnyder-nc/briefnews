@@ -241,14 +241,10 @@
 
 
     <div id="newsPage" class="page w-full max-w-full px-2 sm:px-4 py-4 overflow-x-hidden">
-        <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
-            <div class="flex gap-4 items-center justify-center">
-                <!-- Hidden select for backward compatibility -->
-                <select id="categorySelect" style="display: none;">
-                    <option value="all">All Categories</option>
-                </select>
-            </div>
-        </header>
+        <!-- Hidden select for backward compatibility -->
+        <select id="categorySelect" style="display: none;">
+            <option value="all">All Categories</option>
+        </select>
 
         <div id="statusArea" class="text-center mb-4">
             <p id="statusMessage" class="text-gray-600"></p>
@@ -767,9 +763,8 @@ Write ONE paragraph summary.</textarea>
             document.getElementById('newsPage').style.display = 'block';
             document.getElementById('settingsPage').style.display = 'none';
             
-            // Show welcome section and hide articles/header
+            // Show welcome section and hide articles
             const welcomeSection = document.getElementById('welcomeSection');
-            const newsHeader = document.getElementById('newsHeader');
             const headerNewsletterBtn = document.getElementById('headerNewsletterBtn');
             
             if (welcomeSection) {
@@ -779,10 +774,6 @@ Write ONE paragraph summary.</textarea>
                 welcomeSection.offsetHeight;
             } else {
                 console.error('Welcome section not found');
-            }
-            
-            if (newsHeader) {
-                newsHeader.style.display = 'none';
             }
             
             if (headerNewsletterBtn) {
@@ -1914,11 +1905,7 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
-            // Show news header after articles are loaded
-            const newsHeader = document.getElementById('newsHeader');
-            if (newsHeader) {
-                newsHeader.style.display = 'block';
-            }
+            // Articles are now displayed without extra header
             
             // Update floating buttons visibility
             toggleFloatingButtons();
