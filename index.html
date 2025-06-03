@@ -3453,7 +3453,7 @@ Write exactly 3 sentences.`;
                 statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
                 // Compile newsletter text from the page
-                let newsletterText = 'Today\\'s News Brief. ';
+                let newsletterText = 'Today\'s News Brief. ';
                 
                 // Extract all article content from the page
                 const articles = document.querySelectorAll('.article');
@@ -3463,13 +3463,13 @@ Write exactly 3 sentences.`;
                     const source = article.querySelector('.article-meta');
                     
                     if (title) {
-                        newsletterText += \`Article \${index + 1}. \${title.textContent.trim()}. \`;
+                        newsletterText += 'Article ' + (index + 1) + '. ' + title.textContent.trim() + '. ';
                     }
                     if (summary) {
-                        newsletterText += \`\${summary.textContent.trim()} \`;
+                        newsletterText += summary.textContent.trim() + ' ';
                     }
                     if (source) {
-                        newsletterText += \`Source: \${source.textContent.trim()}. \`;
+                        newsletterText += 'Source: ' + source.textContent.trim() + '. ';
                     }
                 });
 
@@ -3484,7 +3484,7 @@ Write exactly 3 sentences.`;
 
                 // Generate audio using Google TTS
                 const encodedText = encodeURIComponent(newsletterText);
-                const ttsUrl = \`https://translate.google.com/translate_tts?ie=UTF-8&q=\${encodedText}&tl=en&client=tw-ob\`;
+                const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&q=' + encodedText + '&tl=en&client=tw-ob';
                 
                 // Setup audio player
                 const audioElement = playerDiv.querySelector('audio');
