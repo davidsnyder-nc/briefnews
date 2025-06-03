@@ -970,6 +970,7 @@ Write ONE sentence summary. Maximum 10 words.`;
 
         function populateCategoryDropdown() {
             const categorySelect = document.getElementById('categorySelect');
+            const categoryButtons = document.getElementById('categoryButtons');
             
             // Get unique categories from RSS feeds
             const categories = [...new Set(currentRssFeeds.map(feed => feed.category).filter(Boolean))];
@@ -977,12 +978,30 @@ Write ONE sentence summary. Maximum 10 words.`;
             // Clear existing options except "All Categories"
             categorySelect.innerHTML = '<option value="all">All Categories</option>';
             
-            // Add categories from OPML
+            // Add categories from OPML to dropdown
             categories.sort().forEach(category => {
                 const option = document.createElement('option');
                 option.value = category.toLowerCase();
                 option.textContent = category;
                 categorySelect.appendChild(option);
+            });
+            
+            // Update category buttons
+            categoryButtons.innerHTML = '<button onclick="quickCategory(\'all\')" class="category-button special px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm">All Categories</button>';
+            
+            // Add category buttons from OPML with different colors
+            const colors = [
+                'blue', 'green', 'purple', 'indigo', 'red', 'gray', 'orange', 'pink', 
+                'yellow', 'teal', 'emerald', 'amber', 'cyan', 'violet', 'rose'
+            ];
+            
+            categories.sort().forEach((category, index) => {
+                const color = colors[index % colors.length];
+                const button = document.createElement('button');
+                button.onclick = () => toggleCategory(category.toLowerCase());
+                button.className = `category-button px-4 py-3 bg-${color}-50 text-${color}-700 rounded-lg text-sm font-medium hover:bg-${color}-100 transition-colors border border-${color}-200`;
+                button.textContent = category;
+                categoryButtons.appendChild(button);
             });
             
             console.log('Categories populated:', categories);
