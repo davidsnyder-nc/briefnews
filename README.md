@@ -29,7 +29,7 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 - **Personal Finance**: NerdWallet, The Motley Fool, Money Under 30
 - **Gaming**: IGN, GameSpot, Polygon, Kotaku, PC Gamer
 - **Podcasts**: This American Life, Radiolab, Freakonomics Radio
-- **Local News**: Customizable local news sources
+- **Local News**: ZIP code-based Google News integration with major city newspapers
 
 ### AI Content Processing
 - **Multiple AI Providers**: Support for Google Gemini and OpenAI GPT models
@@ -58,6 +58,7 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 - **Settings Persistence**: Local storage of user preferences
 - **Export Options**: Download newsletters in various formats
 - **Content Filtering**: Block terms and customize content
+- **Local News Integration**: ZIP code-based location news fetching
 
 ### Advanced Features
 - **Multi-Proxy Support**: Robust RSS fetching with fallback mechanisms
@@ -90,7 +91,8 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 1. Download the `index.html` file
 2. Open in any modern web browser
 3. Configure AI API keys in Settings
-4. Select news categories and generate your first brief
+4. Optional: Set your ZIP code for local news in Settings
+5. Select news categories and generate your first brief
 
 ## 📖 Usage Guide
 
@@ -106,6 +108,12 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 2. **AI Customization**: Configure AI provider, style, and prompts
 3. **Content Filtering**: Block specific terms or sources
 4. **Export Options**: Download newsletters for sharing
+
+### Local News Configuration
+1. **Set ZIP Code**: Enter your ZIP code in Settings → Local News Configuration
+2. **Select Local News**: Choose "Local News" category to fetch location-based articles
+3. **Automatic Integration**: System fetches from Google News and major city newspapers
+4. **Location Detection**: ZIP codes are automatically converted to city/state for better results
 
 ### Category Refresh System
 - After generating articles, use the blue "Refresh with different categories" section
