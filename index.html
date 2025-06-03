@@ -3441,12 +3441,14 @@ Write exactly 3 sentences.`;
                 articleIndex.style.display = 'none';
             }
             
-            // Remove source filter, load more buttons, and audio controls if they exist
+            // Remove source filter, load more buttons, category filter, and audio controls if they exist
             const sourceFilter = document.getElementById('sourceFilterContainer');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
+            const categoryFilter = document.getElementById('categoryFilterContainer');
             const audioContainer = document.getElementById('audioControlsContainer');
             if (sourceFilter) sourceFilter.remove();
             if (loadMoreContainer) loadMoreContainer.remove();
+            if (categoryFilter) categoryFilter.remove();
             if (audioContainer) audioContainer.remove();
             
             // Reset category selection
