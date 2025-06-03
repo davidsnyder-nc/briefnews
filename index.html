@@ -780,6 +780,26 @@ Write ONE paragraph summary.</textarea>
                 loadMoreBtn.style.display = 'none';
             }
             
+            // Remove source filter container by finding elements with "Filter by source" text
+            const sourceFilterElements = document.querySelectorAll('*');
+            sourceFilterElements.forEach(element => {
+                if (element.textContent && element.textContent.includes('Filter by source:')) {
+                    const container = element.closest('div');
+                    if (container) {
+                        container.remove();
+                    }
+                }
+            });
+            
+            // Remove any remaining source filter buttons
+            const sourceFilters = document.querySelectorAll('.source-filter-btn');
+            sourceFilters.forEach(btn => {
+                const container = btn.closest('div');
+                if (container) {
+                    container.remove();
+                }
+            });
+            
             // Hide article index
             const articleIndex = document.getElementById('articleIndex');
             if (articleIndex) {
