@@ -994,8 +994,8 @@
             const articles = [];
             const corsProxy = 'https://api.allorigins.win/get?url=';
             
-            // Process feeds in parallel with manageable batch size
-            const feedPromises = feeds.slice(0, 15).map(async (feed) => {
+            // Process feeds in parallel with larger batch size for more articles
+            const feedPromises = feeds.slice(0, 25).map(async (feed) => {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000); // Balanced timeout
@@ -1052,7 +1052,7 @@
                         
                         const cleanContent = cleanHtmlContent(rawContent || rawDescription);
                         
-                        if (cleanContent.length > 100) {
+                        if (cleanContent.length > 50) {
                             const article = {
                                 title: cleanHtmlContent(rawTitle),
                                 description: cleanContent.substring(0, 500),
@@ -1153,33 +1153,25 @@ Write the complete rewritten article:`;
                         } else {
                             // Standard summary mode - keep very concise
                             if (digestLength === 'brief') {
-                                prompt = `Summarize in 15 words or less:
+                                prompt = `${article.title}
 
-${article.title}
-
-Answer with exactly one short sentence.`;
-                                maxTokens = 25;
+Write ONE sentence summary. Maximum 10 words.`;
+                                maxTokens = 15;
                             } else if (digestLength === 'medium') {
-                                prompt = `Write exactly 2 sentences summarizing this news:
+                                prompt = `${article.title}
 
-${article.title}
-${article.description.substring(0, 400)}
-
-Respond with exactly 2 sentences.`;
-                                maxTokens = 80;
+Write exactly 2 short sentences.`;
+                                maxTokens = 50;
                             } else {
-                                prompt = `Write exactly 3-4 sentences summarizing this news:
+                                prompt = `${article.title}
 
-${article.title}
-${article.description.substring(0, 500)}
-
-Respond with exactly 3-4 sentences.`;
-                                maxTokens = 120;
+Write exactly 3 sentences.`;
+                                maxTokens = 80;
                             }
                         }
 
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 12000);
+                        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
                         let response, data, aiContent;
 
