@@ -1143,7 +1143,8 @@ Write ONE sentence summary. Maximum 10 words.`;
                 
             } catch (error) {
                 console.error('Error generating newsletter:', error);
-                document.getElementById('statusMessage').textContent = 'Error generating newsletter';
+                console.error('Error stack:', error.stack);
+                document.getElementById('statusMessage').textContent = `Error generating newsletter: ${error.message}`;
                 const errorMessage = error.message || 'An unexpected error occurred';
                 showToast(`Error: ${errorMessage}`, 'error');
             } finally {
@@ -1470,6 +1471,11 @@ Write ONE sentence summary. Maximum 10 words.`;
                 const batch = articles.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (article) => {
                     try {
+                        // Validate article object
+                        if (!article || typeof article !== 'object') {
+                            throw new Error('Invalid article object');
+                        }
+                        
                         let prompt = '';
                         let maxTokens = 200;
                         let aiContent = '';
@@ -1491,8 +1497,8 @@ Write ONE sentence summary. Maximum 10 words.`;
                             
                             prompt = `Rewrite this news story as a ${lengthInstructions[digestLength]} article. ${styleInstructions[aiStyle]}
 
-Original headline: ${article.title}
-Original content: ${article.description.substring(0, 600)}
+Original headline: ${article.title || 'No title'}
+Original content: ${(article.description || '').substring(0, 600)}
 
 Instructions:
 - Create an engaging, well-structured article
@@ -1511,21 +1517,21 @@ Write the complete rewritten article:`;
                             const customPrompt = localStorage.getItem('customPrompt');
                             if (customPrompt && customPrompt.trim()) {
                                 prompt = customPrompt
-                                    .replace('{article.title}', article.title)
+                                    .replace('{article.title}', article.title || 'No title')
                                     .replace('{article.description}', article.description || '');
                                 maxTokens = 50; // Reasonable default for custom prompts
                             } else if (digestLength === 'brief') {
-                                prompt = `${article.title}
+                                prompt = `${article.title || 'No title'}
 
 Write ONE sentence summary. Maximum 10 words.`;
                                 maxTokens = 15;
                             } else if (digestLength === 'medium') {
-                                prompt = `${article.title}
+                                prompt = `${article.title || 'No title'}
 
 Write exactly 2 short sentences.`;
                                 maxTokens = 50;
                             } else {
-                                prompt = `${article.title}
+                                prompt = `${article.title || 'No title'}
 
 Write exactly 3 sentences.`;
                                 maxTokens = 80;
