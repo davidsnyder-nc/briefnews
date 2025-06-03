@@ -365,7 +365,7 @@
                     <label for="customPrompt" class="form-label">AI Prompt Template:</label>
                     <textarea id="customPrompt" class="form-input h-24" placeholder="Enter custom AI prompt template...">{article.title}
 
-Write ONE sentence summary. Maximum 10 words.</textarea>
+Write ONE paragraph summary.</textarea>
                     <p class="text-xs text-gray-500 mt-1">Use {article.title} and {article.description} as placeholders. Leave blank to use default prompts.</p>
                 </div>
             </div>
@@ -1661,7 +1661,7 @@ Write the complete rewritten article:`;
                                 prompt = customPrompt
                                     .replace('{article.title}', article.title || 'No title')
                                     .replace('{article.description}', article.description || '');
-                                maxTokens = 50; // Reasonable default for custom prompts
+                                maxTokens = 150; // Adequate tokens for paragraph summaries
                             } else if (digestLength === 'brief') {
                                 prompt = `${article.title || 'No title'}
 
