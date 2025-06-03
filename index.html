@@ -3408,6 +3408,16 @@ Write exactly 3 sentences.`;
                 // Display articles
                 displayArticles(finalArticles);
 
+                // Show header and hide welcome section
+                document.getElementById('newsHeader').style.display = 'block';
+                document.getElementById('welcomeSection').style.display = 'none';
+
+                // Create article index, source filter buttons, load more button, and category filter buttons
+                createArticleIndex(finalArticles);
+                createSourceFilterButtons(finalArticles);
+                createLoadMoreButton();
+                createCategoryFilterButtons();
+
                 // Hide loading state
                 document.getElementById('loader').classList.add('hidden');
                 document.getElementById('statusMessage').textContent = `Generated newsletter with ${finalArticles.length} articles`;
