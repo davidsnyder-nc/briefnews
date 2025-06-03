@@ -317,6 +317,38 @@
             </div>
         </div>
 
+        <!-- Newsletter Audio Controls -->
+        <div id="newsletterAudioControls" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" style="display: none;">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-medium text-blue-800">Listen to Newsletter</h3>
+                        <p class="text-xs text-blue-600">AI-generated audio of your complete newsletter</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="generateNewsletterAudio" onclick="generateNewsletterAudio()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.906 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.906l3.477-2.816z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                        Generate Audio
+                    </button>
+                    <div id="newsletterAudioPlayer" style="display: none;">
+                        <audio controls class="w-64">
+                            <source id="newsletterAudioSource" src="" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+            <div id="newsletterAudioStatus" class="mt-2 text-xs text-blue-600" style="display: none;"></div>
+        </div>
+
         <main id="newsletterArea" class="grid grid-cols-1 gap-6">
             </main>
     </div>
@@ -3025,6 +3057,109 @@ Write exactly 3 sentences.`;
             }
         }
 
+        async function generateNewsletterAudio() {
+            if (!window.currentDisplayedArticles || window.currentDisplayedArticles.length === 0) {
+                showToast('No newsletter content to convert to audio', 'error');
+                return;
+            }
+
+            const button = document.getElementById('generateNewsletterAudio');
+            const statusDiv = document.getElementById('newsletterAudioStatus');
+            const playerDiv = document.getElementById('newsletterAudioPlayer');
+            
+            try {
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = `
+                    <svg class="w-4 h-4 inline mr-1 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                    </svg>
+                    Generating...
+                `;
+                statusDiv.style.display = 'block';
+                statusDiv.textContent = 'Preparing newsletter content for audio generation...';
+
+                // Compile newsletter text
+                let newsletterText = 'Today\'s News Brief. ';
+                
+                window.currentDisplayedArticles.forEach((article, index) => {
+                    newsletterText += `Article ${index + 1}. ${article.title}. `;
+                    if (article.aiSummary) {
+                        newsletterText += `${article.aiSummary} `;
+                    } else if (article.description) {
+                        newsletterText += `${article.description} `;
+                    }
+                    newsletterText += `Source: ${article.source}. `;
+                });
+
+                newsletterText += 'End of newsletter.';
+
+                // Limit text length for TTS (Google TTS has limits)
+                if (newsletterText.length > 5000) {
+                    newsletterText = newsletterText.substring(0, 4900) + '... Newsletter content truncated for audio generation.';
+                }
+
+                statusDiv.textContent = 'Generating audio with Google Text-to-Speech...';
+
+                // Generate audio using Google TTS
+                const audioUrl = await generateTTSAudio(newsletterText);
+                
+                // Setup audio player
+                const audioElement = playerDiv.querySelector('audio');
+                const audioSource = document.getElementById('newsletterAudioSource');
+                
+                audioSource.src = audioUrl;
+                audioElement.load();
+                
+                // Show player and auto-play
+                playerDiv.style.display = 'block';
+                statusDiv.textContent = 'Audio generated successfully! Playing now...';
+                
+                // Auto-play the audio
+                try {
+                    await audioElement.play();
+                } catch (playError) {
+                    console.log('Auto-play prevented by browser, user must click play manually');
+                    statusDiv.textContent = 'Audio ready! Click play to listen.';
+                }
+
+                // Update button
+                button.innerHTML = `
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Audio Generated
+                `;
+
+            } catch (error) {
+                console.error('Error generating newsletter audio:', error);
+                statusDiv.textContent = 'Error generating audio. Please try again.';
+                showToast('Error generating audio: ' + error.message, 'error');
+                
+                // Reset button
+                button.innerHTML = `
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.906 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.906l3.477-2.816z" clip-rule="evenodd"/>
+                        <path fill-rule="evenodd" d="M12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Generate Audio
+                `;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function generateTTSAudio(text) {
+            // Use Google Text-to-Speech API via a simple URL-based approach
+            // This creates a URL that can be used to generate speech
+            const encodedText = encodeURIComponent(text);
+            
+            // Using Google Translate's TTS service (simple approach)
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=tw-ob`;
+            
+            return ttsUrl;
+        }
+
         async function generateCustomNewsletter() {
             if (!window.currentDisplayedArticles || window.currentDisplayedArticles.length === 0) {
                 showToast('No articles to export', 'error');
@@ -3718,6 +3853,9 @@ Write exactly 3 sentences.`;
                 // Show header and hide welcome section
                 document.getElementById('newsHeader').style.display = 'block';
                 document.getElementById('welcomeSection').style.display = 'none';
+                
+                // Show newsletter audio controls
+                document.getElementById('newsletterAudioControls').style.display = 'block';
 
                 // Create article index, source filter buttons, load more button, and category filter buttons
                 console.log('Creating UI elements...');
