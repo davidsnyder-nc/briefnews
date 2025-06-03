@@ -148,6 +148,13 @@
         .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
         .btn-secondary:hover { background-color: #545b62; border-color: #545b62; }
         
+        .category-button.selected {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
         .app-title-brief { color: #a0d2eb; }
         .app-title-news { color: #ffffff; }
         
@@ -252,6 +259,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="col-span-full">
                         <h4 class="font-medium text-gray-700 mb-3">Choose Your News Categories</h4>
+                        <p class="text-sm text-gray-600 mb-3">Select one or multiple categories. Note: Single categories may produce fewer results than combining multiple categories.</p>
                         <div class="flex flex-wrap gap-3" id="categoryButtons">
                             <!-- Dynamic category buttons will be populated here -->
                         </div>
@@ -945,9 +953,10 @@ Write ONE sentence summary. Maximum 10 words.`;
             categories.sort().forEach((category, index) => {
                 const color = colors[index % colors.length];
                 const button = document.createElement('button');
-                button.onclick = () => quickCategory(category.toLowerCase());
+                button.onclick = () => toggleCategory(category.toLowerCase());
                 button.className = `category-button px-4 py-3 bg-${color}-50 text-${color}-700 rounded-lg text-sm font-medium hover:bg-${color}-100 transition-colors border border-${color}-200`;
                 button.textContent = category;
+                button.setAttribute('data-category', category.toLowerCase());
                 categoryButtons.appendChild(button);
             });
             
@@ -2912,13 +2921,24 @@ Write exactly 3 sentences.`;
                 button.classList.add('selected');
             }
             
-            // Show/hide generate button
+            // Show/hide generate button and update category dropdown
             const generateBtn = document.getElementById('generateFromSelection');
+            const categorySelect = document.getElementById('categorySelect');
+            
             if (selectedCategories.length > 0) {
                 generateBtn.style.display = 'block';
-                generateBtn.textContent = `Generate News from ${selectedCategories.length} Categories`;
+                if (selectedCategories.length === 1) {
+                    generateBtn.textContent = `Generate News from ${selectedCategories[0]}`;
+                    // Set dropdown to single category
+                    categorySelect.value = selectedCategories[0];
+                } else {
+                    generateBtn.textContent = `Generate News from ${selectedCategories.length} Categories`;
+                    // Set dropdown to "all" for multiple categories
+                    categorySelect.value = 'all';
+                }
             } else {
                 generateBtn.style.display = 'none';
+                categorySelect.value = 'all';
             }
         }
 
@@ -2936,7 +2956,15 @@ Write exactly 3 sentences.`;
                 newsHeader.style.display = 'block';
             }
             
-            generateNewsletterForCategories(selectedCategories);
+            // For multiple categories, we need to filter feeds differently
+            if (selectedCategories.length === 1) {
+                // Single category - use existing dropdown logic
+                document.getElementById('categorySelect').value = selectedCategories[0];
+                generateNewsletter();
+            } else {
+                // Multiple categories - use custom filtering
+                generateNewsletterForCategories(selectedCategories);
+            }
         }
 
         async function generateNewsletterForCategories(categories) {
