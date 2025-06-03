@@ -102,18 +102,7 @@
         .app-title-brief { color: #a0d2eb; }
         .app-title-news { color: #ffffff; }
 
-        #wizardContainer {
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 2rem auto;
-        }
-        .wizard-step { display: none; }
-        .wizard-step.active { display: block; }
-        .wizard-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center; color: #0056b3;}
-        .wizard-nav { margin-top: 1.5rem; display: flex; justify-content: space-between; }
+
     </style>
 </head>
 <body class="text-gray-800">
@@ -130,46 +119,7 @@
         </div>
     </nav>
 
-    <div id="wizardContainer" class="container mx-auto px-4 py-4">
-        <h2 class="wizard-title">Welcome to briefnews! Let's get you started.</h2>
-        
-        <div id="wizardStep1" class="wizard-step active">
-            <h3 class="text-lg font-medium mb-3">Step 1: Choose a News Category</h3>
-            <label for="wizardCategorySelect" class="form-label">Category:</label>
-            <select id="wizardCategorySelect" class="form-input w-full mb-4">
-                <option value="all">All Categories</option>
-                <option value="world news">World News</option>
-                <option value="technology">Technology</option>
-                <option value="business">Business</option>
-                <option value="sports">Sports</option>
-                <option value="science">Science</option>
-                <option value="health">Health</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="politics">Politics</option>
-                <option value="lifestyle">Lifestyle</option>
-                <option value="education">Education</option>
-                <option value="environment">Environment</option>
-                <option value="food">Food & Cooking</option>
-                <option value="travel">Travel</option>
-                <option value="finance">Personal Finance</option>
-                <option value="gaming">Gaming</option>
-                <option value="general">General</option>
-            </select>
-            <div class="wizard-nav">
-                <span></span> <button id="wizardNextToStep2" class="btn">Next &rarr;</button>
-            </div>
-        </div>
 
-        <div id="wizardStep2" class="wizard-step">
-            <h3 class="text-lg font-medium mb-3">Step 2: Get Your Briefing!</h3>
-            <p class="mb-4 text-gray-600">You're all set! Click below to get your personalized news briefing.</p>
-            <p class="mb-4"><strong class="text-gray-700">Selected Category:</strong> <span id="wizardConfirmCategory">All</span></p>
-            <div class="wizard-nav">
-                <button id="wizardPrevToStep1" class="btn btn-secondary">&larr; Previous</button>
-                <button id="wizardBriefMe" class="btn">Brief Me!</button>
-            </div>
-        </div>
-    </div>
 
 
     <div id="newsPage" class="page container mx-auto px-4 py-4">
@@ -292,7 +242,7 @@
                     <p class="text-xs text-gray-500 mt-1">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline">OpenAI Platform</a></p>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">API keys stored in browser local storage. <strong class="text-red-500">Note: Not secure for production.</strong></p>
+
         </section>
         <section class="settings-section">
             <h3 class="text-lg font-medium mb-3 text-gray-600">RSS Feeds (OPML)</h3>
@@ -309,20 +259,6 @@
         </section>
         <section class="settings-section">
             <h3 class="text-lg font-medium mb-3 text-gray-600">Newsletter Settings</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="maxArticles" class="form-label">Max Articles (2-20):</label>
-                    <input type="number" id="maxArticles" class="form-input" min="2" max="20" value="20">
-                </div>
-                <div>
-                    <label for="digestLength" class="form-label">AI Digest Length:</label>
-                    <select id="digestLength" class="form-input">
-                        <option value="brief" selected>Brief</option>
-                        <option value="medium">Medium</option>
-                        <option value="detailed">Detailed</option>
-                    </select>
-                </div>
-            </div>
             <div class="mt-4">
                 <label class="flex items-center">
                     <input type="checkbox" id="aiRewrite" class="mr-2">
@@ -568,31 +504,7 @@
             document.getElementById('navNews').addEventListener('click', showNews);
             document.getElementById('navSettings').addEventListener('click', showSettings);
 
-            // Wizard navigation
-            document.getElementById('wizardNextToStep2').addEventListener('click', () => {
-                const category = document.getElementById('wizardCategorySelect').value;
-                
-                document.getElementById('wizardConfirmCategory').textContent = 
-                    category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1);
-                
-                document.getElementById('wizardStep1').classList.remove('active');
-                document.getElementById('wizardStep2').classList.add('active');
-            });
 
-            document.getElementById('wizardPrevToStep1').addEventListener('click', () => {
-                document.getElementById('wizardStep2').classList.remove('active');
-                document.getElementById('wizardStep1').classList.add('active');
-            });
-
-            document.getElementById('wizardBriefMe').addEventListener('click', () => {
-                const category = document.getElementById('wizardCategorySelect').value;
-                
-                // Set main page selector
-                document.getElementById('categorySelect').value = category;
-                
-                showNews();
-                generateNewsletter();
-            });
 
             // Newsletter generation
             document.getElementById('generateNewsletter').addEventListener('click', generateNewsletter);
@@ -656,11 +568,7 @@
             // Show/hide appropriate config section
             handleAiProviderChange();
 
-            const maxArticles = localStorage.getItem('maxArticles') || '20';
-            document.getElementById('maxArticles').value = maxArticles;
 
-            const digestLength = localStorage.getItem('digestLength') || 'brief';
-            document.getElementById('digestLength').value = digestLength;
 
             const showSourceInfo = localStorage.getItem('showSourceInfo');
             document.getElementById('showSourceInfo').checked = showSourceInfo !== 'false';
@@ -713,8 +621,6 @@
             }
 
             // Save other settings
-            localStorage.setItem('maxArticles', document.getElementById('maxArticles').value);
-            localStorage.setItem('digestLength', document.getElementById('digestLength').value);
             localStorage.setItem('showSourceInfo', document.getElementById('showSourceInfo').checked);
             localStorage.setItem('showCategories', document.getElementById('showCategories').checked);
             
@@ -843,8 +749,8 @@
 
         async function generateNewsletter() {
             const category = document.getElementById('categorySelect').value;
-            const maxArticles = parseInt(localStorage.getItem('maxArticles') || '20');
-            const digestLength = localStorage.getItem('digestLength') || 'brief';
+            const maxArticles = 20; // Fixed to 20 articles
+            const digestLength = 'brief'; // Always brief summaries
 
             // Check if API key is configured before starting
             const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
@@ -1351,7 +1257,7 @@ Write exactly 3 sentences.`;
                                         </div>
                                         ` : ''}
                                     </header>
-                                    <div class="flex-grow">
+                                    <div class="content-area">
                                         ${article.isRewritten ? `<div class="text-xs text-blue-600 mb-2 flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.828-2.828z"/>
@@ -1363,7 +1269,8 @@ Write exactly 3 sentences.`;
                                         </div>
                                     </div>
                                 </div>
-                            </div>`;
+                            </div>
+                        </article>`;
                 } else {
                     // Grid view - vertical layout with image on top
                     const imageHtml = article.imageUrl ? 
