@@ -174,37 +174,31 @@
 
     <div id="newsPage" class="page container mx-auto px-4 py-4">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800 mb-1">briefnews</h1>
-                    <p class="text-gray-600">AI-powered news aggregation</p>
+            <div class="flex gap-4 items-center justify-center">
+                <div class="flex items-center gap-2">
+                    <label for="categorySelect" class="form-label text-gray-700">Category:</label>
+                    <select id="categorySelect" class="form-input">
+                        <option value="all">All Categories</option>
+                        <option value="world news">World News</option>
+                        <option value="technology">Technology</option>
+                        <option value="business">Business</option>
+                        <option value="sports">Sports</option>
+                        <option value="science">Science</option>
+                        <option value="health">Health</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="politics">Politics</option>
+                        <option value="lifestyle">Lifestyle</option>
+                        <option value="education">Education</option>
+                        <option value="environment">Environment</option>
+                        <option value="food">Food & Cooking</option>
+                        <option value="travel">Travel</option>
+                        <option value="finance">Personal Finance</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="general">General</option>
+                    </select>
                 </div>
-                <div class="flex gap-4 items-center mt-4 md:mt-0">
-                    <div class="flex items-center gap-2">
-                        <label for="categorySelect" class="form-label text-gray-700">Category:</label>
-                        <select id="categorySelect" class="form-input">
-                            <option value="all">All Categories</option>
-                            <option value="world news">World News</option>
-                            <option value="technology">Technology</option>
-                            <option value="business">Business</option>
-                            <option value="sports">Sports</option>
-                            <option value="science">Science</option>
-                            <option value="health">Health</option>
-                            <option value="entertainment">Entertainment</option>
-                            <option value="politics">Politics</option>
-                            <option value="lifestyle">Lifestyle</option>
-                            <option value="education">Education</option>
-                            <option value="environment">Environment</option>
-                            <option value="food">Food & Cooking</option>
-                            <option value="travel">Travel</option>
-                            <option value="finance">Personal Finance</option>
-                            <option value="gaming">Gaming</option>
-                            <option value="general">General</option>
-                        </select>
-                    </div>
-                    <button id="generateNewsletter" class="btn">Refresh</button>
-                    <button id="startOver" class="btn btn-secondary">Start Over</button>
-                </div>
+                <button id="generateNewsletter" class="btn">Refresh</button>
+                <button id="startOver" class="btn btn-secondary">Start Over</button>
             </div>
         </header>
 
@@ -1064,8 +1058,12 @@
                     
                     return feedArticles;
                 } catch (error) {
+                    console.warn(`Failed to fetch from ${feed.title}:`, error.message);
                     return [];
                 }
+            }).catch(error => {
+                console.warn('Feed processing error:', error.message);
+                return [];
             });
             
             // Wait for all with timeout
@@ -1217,6 +1215,7 @@ ${article.description.substring(0, 400)}`;
                         };
 
                     } catch (error) {
+                        console.warn(`AI processing failed for article: ${article.title}`, error.message);
                         return {
                             ...article,
                             aiSummary: article.description || 'Summary unavailable',
