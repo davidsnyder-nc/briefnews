@@ -768,6 +768,24 @@ Write ONE paragraph summary.</textarea>
             document.getElementById('newsletterArea').innerHTML = '';
             document.getElementById('statusMessage').textContent = '';
             
+            // Hide category filter container if it exists
+            const categoryFilterContainer = document.getElementById('categoryFilterContainer');
+            if (categoryFilterContainer) {
+                categoryFilterContainer.remove();
+            }
+            
+            // Hide load more button if it exists
+            const loadMoreBtn = document.getElementById('loadMoreArticles');
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = 'none';
+            }
+            
+            // Hide article index
+            const articleIndex = document.getElementById('articleIndex');
+            if (articleIndex) {
+                articleIndex.style.display = 'none';
+            }
+            
             // Reset category selections
             selectedCategories = [];
             selectedFilterCategories = [];
