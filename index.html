@@ -724,7 +724,7 @@
                 document.getElementById('opmlFileInfo').textContent = 'Custom OPML loaded';
             } else {
                 parseOpml(DEFAULT_OPML);
-                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
+                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (270+ sources)';
             }
 
             // Load AI provider and API keys
@@ -846,7 +846,7 @@
             localStorage.removeItem('opmlData');
             parseOpml(DEFAULT_OPML);
             document.getElementById('opmlFile').value = '';
-            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
+            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (270+ sources)';
             showToast('Cleared custom OPML, using default feeds', 'info');
         }
 
