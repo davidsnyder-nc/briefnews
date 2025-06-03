@@ -208,9 +208,19 @@
         </div>
 
         <div id="welcomeSection" class="mb-8">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-6">
-                <h2 class="text-3xl font-bold mb-4">Welcome to briefnews</h2>
-                <p class="text-lg mb-4">Your AI-powered news digest from only trusted sources</p>
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8 mb-6 relative">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-4">Welcome to briefnews</h2>
+                        <p class="text-lg mb-4">Your AI-powered news digest from only trusted sources</p>
+                    </div>
+                    <div class="hidden md:block opacity-30">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="currentColor" stroke-width="1.5" fill="currentColor"/>
+                            <path d="M8 8H16M8 12H16M8 16H12" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div class="bg-white bg-opacity-20 rounded-lg p-4">
                         <h3 class="font-semibold text-lg">Smart Summaries</h3>
