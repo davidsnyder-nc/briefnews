@@ -786,8 +786,11 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
             const addQuestions = localStorage.getItem('addQuestions');
             document.getElementById('addQuestions').checked = addQuestions === 'true';
 
-            // Load custom AI prompt
-            const customPrompt = localStorage.getItem('customPrompt') || '';
+            // Load custom AI prompt with default value
+            const defaultPrompt = `{article.title}
+
+Write ONE sentence summary. Maximum 10 words.`;
+            const customPrompt = localStorage.getItem('customPrompt') || defaultPrompt;
             document.getElementById('customPrompt').value = customPrompt;
 
             // Load view mode preference - default to row view
