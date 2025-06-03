@@ -208,7 +208,6 @@
                     </select>
                 </div>
                 <button id="generateNewsletter" class="btn" style="display: none;">Refresh</button>
-                <button id="generateTTSNewsletter" class="btn bg-green-600 hover:bg-green-700" style="display: none;">Generate with Audio</button>
                 <button id="startOver" class="btn btn-secondary" style="display: none;">Start Over</button>
             </div>
         </header>
@@ -2931,6 +2930,10 @@ Write exactly 3 sentences.`;
             
             // Clear current articles
             window.currentDisplayedArticles = [];
+            
+            // Hide floating buttons
+            document.getElementById('scrollToTop').style.display = 'none';
+            document.getElementById('audioFab').style.display = 'none';
         }
 
         function startOver() {
