@@ -959,10 +959,33 @@ Write ONE sentence summary. Maximum 10 words.`;
                 }));
                 
                 console.log(`Loaded ${currentRssFeeds.length} RSS feeds`);
+                
+                // Populate category dropdown with categories from OPML
+                populateCategoryDropdown();
             } catch (error) {
                 console.error('Error parsing OPML:', error);
                 showToast('Error loading OPML file', 'error');
             }
+        }
+
+        function populateCategoryDropdown() {
+            const categorySelect = document.getElementById('categorySelect');
+            
+            // Get unique categories from RSS feeds
+            const categories = [...new Set(currentRssFeeds.map(feed => feed.category).filter(Boolean))];
+            
+            // Clear existing options except "All Categories"
+            categorySelect.innerHTML = '<option value="all">All Categories</option>';
+            
+            // Add categories from OPML
+            categories.sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.toLowerCase();
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+            
+            console.log('Categories populated:', categories);
         }
 
         function handleBlockedTermInput(event) {
