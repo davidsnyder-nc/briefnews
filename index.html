@@ -1249,23 +1249,78 @@ Write ONE sentence summary. Maximum 10 words.`;
 
         async function fetchArticlesFromFeeds(feeds, maxArticles) {
             const articles = [];
-            const corsProxy = 'https://api.allorigins.win/get?url=';
+            const corsProxies = [
+                'https://api.rss2json.com/v1/api.json?rss_url=',
+                'https://api.allorigins.win/get?url=',
+                'https://corsproxy.io/?'
+            ];
+            let proxyIndex = 0;
             
             // Process feeds in parallel with larger batch size for more articles
             const feedPromises = feeds.slice(0, 25).map(async (feed) => {
                 try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000); // Balanced timeout
+                    let response, data, xmlText;
+                    let lastError;
                     
-                    const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
+                    // Try multiple CORS proxies
+                    for (let i = 0; i < corsProxies.length; i++) {
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 4000);
+                            
+                            const corsProxy = corsProxies[i];
+                            const fetchUrl = corsProxy + encodeURIComponent(feed.url);
+                            
+                            response = await fetch(fetchUrl, {
+                                signal: controller.signal,
+                                headers: {
+                                    'Accept': 'application/json, text/plain, */*'
+                                }
+                            });
+                            clearTimeout(timeoutId);
+                            
+                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                            
+                            if (corsProxy.includes('rss2json')) {
+                                // Handle rss2json API response
+                                data = await response.json();
+                                if (data.status === 'ok' && data.items) {
+                                    const feedArticles = [];
+                                    for (const item of data.items.slice(0, 3)) {
+                                        feedArticles.push({
+                                            title: item.title || 'No Title',
+                                            description: item.description || '',
+                                            fullContent: item.content || item.description || '',
+                                            link: item.link || '',
+                                            pubDate: item.pubDate || new Date().toISOString(),
+                                            source: feed.name,
+                                            category: feed.category,
+                                            imageUrl: item.thumbnail || ''
+                                        });
+                                    }
+                                    return feedArticles;
+                                }
+                                throw new Error('RSS2JSON failed');
+                            } else if (corsProxy.includes('allorigins')) {
+                                data = await response.json();
+                                xmlText = data.contents;
+                            } else {
+                                xmlText = await response.text();
+                            }
+                            
+                            if (xmlText && xmlText.trim()) {
+                                break; // Success
+                            }
+                        } catch (error) {
+                            lastError = error;
+                            console.warn(`Failed proxy ${i + 1} for ${feed.name}:`, error.message);
+                            continue;
+                        }
+                    }
                     
-                    if (!response.ok) return [];
-                    
-                    const data = await response.json();
-                    const xmlText = data.contents;
+                    if (!xmlText || !xmlText.trim()) {
+                        throw lastError || new Error('No content received');
+                    }
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                     
