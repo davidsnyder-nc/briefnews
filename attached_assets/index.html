@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>briefnews - AI News Digest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .news-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            transition: box-shadow 0.3s ease-in-out;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            height: 100%; 
+        }
+        .news-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .breaking-news {
+            border-left: 4px solid #dc3545;
+        }
+        .feed-source { color: #5f6368; }
+        .category-tag {
+            background-color: #e8f0fe; color: #1a73e8;
+            font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 0.25rem;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #1a73e8;
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border: 1px solid #bbb; width: 90%; max-width: 450px; border-radius: 8px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .modal-close-button { color: #888; float: right; font-size: 24px; font-weight: bold; line-height: 0.8; }
+        .modal-close-button:hover, .modal-close-button:focus { color: #333; text-decoration: none; cursor: pointer; }
+
+        #toastContainer { position: fixed; bottom: 15px; right: 15px; z-index: 1001; display: flex; flex-direction: column; align-items: flex-end; }
+        .toast {
+            background-color: #333; color: #fff;
+            padding: 10px 15px; border-radius: 5px; margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0; transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            font-size: 0.85rem; max-width: 300px; word-wrap: break-word;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background-color: #c82333; }
+        .toast.success { background-color: #218838; }
+        .toast.info { background-color: #0069d9; }
+
+        .settings-section { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .blocked-term-pill {
+            display: inline-flex; align-items: center;
+            background-color: #e0e0e0; color: #333;
+            padding: 5px 10px; margin: 3px; border-radius: 16px; font-size: 0.85rem;
+        }
+        .blocked-term-pill button {
+            background: none; border: none; color: #777; margin-left: 8px;
+            font-weight: bold; cursor: pointer; padding: 0; line-height: 1;
+        }
+        .blocked-term-pill button:hover { color: #333; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .form-input {
+            width: 100%; padding: 0.5rem 0.75rem; font-size: 0.9rem;
+            border: 1px solid #ced4da; border-radius: 0.25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .form-input:focus {
+            border-color: #80bdff; outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .btn {
+            display: inline-block; font-weight: 500; color: #fff; text-align: center;
+            vertical-align: middle; cursor: pointer; user-select: none;
+            background-color: #007bff; border: 1px solid #007bff;
+            padding: 0.5rem 1rem; font-size: 0.9rem; line-height: 1.5;
+            border-radius: 0.25rem; transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .btn:hover { background-color: #0056b3; border-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #545b62; border-color: #545b62; }
+        
+        .app-title-brief { color: #a0d2eb; }
+        .app-title-news { color: #ffffff; }
+
+        #wizardContainer {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .wizard-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center; color: #0056b3;}
+        .wizard-nav { margin-top: 1.5rem; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold">
+                <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
+            </h1>
+            <div>
+                <button id="navNews" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
+                <button id="navSettings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">Settings</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="wizardContainer" class="container mx-auto px-4 py-4">
+        <h2 class="wizard-title">Welcome to briefnews! Let's get you started.</h2>
+        
+        <div id="wizardStep1" class="wizard-step active">
+            <h3 class="text-lg font-medium mb-3">Step 1: Choose a News Category</h3>
+            <label for="wizardCategorySelect" class="form-label">Category:</label>
+            <select id="wizardCategorySelect" class="form-input w-full mb-4">
+                <option value="all">All Categories</option>
+                <option value="world news">World News</option>
+                <option value="technology">Technology</option>
+                <option value="business">Business</option>
+                <option value="sports">Sports</option>
+                <option value="science">Science</option>
+                <option value="health">Health</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="general">General</option>
+            </select>
+            <div class="wizard-nav">
+                <span></span> <button id="wizardNextToStep2" class="btn">Next &rarr;</button>
+            </div>
+        </div>
+
+        <div id="wizardStep2" class="wizard-step">
+            <h3 class="text-lg font-medium mb-3">Step 2: Select Date Range</h3>
+            <label for="wizardDateRangeSelect" class="form-label">Date Range:</label>
+            <select id="wizardDateRangeSelect" class="form-input w-full mb-4">
+                <option value="last_week">Last Week</option>
+                <option value="today">Today</option>
+                <option value="last_month">Last Month</option>
+                <option value="all_time">All Time</option>
+            </select>
+            <div class="wizard-nav">
+                <button id="wizardPrevToStep1" class="btn btn-secondary">&larr; Previous</button>
+                <button id="wizardNextToStep3" class="btn">Next &rarr;</button>
+            </div>
+        </div>
+
+        <div id="wizardStep3" class="wizard-step">
+            <h3 class="text-lg font-medium mb-3">Step 3: Get Your Briefing!</h3>
+            <p class="mb-4 text-gray-600">You're all set! Click below to get your personalized news briefing.</p>
+            <p class="mb-1"><strong class="text-gray-700">Selected Category:</strong> <span id="wizardConfirmCategory">All</span></p>
+            <p class="mb-4"><strong class="text-gray-700">Selected Date Range:</strong> <span id="wizardConfirmDateRange">Last Week</span></p>
+            <div class="wizard-nav">
+                <button id="wizardPrevToStep2" class="btn btn-secondary">&larr; Previous</button>
+                <button id="wizardBriefMe" class="btn">Brief Me!</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="newsPage" class="page container mx-auto px-4 py-4">
+        <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label for="categorySelect" class="form-label text-gray-700">Category:</label>
+                    <select id="categorySelect" class="form-input w-full">
+                        <option value="all">All Categories</option>
+                        <option value="world news">World News</option>
+                        <option value="technology">Technology</option>
+                        <option value="business">Business</option>
+                        <option value="sports">Sports</option>
+                        <option value="science">Science</option>
+                        <option value="health">Health</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="dateRangeSelect" class="form-label text-gray-700">Date Range:</label>
+                    <select id="dateRangeSelect" class="form-input w-full">
+                        <option value="last_week">Last Week</option>
+                        <option value="today">Today</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="all_time">All Time</option>
+                    </select>
+                </div>
+                <div id="sortingOptions" class="hidden"> <label for="sortSelect" class="form-label text-gray-700">Sort by:</label>
+                     <select id="sortSelect" class="form-input w-full">
+                        <option value="relevance">Relevance (AI default)</option>
+                        <option value="category">Category</option>
+                        <option value="sourceName">Source</option>
+                    </select>
+                </div>
+                <button id="generateNewsletter" class="btn w-full lg:col-start-4">
+                    Brief Me
+                </button>
+            </div>
+        </header>
+
+        <div id="statusArea" class="text-center mb-4">
+            <p id="statusMessage" class="text-gray-600"></p>
+            <div id="loader" class="loader hidden"></div>
+        </div>
+
+        <main id="newsletterArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </main>
+    </div>
+
+    <div id="settingsPage" class="page container mx-auto px-4 py-4">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-700">Settings</h2>
+        <section class="settings-section">
+            <h3 class="text-lg font-medium mb-3 text-gray-600">Gemini API Key</h3>
+            <p class="text-xs text-gray-500 mb-2">Enter your Google AI Gemini API Key. Stored in browser local storage. <strong class="text-red-500">Note: Not secure for production.</strong></p>
+            <input type="password" id="geminiApiKey" class="form-input" placeholder="Enter your Gemini API Key">
+        </section>
+        <section class="settings-section">
+            <h3 class="text-lg font-medium mb-3 text-gray-600">RSS Feeds (OPML)</h3>
+            <p class="text-xs text-gray-500 mb-2">Upload an OPML file for custom RSS feeds. Cleared OPML uses defaults.</p>
+            <input type="file" id="opmlFile" accept=".opml,.xml" class="form-input mb-2">
+            <div id="opmlFileInfo" class="text-sm text-gray-600 mb-2"></div>
+            <button id="clearOpml" class="btn btn-secondary btn-sm">Clear Uploaded OPML</button>
+        </section>
+        <section class="settings-section">
+            <h3 class="text-lg font-medium mb-3 text-gray-600">Blocked Terms</h3>
+            <p class="text-xs text-gray-500 mb-2">Comma-separated terms to block stories. Case-insensitive.</p>
+            <input type="text" id="blockedTermsInput" class="form-input mb-2" placeholder="e.g., celebrity gossip, reality tv">
+            <div id="blockedTermsPills" class="mb-3"></div>
+            <button id="addBlockedTermBtn" class="btn btn-secondary btn-sm">Add Terms from Input</button>
+        </section>
+        <button id="saveSettings" class="btn mt-4">Save All Settings</button>
+    </div>
+
+    <footer class="text-center py-6 mt-8 bg-white border-t border-gray-200">
+        <p class="text-sm text-gray-500">&copy; <span id="currentYear"></span> briefnews. Powered by Gemini.</p>
+    </footer>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button" onclick="document.getElementById('errorModal').style.display='none'">&times;</span>
+            <h3 class="text-xl font-semibold text-red-600 mb-3">Operation Failed</h3>
+            <p id="errorMessage" class="text-gray-700"></p>
+        </div>
+    </div>
+    <div id="toastContainer"></div>
+
+    <script type="module">
+        // --- Configuration & Constants ---
+        const DEFAULT_RSS_FEEDS = [
+            { name: "BBC News - World", url: "http://feeds.bbci.co.uk/news/world/rss.xml", categories: ["world news", "general"] },
+            { name: "Reuters - Top News", url: "http://feeds.reuters.com/reuters/topNews", categories: ["world news", "business", "general"] },
+            { name: "NYT - World", url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", categories: ["world news"] },
+            { name: "TechCrunch", url: "https://techcrunch.com/feed/", categories: ["technology", "business"] },
+            { name: "Wired", url: "https://www.wired.com/feed/rss", categories: ["technology", "science", "culture"] },
+            { name: "ESPN", url: "https://www.espn.com/espn/rss/news", categories: ["sports"] },
+            { name: "NPR News", url: "https://feeds.npr.org/1001/rss.xml", categories: ["general", "world news", "us news"] },
+            { name: "The Verge", url: "https://www.theverge.com/rss/index.xml", categories: ["technology", "science"] },
+            { name: "Ars Technica", url: "http://feeds.arstechnica.com/arstechnica/index/", categories: ["technology", "science"] },
+            { name: "ScienceDaily - Top", url: "https://www.sciencedaily.com/rss/top.xml", categories: ["science"] },
+            { name: "The Guardian - World", url: "https://www.theguardian.com/world/rss", categories: ["world news"] },
+            { name: "CNN - Top Stories", url: "http://rss.cnn.com/rss/cnn_topstories.rss", categories: ["world news", "us news", "general"] },
+            { name: "Al Jazeera - English", url: "https://www.aljazeera.com/xml/rss/all.xml", categories: ["world news"] },
+            { name: "Google News - Top (US)", url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", categories: ["general", "us news"] },
+            { name: "Hacker News", url: "https://news.ycombinator.com/rss", categories: ["technology"] },
+            { name: "Associated Press - Top", url: "https://rssfeeds.apnews.com/APTopNews", categories: ["world news", "us news", "general"]},
+            { name: "Politico", url: "https://rss.politico.com/politics-news.xml", categories: ["politics", "us news"]},
+            { name: "CNET News", url: "https://www.cnet.com/rss/news/", categories: ["technology"]},
+            { name: "Mashable", url: "http://feeds.mashable.com/Mashable", categories: ["technology", "entertainment", "culture"]},
+            { name: "Engadget", url: "https://www.engadget.com/rss.xml", categories: ["technology", "entertainment"]}
+        ];
+        const CORS_PROXY_URL = "https://cors-anywhere.herokuapp.com/";
+        const TOAST_TIMEOUT = 4000;
+        const STORAGE_KEYS = {
+            API_KEY: 'geminiApiKey_briefnews',
+            OPML_FEEDS: 'opmlFeedsData_briefnews',
+            OPML_FILE_NAME: 'opmlFileName_briefnews',
+            BLOCKED_TERMS: 'blockedTermsList_briefnews',
+            WIZARD_COMPLETED: 'wizardCompleted_briefnews'
+        };
+
+        // --- DOM Elements ---
+        const navNewsBtn = document.getElementById('navNews');
+        const navSettingsBtn = document.getElementById('navSettings');
+        const newsPageDiv = document.getElementById('newsPage');
+        const settingsPageDiv = document.getElementById('settingsPage');
+        const wizardContainer = document.getElementById('wizardContainer');
+
+        const wizardSteps = [document.getElementById('wizardStep1'), document.getElementById('wizardStep2'), document.getElementById('wizardStep3')];
+        const wizardCategorySelect = document.getElementById('wizardCategorySelect');
+        const wizardDateRangeSelect = document.getElementById('wizardDateRangeSelect');
+        const wizardConfirmCategory = document.getElementById('wizardConfirmCategory');
+        const wizardConfirmDateRange = document.getElementById('wizardConfirmDateRange');
+        const wizardNextToStep2Btn = document.getElementById('wizardNextToStep2');
+        const wizardPrevToStep1Btn = document.getElementById('wizardPrevToStep1');
+        const wizardNextToStep3Btn = document.getElementById('wizardNextToStep3');
+        const wizardPrevToStep2Btn = document.getElementById('wizardPrevToStep2');
+        const wizardBriefMeBtn = document.getElementById('wizardBriefMe');
+
+        const generateButton = document.getElementById('generateNewsletter');
+        const statusMessageElement = document.getElementById('statusMessage');
+        const loaderElement = document.getElementById('loader');
+        const newsletterArea = document.getElementById('newsletterArea');
+        const categorySelect = document.getElementById('categorySelect');
+        const dateRangeSelect = document.getElementById('dateRangeSelect');
+        const sortingOptionsDiv = document.getElementById('sortingOptions');
+        const sortSelect = document.getElementById('sortSelect');
+
+        const geminiApiKeyInput = document.getElementById('geminiApiKey');
+        const opmlFileInput = document.getElementById('opmlFile');
+        const opmlFileInfoElement = document.getElementById('opmlFileInfo');
+        const clearOpmlBtn = document.getElementById('clearOpml');
+        const blockedTermsInput = document.getElementById('blockedTermsInput');
+        const blockedTermsPillsContainer = document.getElementById('blockedTermsPills');
+        const addBlockedTermBtn = document.getElementById('addBlockedTermBtn');
+        const saveSettingsBtn = document.getElementById('saveSettings');
+        
+        const errorModal = document.getElementById('errorModal');
+        const errorMessageElement = document.getElementById('errorMessage');
+        const toastContainer = document.getElementById('toastContainer');
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        let currentBlockedTerms = [];
+        let currentOpmlFeeds = null;
+        let currentGeminiApiKey = "";
+        let currentWizardStep = 0;
+
+        // --- Wizard Logic ---
+        function showWizardStep(stepIndex) {
+            wizardSteps.forEach((step, index) => {
+                step.classList.toggle('active', index === stepIndex);
+            });
+            currentWizardStep = stepIndex;
+            if (stepIndex === 2) { 
+                wizardConfirmCategory.textContent = wizardCategorySelect.options[wizardCategorySelect.selectedIndex].text;
+                wizardConfirmDateRange.textContent = wizardDateRangeSelect.options[wizardDateRangeSelect.selectedIndex].text;
+            }
+        }
+
+        wizardNextToStep2Btn.addEventListener('click', () => showWizardStep(1));
+        wizardPrevToStep1Btn.addEventListener('click', () => showWizardStep(0));
+        wizardNextToStep3Btn.addEventListener('click', () => showWizardStep(2));
+        wizardPrevToStep2Btn.addEventListener('click', () => showWizardStep(1));
+
+        wizardBriefMeBtn.addEventListener('click', () => {
+            categorySelect.value = wizardCategorySelect.value;
+            dateRangeSelect.value = wizardDateRangeSelect.value;
+            sortingOptionsDiv.classList.toggle('hidden', categorySelect.value !== 'all');
+            wizardContainer.style.display = 'none';
+            newsPageDiv.classList.add('active'); 
+            localStorage.setItem(STORAGE_KEYS.WIZARD_COMPLETED, 'true');
+            generateNewsletterMain(); 
+        });
+
+        // --- Page Navigation ---
+        function showPage(pageId) {
+            wizardContainer.style.display = 'none'; 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            navNewsBtn.classList.toggle('bg-blue-800', pageId === 'newsPage');
+            navSettingsBtn.classList.toggle('bg-blue-800', pageId === 'settingsPage');
+             if (pageId === 'newsPage' && localStorage.getItem(STORAGE_KEYS.WIZARD_COMPLETED) !== 'true') {
+                wizardContainer.style.display = 'block'; 
+                newsPageDiv.classList.remove('active'); 
+                showWizardStep(0);
+            }
+        }
+        navNewsBtn.addEventListener('click', () => showPage('newsPage'));
+        navSettingsBtn.addEventListener('click', () => showPage('settingsPage'));
+
+        // --- Toast & Modal ---
+        function showToast(message, type = 'info', duration = TOAST_TIMEOUT) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            toast.offsetHeight; 
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => { if (toast.parentNode) toastContainer.removeChild(toast); }, 500);
+            }, duration);
+        }
+        function showCriticalError(message) {
+            errorMessageElement.textContent = message;
+            errorModal.style.display = "block";
+        }
+
+        // --- Settings Management ---
+        function loadSettings() {
+            currentGeminiApiKey = localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+            geminiApiKeyInput.value = currentGeminiApiKey;
+
+            const storedOpmlFeeds = localStorage.getItem(STORAGE_KEYS.OPML_FEEDS);
+            if (storedOpmlFeeds) {
+                currentOpmlFeeds = JSON.parse(storedOpmlFeeds);
+                const fileName = localStorage.getItem(STORAGE_KEYS.OPML_FILE_NAME) || "Stored OPML";
+                opmlFileInfoElement.textContent = `Using: ${fileName} (${currentOpmlFeeds.length} feeds).`;
+            } else {
+                opmlFileInfoElement.textContent = "No OPML uploaded. Default feeds will be used.";
+            }
+            const storedBlockedTerms = localStorage.getItem(STORAGE_KEYS.BLOCKED_TERMS);
+            currentBlockedTerms = storedBlockedTerms ? JSON.parse(storedBlockedTerms) : [];
+            renderBlockedTermsPills();
+        }
+
+        function saveAllSettings() {
+            currentGeminiApiKey = geminiApiKeyInput.value.trim();
+            localStorage.setItem(STORAGE_KEYS.API_KEY, currentGeminiApiKey);
+            // Blocked terms are saved immediately on add/remove, but this ensures current state is saved if user only types and hits save.
+            // However, the current design requires clicking "Add Terms from Input" first.
+            // For consistency, let's ensure currentBlockedTerms (which is the source of truth for pills) is saved.
+            localStorage.setItem(STORAGE_KEYS.BLOCKED_TERMS, JSON.stringify(currentBlockedTerms));
+            showToast("Settings saved!", "success");
+        }
+        saveSettingsBtn.addEventListener('click', saveAllSettings);
+
+        opmlFileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            console.log('Parsing OPML...');
+            try {
+                const opmlText = await file.text();
+                const parsedFeeds = parseOpml(opmlText);
+                if (parsedFeeds.length === 0) {
+                    showToast("OPML empty or invalid.", "error");
+                    currentOpmlFeeds = null; 
+                    localStorage.removeItem(STORAGE_KEYS.OPML_FEEDS);
+                    localStorage.removeItem(STORAGE_KEYS.OPML_FILE_NAME);
+                    opmlFileInfoElement.textContent = "OPML parsing failed. Defaults will be used.";
+                } else {
+                    currentOpmlFeeds = parsedFeeds;
+                    localStorage.setItem(STORAGE_KEYS.OPML_FEEDS, JSON.stringify(currentOpmlFeeds));
+                    localStorage.setItem(STORAGE_KEYS.OPML_FILE_NAME, file.name);
+                    opmlFileInfoElement.textContent = `Parsed ${file.name} (${currentOpmlFeeds.length} feeds).`; // Removed "Save settings to confirm" as it saves immediately.
+                    showToast(`OPML '${file.name}' processed and saved.`, "info");
+                }
+            } catch (error) {
+                showToast(`OPML Error: ${error.message.substring(0,50)}...`, "error");
+                currentOpmlFeeds = null;
+                localStorage.removeItem(STORAGE_KEYS.OPML_FEEDS);
+                localStorage.removeItem(STORAGE_KEYS.OPML_FILE_NAME);
+                opmlFileInfoElement.textContent = "Error processing OPML.";
+            } finally {
+                 console.log('OPML parsing finished.');
+            }
+        });
+
+        clearOpmlBtn.addEventListener('click', () => {
+            currentOpmlFeeds = null;
+            localStorage.removeItem(STORAGE_KEYS.OPML_FEEDS);
+            localStorage.removeItem(STORAGE_KEYS.OPML_FILE_NAME);
+            opmlFileInput.value = "";
+            opmlFileInfoElement.textContent = "Uploaded OPML cleared. Defaults will be used.";
+            showToast("OPML data cleared.", "info");
+        });
+        
+        function parseOpml(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            const outlines = xmlDoc.getElementsByTagName('outline');
+            const feeds = [];
+            for (let i = 0; i < outlines.length; i++) {
+                const outline = outlines[i];
+                const xmlUrl = outline.getAttribute('xmlUrl') || outline.getAttribute('rssUrl');
+                const title = outline.getAttribute('title') || outline.getAttribute('text') || (xmlUrl ? new URL(xmlUrl).hostname : "Untitled");
+                if (xmlUrl) feeds.push({ name: title, url: xmlUrl });
+            }
+            return feeds;
+        }
+
+        function renderBlockedTermsPills() {
+            blockedTermsPillsContainer.innerHTML = '';
+            currentBlockedTerms.forEach(term => {
+                const pill = document.createElement('span');
+                pill.className = 'blocked-term-pill';
+                pill.textContent = term;
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = () => removeBlockedTerm(term);
+                pill.appendChild(removeBtn);
+                blockedTermsPillsContainer.appendChild(pill);
+            });
+        }
+
+        addBlockedTermBtn.addEventListener('click', () => {
+            const termsText = blockedTermsInput.value.trim();
+            if (termsText) {
+                const termsArray = termsText.split(',').map(t => t.trim().toLowerCase()).filter(t => t && !currentBlockedTerms.includes(t));
+                if (termsArray.length > 0) {
+                    currentBlockedTerms.push(...termsArray);
+                    renderBlockedTermsPills();
+                    localStorage.setItem(STORAGE_KEYS.BLOCKED_TERMS, JSON.stringify(currentBlockedTerms)); // Save on add
+                    showToast("Blocked terms updated.", "info");
+                }
+                blockedTermsInput.value = '';
+            }
+        });
+
+        function removeBlockedTerm(termToRemove) {
+            currentBlockedTerms = currentBlockedTerms.filter(term => term !== termToRemove);
+            renderBlockedTermsPills();
+            localStorage.setItem(STORAGE_KEYS.BLOCKED_TERMS, JSON.stringify(currentBlockedTerms)); // Save on remove
+            showToast("Blocked term removed.", "info");
+        }
+        
+        // --- RSS Fetching & Parsing ---
+        async function getFeedsToProcess() {
+            const selectedCategoryVal = categorySelect.value;
+            if (currentOpmlFeeds && currentOpmlFeeds.length > 0) {
+                return currentOpmlFeeds;
+            }
+            if (selectedCategoryVal !== "all") {
+                return DEFAULT_RSS_FEEDS.filter(feed => feed.categories && feed.categories.includes(selectedCategoryVal));
+            }
+            return DEFAULT_RSS_FEEDS;
+        }
+
+        async function fetchAndParseFeed(feedConfig, useProxy = false) {
+            const { name: sourceName, url: feedUrl } = feedConfig;
+            const urlToFetch = useProxy ? `${CORS_PROXY_URL}${feedUrl}` : feedUrl;
+            const attemptType = useProxy ? "proxy" : "direct";
+            try {
+                const response = await fetch(urlToFetch, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!response.ok) throw new Error(`${attemptType} fetch HTTP ${response.status}`);
+                const xmlString = await response.text();
+                return parseRssAtom(xmlString, sourceName, feedUrl);
+            } catch (error) {
+                console.warn(`Error ${attemptType} fetch ${feedUrl}: ${error.message}`);
+                if (!useProxy && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('HTTP'))) {
+                    if (CORS_PROXY_URL) return fetchAndParseFeed(feedConfig, true);
+                    throw new Error(`Direct fetch for ${feedUrl.substring(0,30)}... failed, no proxy.`);
+                }
+                throw new Error(`Failed ${feedUrl.substring(0,30)}... (${attemptType}): ${error.message.substring(0,50)}...`);
+            }
+        }
+        
+        function parseRssAtom(xmlString, sourceName, feedUrl) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            const articles = [];
+            let items = xmlDoc.getElementsByTagName('item');
+            if (items.length === 0) items = xmlDoc.getElementsByTagName('entry');
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                let title, link, description, pubDateStr;
+                if (item.tagName.toLowerCase() === 'item') {
+                    title = item.getElementsByTagName('title')[0]?.textContent || 'No title';
+                    link = item.getElementsByTagName('link')[0]?.textContent || item.getElementsByTagName('guid')[0]?.textContent || feedUrl;
+                    description = item.getElementsByTagName('description')[0]?.textContent || '';
+                    pubDateStr = item.getElementsByTagName('pubDate')[0]?.textContent || item.getElementsByTagName('dc:date')[0]?.textContent;
+                } else { 
+                    title = item.getElementsByTagName('title')[0]?.textContent || 'No title';
+                    let linkNode = Array.from(item.getElementsByTagName('link')).find(l => l.getAttribute('rel') === 'alternate' || !l.getAttribute('rel'));
+                    link = linkNode?.getAttribute('href') || feedUrl;
+                    description = item.getElementsByTagName('summary')[0]?.textContent || item.getElementsByTagName('content')[0]?.textContent || '';
+                    pubDateStr = item.getElementsByTagName('updated')[0]?.textContent || item.getElementsByTagName('published')[0]?.textContent;
+                }
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = description;
+                description = (tempDiv.textContent || tempDiv.innerText || "").replace(/<[^>]+>/g, '').substring(0, 250) + (description.length > 250 ? '...' : '');
+                
+                const pubDate = pubDateStr ? new Date(pubDateStr) : null;
+
+                const lowerTitle = title.toLowerCase();
+                const lowerDescription = description.toLowerCase();
+                const isBlocked = currentBlockedTerms.some(term => lowerTitle.includes(term) || lowerDescription.includes(term));
+
+                if (!isBlocked) {
+                    articles.push({ title, link, description, pubDate, sourceName, feedUrl });
+                }
+            }
+            if (xmlDoc.getElementsByTagName("parsererror").length > 0) console.warn(`Parsing error for ${sourceName}.`);
+            return articles;
+        }
+
+        function filterArticlesByDate(articles, dateRange) {
+            if (dateRange === "all_time") return articles;
+            const now = new Date();
+            let startDate = new Date(now); 
+
+            if (dateRange === "today") {
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+            } else if (dateRange === "last_week") {
+                // Start of 7 days ago (e.g., if today is Tue, start is last Tue 00:00:00)
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+            } else if (dateRange === "last_month") {
+                // Start of the day, one calendar month ago
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate(), 0,0,0,0);
+            }
+            
+            return articles.filter(article => {
+                if (!article.pubDate || !(article.pubDate instanceof Date) || isNaN(article.pubDate.getTime())) {
+                    return false; 
+                }
+                return article.pubDate >= startDate && article.pubDate <= now;
+            });
+        }
+
+        // --- Main Logic ---
+        categorySelect.addEventListener('change', () => {
+            sortingOptionsDiv.classList.toggle('hidden', categorySelect.value !== 'all');
+        });
+
+        async function generateNewsletterMain() {
+            newsletterArea.innerHTML = ''; 
+            statusMessageElement.textContent = 'Starting briefing...';
+            loaderElement.classList.remove('hidden');
+            generateButton.disabled = true;
+
+            let feedsToProcess = await getFeedsToProcess();
+            if (feedsToProcess.length === 0) {
+                showCriticalError(`No RSS feeds configured for category: ${categorySelect.options[categorySelect.selectedIndex].text}.`);
+                loaderElement.classList.add('hidden');
+                generateButton.disabled = false;
+                statusMessageElement.textContent = 'Select filters and click "Brief Me".';
+                return;
+            }
+
+            let allFetchedArticles = [];
+            let feedsProcessed = 0;
+            let successfulFetches = 0;
+            statusMessageElement.textContent = `Fetching from ${feedsToProcess.length} feed(s)...`;
+
+            const articlePromises = feedsToProcess.map(async (feedConfig) => {
+                try {
+                    const articlesFromFeed = await fetchAndParseFeed(feedConfig);
+                    if (articlesFromFeed.length > 0) successfulFetches++;
+                    allFetchedArticles.push(...articlesFromFeed);
+                } catch (error) {
+                    console.error(`Feed error for '${feedConfig.name}': ${error.message}`);
+                } finally {
+                    feedsProcessed++;
+                    if (feedsProcessed % 5 === 0 || feedsProcessed === feedsToProcess.length) {
+                        statusMessageElement.textContent = `Processed ${feedsProcessed}/${feedsToProcess.length} feeds.`;
+                    }
+                }
+            });
+            await Promise.allSettled(articlePromises);
+            
+            statusMessageElement.textContent = `Fetched articles from ${successfulFetches} of ${feedsToProcess.length} feeds. Filtering...`;
+
+            const selectedDateRange = dateRangeSelect.value;
+            const dateFilteredArticles = filterArticlesByDate(allFetchedArticles, selectedDateRange);
+
+            if (dateFilteredArticles.length === 0) {
+                statusMessageElement.textContent = 'No articles matched your criteria after all filtering.';
+                showCriticalError('No articles found for the selected category, date range, and blocked terms. Try adjusting filters. Note: RSS feeds may have limited history.');
+                loaderElement.classList.add('hidden');
+                generateButton.disabled = false;
+                return;
+            }
+
+            statusMessageElement.textContent = `Found ${dateFilteredArticles.length} relevant articles. Analyzing with AI...`;
+            try {
+                let rankedArticles = await getAiRankedNews(dateFilteredArticles);
+                if (categorySelect.value === 'all' && sortSelect.value !== 'relevance') {
+                    rankedArticles = sortArticles(rankedArticles, sortSelect.value);
+                }
+                displayNewsletter(rankedArticles);
+                statusMessageElement.textContent = `Briefing complete! Displaying ${rankedArticles.length} articles.`;
+                if (rankedArticles.length > 0) showToast("Briefing complete!", "success");
+            } catch (error) {
+                statusMessageElement.textContent = 'Error during AI analysis or display.';
+                showCriticalError(`Processing error: ${error.message}`);
+            } finally {
+                loaderElement.classList.add('hidden');
+                generateButton.disabled = false;
+            }
+        }
+        generateButton.addEventListener('click', generateNewsletterMain);
+
+        function sortArticles(articles, sortBy) {
+            if (sortBy === 'category') {
+                return articles.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+            } else if (sortBy === 'sourceName') {
+                return articles.sort((a, b) => (a.sourceName || '').localeCompare(b.sourceName || ''));
+            }
+            return articles;
+        }
+
+        async function getAiRankedNews(articles) {
+            const articlesForAI = articles.length > 200 ? articles.slice(0, 200) : articles; 
+            const selectedCategoryVal = categorySelect.value; 
+            const selectedDateRangeText = dateRangeSelect.options[dateRangeSelect.selectedIndex].text;
+
+            let categoryInstruction = "Consider all news categories based on the provided articles.";
+            if (selectedCategoryVal !== "all") {
+                categoryInstruction = `The user is primarily interested in the "${selectedCategoryVal}" category. Please prioritize articles fitting this category from the provided list. If few are available, select other highly relevant articles.`;
+            }
+            
+            let dateInstruction = `IMPORTANT: The articles provided to you have ALREADY been filtered by the user to include only news from the period of "${selectedDateRangeText}". Your selection of top articles MUST come from this pre-filtered set. You should aim to represent the most significant news across this ENTIRE provided period, not just the absolute most recent items within it, unless those are genuinely the only important ones available in the set.`;
+            if (selectedDateRangeText.toLowerCase().includes("all time")) {
+                 dateInstruction = "The articles provided cover a broad date range. Select the most relevant from this set, considering the entire span of provided articles.";
+            }
+
+            const prompt = `
+You are "briefnews", an expert news summarization, deduplication, and ranking AI.
+Given the following list of news articles (JSON format), your task is to:
+1. Identify up to 20 of the most important, relevant, and unique news stories. ${dateInstruction}
+2. **Deduplication is crucial**: If multiple articles report on the same core event, select only the single best, most comprehensive version from the provided list.
+3. ${categoryInstruction}
+4. For each unique story you select, provide: "title", "link", a concise "summary" (1-2 sentences, generated by you), "sourceName", "pubDate" (use the original parsed date; if it was 'N/A' or invalid, reflect that or omit, otherwise format as YYYY-MM-DD HH:MM), a "category" you assign (e.g., World News, Technology), and an "isBreaking" boolean flag.
+5. Prioritize genuinely breaking news from the provided articles.
+6. Return a single, valid JSON array of these article objects. If fewer than 20 unique, relevant articles are found in the provided set, return all of them.
+
+Articles (already filtered for date range: ${selectedDateRangeText}):
+${JSON.stringify(articlesForAI.map(a => ({title: a.title, link: a.link, description: a.description, pubDate: a.pubDate instanceof Date && !isNaN(a.pubDate) ? a.pubDate.toISOString() : "N/A", sourceName: a.sourceName})))}
+`;
+            const apiKeyToUse = currentGeminiApiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKeyToUse}`;
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.2, maxOutputTokens: 8192 }
+            };
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`Gemini API Error (${response.status}): ${errorBody.substring(0,200)}`);
+            }
+            const result = await response.json();
+            if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                const textResponse = result.candidates[0].content.parts[0].text;
+                const jsonMatch = textResponse.match(/```json\s*([\s\S]*?)\s*```/);
+                let jsonString = jsonMatch ? jsonMatch[1].trim() : textResponse.trim();
+                
+                if (jsonString.startsWith("```")) jsonString = jsonString.substring(3);
+                if (jsonString.endsWith("```")) jsonString = jsonString.substring(0, jsonString.length - 3);
+                jsonString = jsonString.trim();
+                if (jsonString.startsWith("json")) jsonString = jsonString.substring(4).trim();
+
+                try {
+                    if (!jsonString.startsWith("[")) {
+                        const arrayStartIndex = jsonString.indexOf("[");
+                        if (arrayStartIndex !== -1) jsonString = jsonString.substring(arrayStartIndex);
+                    }
+                    if (!jsonString.endsWith("]")) {
+                        const arrayEndIndex = jsonString.lastIndexOf("]");
+                        if (arrayEndIndex !== -1) jsonString = jsonString.substring(0, arrayEndIndex + 1);
+                    }
+                    const parsedJson = JSON.parse(jsonString);
+                    return Array.isArray(parsedJson) ? parsedJson.map(art => ({...art, pubDate: art.pubDate && art.pubDate !== "N/A" ? new Date(art.pubDate) : null })) : [];
+                } catch (e) {
+                    console.error("Failed to parse JSON from Gemini:", e, "\nCleaned JSON string attempt:", jsonString, "\nRaw response:", textResponse);
+                    throw new Error("AI returned invalid JSON. Check console for details.");
+                }
+            } else {
+                const blockReason = result.promptFeedback?.blockReason;
+                if (blockReason) throw new Error(`AI request blocked: ${blockReason}. Details: ${JSON.stringify(result.promptFeedback.safetyRatings)}`);
+                throw new Error(`AI response structure unexpected. Result: ${JSON.stringify(result)}`);
+            }
+        }
+
+        function displayNewsletter(rankedArticles) {
+            newsletterArea.innerHTML = ''; 
+            if (!rankedArticles || rankedArticles.length === 0) {
+                newsletterArea.innerHTML = '<p class="text-center text-gray-500 col-span-full">No articles to display.</p>';
+                return;
+            }
+            rankedArticles.forEach(article => {
+                const card = document.createElement('div');
+                card.className = `news-card rounded-lg shadow-lg p-4 ${article.isBreaking ? 'breaking-news' : ''}`;
+                let displayDate = 'Date N/A';
+                if (article.pubDate && article.pubDate instanceof Date && !isNaN(article.pubDate.getTime())) {
+                    displayDate = article.pubDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                } else if (typeof article.pubDate === 'string' && article.pubDate !== "N/A") { 
+                     try { 
+                        const parsedAttempt = new Date(article.pubDate);
+                        if (!isNaN(parsedAttempt.getTime())) {
+                           displayDate = parsedAttempt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        } else { displayDate = article.pubDate; }
+                     } catch(e){ displayDate = article.pubDate; }
+                }
+
+                const sanitizedTitle = sanitizeHTML(article.title || "Untitled");
+                const sanitizedSummary = sanitizeHTML(article.summary || "No summary.");
+                const sanitizedSourceName = sanitizeHTML(article.sourceName || "Unknown Source");
+                const sanitizedCategory = sanitizeHTML(article.category || "General");
+
+                card.innerHTML = `
+                    <div>
+                        ${article.isBreaking ? '<span class="inline-block bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2 uppercase">Breaking</span>' : ''}
+                        <h2 class="text-lg font-semibold mb-1 text-gray-800 hover:text-blue-600 transition-colors">
+                            <a href="${sanitizeHTML(article.link || '#')}" target="_blank" rel="noopener noreferrer">${sanitizedTitle}</a>
+                        </h2>
+                        <p class="text-sm text-gray-600 mb-2 leading-relaxed">${sanitizedSummary}</p>
+                    </div>
+                    <div class="mt-auto pt-2 border-t border-gray-100">
+                        <div class="flex justify-between items-center text-xs mb-1">
+                            <span class="feed-source font-medium">${sanitizedSourceName}</span>
+                            <span class="category-tag">${sanitizedCategory}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">${displayDate}</p>
+                    </div>
+                `;
+                newsletterArea.appendChild(card);
+            });
+        }
+        
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadSettings();
+            if (localStorage.getItem(STORAGE_KEYS.WIZARD_COMPLETED) === 'true') {
+                wizardContainer.style.display = 'none';
+                showPage('newsPage');
+                statusMessageElement.textContent = 'Select filters and click "Brief Me", or visit Settings.';
+            } else {
+                wizardContainer.style.display = 'block';
+                newsPageDiv.classList.remove('active'); 
+                settingsPageDiv.classList.remove('active'); 
+                showWizardStep(0);
+                statusMessageElement.textContent = 'Please complete the setup wizard.';
+            }
+            sortingOptionsDiv.classList.toggle('hidden', categorySelect.value !== 'all');
+        };
+        
+        window.onclick = function(event) {
+            if (event.target == errorModal) {
+                errorModal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
