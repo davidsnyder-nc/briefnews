@@ -3293,9 +3293,14 @@ Write exactly 3 sentences.`;
         <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 20px; margin-bottom: 30px; text-align: center;">
             <h3 style="margin: 0 0 10px 0; color: #1e40af;">🎧 Listen to Newsletter</h3>
             <p style="margin: 0 0 15px 0; font-size: 12px; color: #6b7280;">AI-generated audio of your complete newsletter</p>
-            <button onclick="generateAudio()" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 15px;">
-                🔊 Generate Audio
-            </button>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+                <button onclick="generateAudio()" id="playButton" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    🔊 Generate Audio
+                </button>
+                <button onclick="stopAudio()" id="stopButton" style="background: #dc2626; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; display: none;">
+                    ⏹️ Stop
+                </button>
+            </div>
             <div id="audioPlayer" style="display: none; margin-top: 15px;">
                 <div style="padding: 15px; background: #f3f4f6; border-radius: 6px;">
                     <p style="margin: 0; font-size: 14px; color: #374151;">Audio will play using your browser's built-in text-to-speech.</p>
@@ -3351,14 +3356,28 @@ Write exactly 3 sentences.`;
     </div>
     
     ${includeAudio ? `<script>
+        function stopAudio() {
+            speechSynthesis.cancel();
+            window.isPlaying = false;
+            const playButton = document.getElementById('playButton');
+            const stopButton = document.getElementById('stopButton');
+            const statusDiv = document.getElementById('audioStatus');
+            
+            playButton.innerHTML = '🔊 Generate Audio';
+            playButton.disabled = false;
+            stopButton.style.display = 'none';
+            statusDiv.textContent = 'Audio stopped';
+        }
+        
         function generateAudio() {
-            const button = event.target;
+            const playButton = document.getElementById('playButton');
+            const stopButton = document.getElementById('stopButton');
             const statusDiv = document.getElementById('audioStatus');
             const playerDiv = document.getElementById('audioPlayer');
             
             // Show loading state
-            button.disabled = true;
-            button.innerHTML = '⏳ Generating...';
+            playButton.disabled = true;
+            playButton.innerHTML = '⏳ Generating...';
             statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
             // Compile newsletter text from the page
@@ -3393,19 +3412,27 @@ Write exactly 3 sentences.`;
 
             // Use Web Speech API for text-to-speech
             if ('speechSynthesis' in window) {
-                // If already playing, pause/resume
-                if (window.isPlaying) {
-                    if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                // If already playing, handle pause/resume
+                if (window.isPlaying && speechSynthesis.speaking) {
+                    if (!speechSynthesis.paused) {
                         speechSynthesis.pause();
-                        button.innerHTML = '▶️ Resume';
+                        playButton.innerHTML = '▶️ Resume';
                         statusDiv.textContent = 'Audio paused';
                         return;
-                    } else if (speechSynthesis.paused) {
+                    } else {
                         speechSynthesis.resume();
-                        button.innerHTML = '⏸️ Pause';
+                        playButton.innerHTML = '⏸️ Pause';
                         statusDiv.textContent = 'Audio resumed';
                         return;
                     }
+                }
+                
+                // If speech has ended but isPlaying is still true, reset
+                if (window.isPlaying && !speechSynthesis.speaking) {
+                    window.isPlaying = false;
+                    playButton.innerHTML = '🔊 Generate Audio';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'none';
                 }
                 
                 // Cancel any existing speech
@@ -3417,67 +3444,81 @@ Write exactly 3 sentences.`;
                 utterance.pitch = 0.8; // Lower pitch for more male-like voice
                 utterance.volume = 1;
                 
-                // Function to select a male voice
-                const selectMaleVoice = () => {
+                // Wait for voices to load and select the best male voice
+                const setVoice = () => {
                     const voices = speechSynthesis.getVoices();
+                    console.log('Available voices:', voices.map(v => v.name + ' (' + v.lang + ')'));
                     
-                    // Try to find a male voice in order of preference
-                    const maleVoice = voices.find(voice => {
-                        const name = voice.name.toLowerCase();
-                        const lang = voice.lang.toLowerCase();
-                        
-                        // Prefer English male voices
-                        if (lang.startsWith('en')) {
-                            return name.includes('male') || 
-                                   name.includes('david') ||
-                                   name.includes('mark') ||
-                                   name.includes('microsoft mark') ||
-                                   name.includes('alex') ||
-                                   name.includes('daniel') ||
-                                   name.includes('tom') ||
-                                   name.includes('paul') ||
-                                   name.includes('richard');
+                    // Find the best male voice
+                    let selectedVoice = null;
+                    
+                    // Priority 1: Look for explicitly male voices
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en') && 
+                        (voice.name.toLowerCase().includes('male') || 
+                         voice.name.toLowerCase().includes('david') ||
+                         voice.name.toLowerCase().includes('mark'))
+                    );
+                    
+                    // Priority 2: Look for common male voice names
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            (voice.name.toLowerCase().includes('alex') ||
+                             voice.name.toLowerCase().includes('daniel') ||
+                             voice.name.toLowerCase().includes('tom') ||
+                             voice.name.toLowerCase().includes('paul') ||
+                             voice.name.toLowerCase().includes('richard') ||
+                             voice.name.toLowerCase().includes('john'))
+                        );
+                    }
+                    
+                    // Priority 3: Use any available English voice and adjust pitch
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+                        if (selectedVoice) {
+                            utterance.pitch = 0.7; // Even lower pitch for female-to-male effect
                         }
-                        return false;
-                    }) || voices.find(voice => {
-                        // Fallback to any male-sounding voice
-                        const name = voice.name.toLowerCase();
-                        return name.includes('male') || name.includes('man');
-                    });
+                    }
                     
-                    return maleVoice;
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                        console.log('Selected voice:', selectedVoice.name);
+                    }
                 };
                 
-                // Set voice (with fallback if voices aren't loaded yet)
-                const maleVoice = selectMaleVoice();
-                if (maleVoice) {
-                    utterance.voice = maleVoice;
-                } else if (speechSynthesis.getVoices().length === 0) {
-                    // Voices not loaded yet, wait and try again
-                    speechSynthesis.onvoiceschanged = () => {
-                        const voice = selectMaleVoice();
-                        if (voice) utterance.voice = voice;
-                    };
+                // Try to set voice immediately
+                if (speechSynthesis.getVoices().length > 0) {
+                    setVoice();
+                } else {
+                    // Wait for voices to load
+                    speechSynthesis.onvoiceschanged = setVoice;
+                    // Also try after a short delay
+                    setTimeout(setVoice, 100);
                 }
                 
                 // Set up event handlers
                 utterance.onstart = () => {
                     statusDiv.textContent = 'Audio is playing...';
-                    button.innerHTML = '⏸️ Pause';
+                    playButton.innerHTML = '⏸️ Pause';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'inline-block';
                     window.isPlaying = true;
                 };
                 
                 utterance.onend = () => {
                     statusDiv.textContent = 'Audio playback completed.';
-                    button.innerHTML = '🔊 Generate Audio';
-                    button.disabled = false;
+                    playButton.innerHTML = '🔊 Generate Audio';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'none';
                     window.isPlaying = false;
                 };
                 
                 utterance.onerror = () => {
                     statusDiv.textContent = 'Audio playback failed. Try again.';
-                    button.innerHTML = '🔊 Generate Audio';
-                    button.disabled = false;
+                    playButton.innerHTML = '🔊 Generate Audio';
+                    playButton.disabled = false;
+                    stopButton.style.display = 'none';
                     window.isPlaying = false;
                 };
                 
