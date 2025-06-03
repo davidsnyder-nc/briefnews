@@ -1792,17 +1792,28 @@ Write exactly 3 sentences.`;
         }
 
         function createSourceFilterButtons(articles) {
+            // Check if articles exist and have valid data
+            if (!articles || !Array.isArray(articles) || articles.length === 0) {
+                console.warn('No articles provided to createSourceFilterButtons');
+                return;
+            }
+            
             // Get unique sources from articles
-            const sources = [...new Set(articles.map(article => article.source))].sort();
+            const sources = [...new Set(articles.map(article => article.source).filter(Boolean))].sort();
             
             // Create filter container if it doesn't exist
             let filterContainer = document.getElementById('sourceFilterContainer');
             if (!filterContainer) {
+                const newsletterArea = document.getElementById('newsletterArea');
+                if (!newsletterArea || !newsletterArea.parentNode) {
+                    console.warn('Newsletter area not found for source filter buttons');
+                    return;
+                }
+                
                 filterContainer = document.createElement('div');
                 filterContainer.id = 'sourceFilterContainer';
                 filterContainer.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
                 
-                const newsletterArea = document.getElementById('newsletterArea');
                 newsletterArea.parentNode.insertBefore(filterContainer, newsletterArea);
             }
             
@@ -1963,6 +1974,12 @@ Write exactly 3 sentences.`;
             const indexContainer = document.getElementById('articleIndex');
             const indexList = document.getElementById('indexList');
             
+            // Check if elements exist before using them
+            if (!indexContainer || !indexList) {
+                console.warn('Article index elements not found in DOM');
+                return;
+            }
+            
             if (articles.length === 0) {
                 indexContainer.style.display = 'none';
                 return;
@@ -1970,9 +1987,10 @@ Write exactly 3 sentences.`;
             
             indexList.innerHTML = articles.map((article, index) => {
                 const articleNumber = index + 1;
+                const title = article.title || 'No title';
                 return `
                     <div class="cursor-pointer hover:text-blue-600 transition-colors" onclick="scrollToArticle(${articleNumber})">
-                        <span class="font-medium">${articleNumber}.</span> ${article.title.substring(0, 60)}${article.title.length > 60 ? '...' : ''}
+                        <span class="font-medium">${articleNumber}.</span> ${title.substring(0, 60)}${title.length > 60 ? '...' : ''}
                     </div>
                 `;
             }).join('');
@@ -2280,6 +2298,13 @@ Write exactly 3 sentences.`;
                 existingButton.remove();
             }
             
+            // Check if newsletter area exists
+            const newsletterArea = document.getElementById('newsletterArea');
+            if (!newsletterArea || !newsletterArea.parentNode) {
+                console.warn('Newsletter area not found for load more button');
+                return;
+            }
+            
             // Create load more container
             const loadMoreContainer = document.createElement('div');
             loadMoreContainer.id = 'loadMoreContainer';
@@ -2297,7 +2322,6 @@ Write exactly 3 sentences.`;
             `;
             
             // Insert after newsletter area
-            const newsletterArea = document.getElementById('newsletterArea');
             newsletterArea.parentNode.insertBefore(loadMoreContainer, newsletterArea.nextSibling);
         }
 
