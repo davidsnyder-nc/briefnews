@@ -526,20 +526,12 @@
             document.querySelector('.modal-close-button').addEventListener('click', closeModal);
         }
 
-        function showWizard() {
-            document.getElementById('wizardContainer').style.display = 'block';
-            document.getElementById('newsPage').classList.remove('active');
-            document.getElementById('settingsPage').classList.remove('active');
-        }
-
         function showNews() {
-            document.getElementById('wizardContainer').style.display = 'none';
             document.getElementById('newsPage').classList.add('active');
             document.getElementById('settingsPage').classList.remove('active');
         }
 
         function showSettings() {
-            document.getElementById('wizardContainer').style.display = 'none';
             document.getElementById('newsPage').classList.remove('active');
             document.getElementById('settingsPage').classList.add('active');
         }
