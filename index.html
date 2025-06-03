@@ -1472,23 +1472,13 @@ Write ONE paragraph summary.`;
         function filterBlockedTerms(articles, blockedTerms) {
             if (blockedTerms.length === 0) return articles;
             
-            console.log('Applying blocked terms filter:', blockedTerms);
-            
-            const filteredArticles = articles.filter(article => {
+            return articles.filter(article => {
                 const text = (article.title + ' ' + article.description).toLowerCase();
-                const isBlocked = blockedTerms.some(term => {
+                return !blockedTerms.some(term => {
                     const termLower = term.toLowerCase();
-                    const blocked = text.includes(termLower);
-                    if (blocked) {
-                        console.log(`Article blocked by term "${term}":`, article.title);
-                    }
-                    return blocked;
+                    return text.includes(termLower);
                 });
-                return !isBlocked;
             });
-            
-            console.log(`Filtered ${articles.length - filteredArticles.length} articles due to blocked terms`);
-            return filteredArticles;
         }
 
         function removeDuplicateArticles(articles) {
