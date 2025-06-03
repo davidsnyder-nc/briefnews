@@ -11,6 +11,18 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8f9fa;
             color: #333;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        .container {
+            max-width: 100%;
+            overflow-x: hidden;
         }
         .news-card {
             background-color: #ffffff;
@@ -196,30 +208,30 @@
 <body class="text-gray-800">
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 onclick="window.location.href = window.location.origin + window.location.pathname" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
+        <div class="w-full px-2 sm:px-4 py-2 sm:py-3 flex justify-between items-center min-w-0">
+            <h1 onclick="window.location.href = window.location.origin + window.location.pathname" class="text-lg sm:text-xl md:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">
                 <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
             </h1>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button id="headerNewsletterBtn" onclick="generateCustomNewsletter()" 
-                        class="hidden px-3 py-1 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
-                    Generate Newsletter
+                        class="hidden px-2 py-1 bg-green-600 text-white rounded text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors whitespace-nowrap">
+                    Newsletter
                 </button>
-                <button id="navNews" onclick="window.location.href = window.location.origin + window.location.pathname" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <button id="navNews" onclick="window.location.href = window.location.origin + window.location.pathname" class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
                         <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z" stroke="currentColor" stroke-width="2" fill="none"/>
                         <path d="M7 7H17M7 11H17M7 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    News
+                    <span class="hidden sm:inline">News</span>
                 </button>
-                <button id="navSettings" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <button id="navSettings" class="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
                         <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
                         <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
                         <path d="M12 6V2M12 22V18M18 12H22M2 12H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         <path d="M16.24 7.76L18.36 5.64M5.64 18.36L7.76 16.24M16.24 16.24L18.36 18.36M5.64 5.64L7.76 7.76" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    Settings
+                    <span class="hidden sm:inline">Settings</span>
                 </button>
             </div>
         </div>
@@ -228,7 +240,7 @@
 
 
 
-    <div id="newsPage" class="page container mx-auto px-4 py-4">
+    <div id="newsPage" class="page w-full max-w-full px-2 sm:px-4 py-4 overflow-x-hidden">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6" id="newsHeader" style="display: none;">
             <div class="flex gap-4 items-center justify-center">
                 <div class="flex items-center gap-2" id="headerControls" style="display: none;">
