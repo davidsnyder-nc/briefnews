@@ -1059,16 +1059,20 @@ Write ONE sentence summary. Maximum 10 words.`;
                         const feedCat = feed.category.toLowerCase().trim();
                         const selectedCat = category.toLowerCase().trim();
                         
-                        // Direct match with the category values from dropdown
+                        // Exact match for category filtering
                         return feedCat === selectedCat;
                     });
                     
+                    console.log(`Selected category: ${category}`);
                     console.log(`Filtered ${feedsToUse.length} feeds for category: ${category}`);
-                    console.log('Available feed categories:', [...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))]);
-                    console.log('Selected category:', category);
+                    console.log('Feeds to use:', feedsToUse.map(f => f.name));
                     
                     if (feedsToUse.length === 0) {
-                        throw new Error(`No feeds found for category: ${category}. Available categories: ${[...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))].join(', ')}`);
+                        const availableCategories = [...new Set(currentRssFeeds.map(f => f.category).filter(Boolean))];
+                        document.getElementById('statusMessage').textContent = `No feeds found for category: ${category}`;
+                        document.getElementById('loader').classList.add('hidden');
+                        showToast(`No feeds found for category: ${category}`, 'error');
+                        return;
                     }
                 }
 
@@ -2886,8 +2890,8 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
-            // Only show header controls if "All Categories" is selected
-            if (categoryName.toLowerCase() === 'all') {
+            // Always show header controls when generating content
+            if (newsHeader) {
                 newsHeader.style.display = 'block';
             }
             
