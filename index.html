@@ -3359,11 +3359,16 @@ Write exactly 3 sentences.`;
         // Get saved settings from parent window or use defaults
         const getApiKey = () => {
             try {
-                return window.opener?.localStorage.getItem('geminiApiKey') || 
-                       window.opener?.localStorage.getItem('openaiApiKey') || 
-                       localStorage.getItem('geminiApiKey') || 
-                       localStorage.getItem('openaiApiKey') || '';
+                // Try to get Gemini key first as it can be used for Google TTS
+                let apiKey = window.opener?.localStorage.getItem('geminiApiKey') || 
+                            localStorage.getItem('geminiApiKey') || '';
+                
+                // Log for debugging
+                console.log('Retrieved API key length:', apiKey ? apiKey.length : 0);
+                
+                return apiKey;
             } catch (e) {
+                console.error('Error getting API key:', e);
                 return '';
             }
         };
@@ -3517,7 +3522,9 @@ Write exactly 3 sentences.`;
                     });
 
                     if (!response.ok) {
-                        throw new Error('Google TTS API failed: ' + response.status + ' for chunk ' + (i + 1));
+                        const errorText = await response.text();
+                        console.error('Google TTS API error:', response.status, errorText);
+                        throw new Error('Google TTS API failed: ' + response.status + ' - ' + errorText);
                     }
 
                     const data = await response.json();
