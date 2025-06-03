@@ -3603,25 +3603,44 @@ Write exactly 3 sentences.`;
                     }
                     
                     const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex]);
-                    utterance.rate = 0.85;
-                    utterance.pitch = 0.5; // Very low pitch for deeper voice
+                    utterance.rate = 0.8;
+                    utterance.pitch = 0.1; // Much lower pitch for deeper voice
                     utterance.volume = 1;
                     
-                    // Enhanced voice selection with priority system
+                    // Advanced voice selection with quality prioritization
                     const voices = speechSynthesis.getVoices();
                     let selectedVoice = null;
                     
-                    // Priority 1: Look for specifically named male voices
-                    const maleNames = ['david', 'alex', 'daniel', 'thomas', 'paul', 'michael', 'john', 'james', 'robert', 'mark'];
-                    for (const name of maleNames) {
+                    // Priority 1: Look for Google voices (highest quality) with male characteristics
+                    selectedVoice = voices.find(voice => 
+                        voice.name.toLowerCase().includes('google') &&
+                        voice.lang.startsWith('en') && 
+                        (voice.name.toLowerCase().includes('male') || 
+                         voice.name.toLowerCase().includes('david') ||
+                         voice.name.toLowerCase().includes('english male'))
+                    );
+                    
+                    // Priority 2: Look for Microsoft voices with male characteristics
+                    if (!selectedVoice) {
                         selectedVoice = voices.find(voice => 
+                            voice.name.toLowerCase().includes('microsoft') &&
                             voice.lang.startsWith('en') && 
-                            voice.name.toLowerCase().includes(name)
+                            (voice.name.toLowerCase().includes('david') ||
+                             voice.name.toLowerCase().includes('mark') ||
+                             voice.name.toLowerCase().includes('male'))
                         );
-                        if (selectedVoice) break;
                     }
                     
-                    // Priority 2: Look for voices explicitly labeled as male
+                    // Priority 3: Look for Apple/macOS voices with male names
+                    if (!selectedVoice) {
+                        const appleMaleVoices = ['alex', 'daniel', 'fred', 'jorge', 'lee', 'ralph', 'sameer', 'thomas'];
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('en') && 
+                            appleMaleVoices.some(name => voice.name.toLowerCase().includes(name))
+                        );
+                    }
+                    
+                    // Priority 4: Look for any voice explicitly labeled as male
                     if (!selectedVoice) {
                         selectedVoice = voices.find(voice => 
                             voice.lang.startsWith('en') && 
@@ -3630,21 +3649,30 @@ Write exactly 3 sentences.`;
                         );
                     }
                     
-                    // Priority 3: Avoid obviously female voices and pick the first English voice
+                    // Priority 5: Avoid known female voices and select best remaining option
                     if (!selectedVoice) {
-                        const femaleIndicators = ['female', 'woman', 'samantha', 'susan', 'karen', 'sarah', 'emma', 'jessica'];
-                        selectedVoice = voices.find(voice => 
+                        const femaleIndicators = ['female', 'woman', 'samantha', 'susan', 'karen', 'sarah', 'emma', 'jessica', 'victoria', 'kate', 'serena', 'tessa', 'nicky', 'fiona'];
+                        const nonFemaleVoices = voices.filter(voice => 
                             voice.lang.startsWith('en') && 
                             !femaleIndicators.some(indicator => voice.name.toLowerCase().includes(indicator))
                         );
+                        
+                        // Prefer voices that are likely to be deeper/male
+                        selectedVoice = nonFemaleVoices.find(voice => 
+                            voice.name.toLowerCase().includes('david') ||
+                            voice.name.toLowerCase().includes('alex') ||
+                            voice.name.toLowerCase().includes('mark') ||
+                            voice.name.toLowerCase().includes('paul') ||
+                            voice.name.toLowerCase().includes('tom')
+                        ) || nonFemaleVoices[0];
                     }
                     
-                    // Priority 4: Last resort - any English voice with very low pitch
+                    // Priority 6: Last resort - any English voice with extremely low pitch
                     if (!selectedVoice) {
                         selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
                         if (selectedVoice) {
-                            utterance.pitch = 0.3; // Extremely low pitch as last resort
-                            utterance.rate = 0.7;
+                            utterance.pitch = 0.05; // Extremely low pitch as last resort
+                            utterance.rate = 0.65;
                         }
                     }
                     
@@ -3723,7 +3751,7 @@ Write exactly 3 sentences.`;
                                 Copy & Open NotebookLM
                             </button>
                             <button onclick="downloadNewsletter()" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
-                                Download HTML
+                                Download or Play
                             </button>
                             <button onclick="printNewsletter()" class="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm">
                                 Print
