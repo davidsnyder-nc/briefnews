@@ -2823,13 +2823,52 @@ Write exactly 3 sentences.`;
 
             showToast('Generating newsletter...', 'info');
 
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
+            // Calculate date range from articles
+            const articleDates = window.currentDisplayedArticles
+                .map(article => new Date(article.pubDate))
+                .filter(date => !isNaN(date))
+                .sort((a, b) => a - b);
+            
+            let dateStr;
+            if (articleDates.length > 0) {
+                const earliestDate = articleDates[0];
+                const latestDate = articleDates[articleDates.length - 1];
+                
+                const isSameDay = earliestDate.toDateString() === latestDate.toDateString();
+                
+                if (isSameDay) {
+                    dateStr = earliestDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                } else {
+                    const earliestDay = earliestDate.getDate();
+                    const latestDay = latestDate.getDate();
+                    const month = latestDate.toLocaleDateString('en-US', { month: 'long' });
+                    const year = latestDate.getFullYear();
+                    
+                    if (earliestDate.getMonth() === latestDate.getMonth()) {
+                        dateStr = `${month} ${earliestDay}${getOrdinalSuffix(earliestDay)} to ${latestDay}${getOrdinalSuffix(latestDay)}, ${year}`;
+                    } else {
+                        const earliestMonth = earliestDate.toLocaleDateString('en-US', { month: 'long' });
+                        dateStr = `${earliestMonth} ${earliestDay}${getOrdinalSuffix(earliestDay)} to ${month} ${latestDay}${getOrdinalSuffix(latestDay)}, ${year}`;
+                    }
+                }
+            } else {
+                const today = new Date();
+                dateStr = today.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+
+            // Get unique categories for header
+            const categories = [...new Set(window.currentDisplayedArticles.map(article => article.category || 'General'))];
+            const categoryText = categories.join(', ');
 
             // Group articles by category
             const articlesByCategory = {};

@@ -1,11 +1,11 @@
 # News Brief
 
-A sophisticated single-page HTML news aggregation application that collects, curates, and presents news from 139+ RSS feeds with intelligent AI-powered content processing.
+A sophisticated single-page HTML news aggregation application that collects, curates, and presents news from 88+ RSS feeds with intelligent AI-powered content processing and balanced multiple category selection.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Multi-Source RSS Aggregation**: Fetches news from 139+ verified RSS feeds across 18 categories
+- **Multi-Source RSS Aggregation**: Fetches news from 88+ verified RSS feeds across 18 categories
 - **AI-Powered Content Processing**: Intelligent summarization using Google Gemini or OpenAI GPT models
 - **Text-to-Speech Integration**: Google Cloud Text-to-Speech for article audio generation
 - **Responsive Design**: Optimized for desktop and mobile viewing
@@ -40,7 +40,8 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 - **Duplicate Detection**: Intelligent filtering of similar articles
 
 ### User Interface Features
-- **Category Selection**: Multiple category selection with toggle functionality
+- **Multiple Category Selection**: Balanced article distribution across selected categories
+- **Professional AI Summaries**: Single paragraph summaries with customizable prompts
 - **View Modes**: Row and grid layout options
 - **Article Index**: Quick navigation to specific articles
 - **Source Filtering**: Filter articles by news source
@@ -146,9 +147,9 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 
 ### AI Settings
 - **Provider Selection**: Choose between Gemini and OpenAI
-- **Processing Style**: Professional, conversational, analytical, or simple
+- **Processing Style**: Professional (default), conversational, analytical, or simple
 - **Content Length**: Brief, medium, or detailed summaries
-- **Additional Features**: Context addition, impact analysis, thought-provoking questions
+- **Custom Prompts**: User-defined AI processing instructions with default "Write ONE paragraph summary"
 
 ### Display Settings
 - **View Mode**: Row or grid layout
@@ -171,8 +172,8 @@ A sophisticated single-page HTML news aggregation application that collects, cur
 
 ## 🔄 RSS Feed Management
 
-### Default Feeds (139+ sources)
-The application includes curated, verified RSS feeds across all major news categories, ensuring reliable content delivery.
+### Default Feeds (88+ sources)
+The application includes curated, verified RSS feeds across all major news categories, ensuring reliable content delivery with balanced multiple category selection.
 
 ### Custom OPML Import
 - Upload OPML files to add custom RSS feeds
