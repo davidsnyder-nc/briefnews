@@ -197,7 +197,7 @@
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 onclick="navigateToHome()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
+            <h1 onclick="window.location.reload()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
                 <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
             </h1>
             <div class="flex items-center space-x-2">
@@ -205,7 +205,7 @@
                         class="hidden px-3 py-1 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
                     Generate Newsletter
                 </button>
-                <button id="navNews" onclick="navigateToHome()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
+                <button id="navNews" onclick="window.location.reload()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
                 <button id="navSettings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">Settings</button>
             </div>
         </div>
@@ -743,6 +743,8 @@ Write ONE paragraph summary.</textarea>
         }
 
         function navigateToHome() {
+            console.log('Navigating to home...');
+            
             // Show news page and hide settings
             document.getElementById('newsPage').style.display = 'block';
             document.getElementById('settingsPage').style.display = 'none';
@@ -1065,9 +1067,8 @@ Write ONE paragraph summary.`;
         }
 
         function startOver() {
-            // Use the comprehensive home navigation function
-            navigateToHome();
-            showToast('Reset to start page', 'info');
+            // Simple page reload to ensure clean state
+            window.location.reload();
         }
 
         function parseOpml(opmlContent) {
