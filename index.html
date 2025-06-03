@@ -161,25 +161,11 @@
         </div>
 
         <div id="wizardStep2" class="wizard-step">
-            <h3 class="text-lg font-medium mb-3">Step 2: Select Date Range</h3>
-            <label for="wizardDateRangeSelect" class="form-label">Date Range:</label>
-            <select id="wizardDateRangeSelect" class="form-input w-full mb-4">
-                <option value="today">Today</option>
-                <option value="anytime">Anytime</option>
-            </select>
+            <h3 class="text-lg font-medium mb-3">Step 2: Get Your Briefing!</h3>
+            <p class="mb-4 text-gray-600">You're all set! Click below to get your personalized news briefing.</p>
+            <p class="mb-4"><strong class="text-gray-700">Selected Category:</strong> <span id="wizardConfirmCategory">All</span></p>
             <div class="wizard-nav">
                 <button id="wizardPrevToStep1" class="btn btn-secondary">&larr; Previous</button>
-                <button id="wizardNextToStep3" class="btn">Next &rarr;</button>
-            </div>
-        </div>
-
-        <div id="wizardStep3" class="wizard-step">
-            <h3 class="text-lg font-medium mb-3">Step 3: Get Your Briefing!</h3>
-            <p class="mb-4 text-gray-600">You're all set! Click below to get your personalized news briefing.</p>
-            <p class="mb-1"><strong class="text-gray-700">Selected Category:</strong> <span id="wizardConfirmCategory">All</span></p>
-            <p class="mb-4"><strong class="text-gray-700">Selected Date Range:</strong> <span id="wizardConfirmDateRange">Today</span></p>
-            <div class="wizard-nav">
-                <button id="wizardPrevToStep2" class="btn btn-secondary">&larr; Previous</button>
                 <button id="wizardBriefMe" class="btn">Brief Me!</button>
             </div>
         </div>
@@ -188,8 +174,8 @@
 
     <div id="newsPage" class="page container mx-auto px-4 py-4">
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                <div>
+            <div class="flex gap-4 items-end">
+                <div class="flex-1">
                     <label for="categorySelect" class="form-label text-gray-700">Category:</label>
                     <select id="categorySelect" class="form-input w-full">
                         <option value="all">All Categories</option>
@@ -211,21 +197,7 @@
                         <option value="general">General</option>
                     </select>
                 </div>
-                <div>
-                    <label for="dateRangeSelect" class="form-label text-gray-700">Date Range:</label>
-                    <select id="dateRangeSelect" class="form-input w-full">
-                        <option value="today">Today</option>
-                        <option value="anytime">Anytime</option>
-                    </select>
-                </div>
-                <div id="sortingOptions" class="hidden"> <label for="sortSelect" class="form-label text-gray-700">Sort by:</label>
-                     <select id="sortSelect" class="form-input w-full">
-                        <option value="relevance">Relevance (AI default)</option>
-                        <option value="category">Category</option>
-                        <option value="sourceName">Source</option>
-                    </select>
-                </div>
-                <button id="generateNewsletter" class="btn w-full lg:col-start-4">
+                <button id="generateNewsletter" class="btn px-8">
                     Brief Me
                 </button>
             </div>
@@ -480,6 +452,11 @@
 
             // Wizard navigation
             document.getElementById('wizardNextToStep2').addEventListener('click', () => {
+                const category = document.getElementById('wizardCategorySelect').value;
+                
+                document.getElementById('wizardConfirmCategory').textContent = 
+                    category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1);
+                
                 document.getElementById('wizardStep1').classList.remove('active');
                 document.getElementById('wizardStep2').classList.add('active');
             });
@@ -489,31 +466,11 @@
                 document.getElementById('wizardStep1').classList.add('active');
             });
 
-            document.getElementById('wizardNextToStep3').addEventListener('click', () => {
-                const category = document.getElementById('wizardCategorySelect').value;
-                const dateRange = document.getElementById('wizardDateRangeSelect').value;
-                
-                document.getElementById('wizardConfirmCategory').textContent = 
-                    category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1);
-                document.getElementById('wizardConfirmDateRange').textContent = 
-                    dateRange === 'today' ? 'Today' : 'Anytime';
-                
-                document.getElementById('wizardStep2').classList.remove('active');
-                document.getElementById('wizardStep3').classList.add('active');
-            });
-
-            document.getElementById('wizardPrevToStep2').addEventListener('click', () => {
-                document.getElementById('wizardStep3').classList.remove('active');
-                document.getElementById('wizardStep2').classList.add('active');
-            });
-
             document.getElementById('wizardBriefMe').addEventListener('click', () => {
                 const category = document.getElementById('wizardCategorySelect').value;
-                const dateRange = document.getElementById('wizardDateRangeSelect').value;
                 
-                // Set main page selectors
+                // Set main page selector
                 document.getElementById('categorySelect').value = category;
-                document.getElementById('dateRangeSelect').value = dateRange;
                 
                 showNews();
                 generateNewsletter();
@@ -698,7 +655,6 @@
             }
 
             const category = document.getElementById('categorySelect').value;
-            const dateRange = document.getElementById('dateRangeSelect').value;
             const maxArticles = parseInt(localStorage.getItem('maxArticles') || '8');
             const digestLength = localStorage.getItem('digestLength') || 'medium';
 
@@ -718,30 +674,27 @@
                 }
 
                 // Fetch articles from RSS feeds (fetch more to account for filtering)
-                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 3);
+                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 4);
                 
                 if (articles.length === 0) {
                     throw new Error('No articles found for the selected criteria');
                 }
 
-                // Filter articles by date if needed
-                const filteredArticles = filterArticlesByDate(articles, dateRange);
-
                 // Apply blocked terms filter
                 const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
-                const cleanArticles = filterBlockedTerms(filteredArticles, blockedTerms);
+                const cleanArticles = filterBlockedTerms(articles, blockedTerms);
 
                 // Remove duplicate articles and keep the best version
                 const uniqueArticles = removeDuplicateArticles(cleanArticles);
 
-                // Sort articles with breaking news first - ALWAYS prioritize breaking news
+                // Sort articles with breaking news first
                 const sortedArticles = sortArticlesWithBreakingFirst(uniqueArticles);
 
                 // Limit to max articles
                 const finalArticles = sortedArticles.slice(0, maxArticles);
 
-                // Generate AI summaries with dateRange context passed to AI
-                const processedArticles = await generateAISummaries(finalArticles, apiKey, digestLength, category, dateRange);
+                // Generate AI summaries
+                const processedArticles = await generateAISummaries(finalArticles, apiKey, digestLength, category);
 
                 // Display articles
                 displayArticles(processedArticles);
@@ -877,103 +830,110 @@
 
         async function fetchArticlesFromFeeds(feeds, maxArticles) {
             const articles = [];
-            const corsProxy = 'https://api.allorigins.win/get?url=';
+            const corsProxies = [
+                'https://api.allorigins.win/get?url=',
+                'https://corsproxy.io/?',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ];
             
             // Process more feeds to get enough articles
-            const feedPromises = feeds.slice(0, 15).map(async (feed) => {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-                    
-                    const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    const xmlText = data.contents;
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-                    
-                    const items = xmlDoc.querySelectorAll('item');
-                    const feedArticles = [];
-                    
-                    for (const item of Array.from(items).slice(0, 3)) { // Max 3 articles per feed
-                        const rawTitle = item.querySelector('title')?.textContent || 'No Title';
-                        const rawDescription = item.querySelector('description')?.textContent || '';
-                        const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
+            for (let i = 0; i < Math.min(feeds.length, 25); i++) {
+                const feed = feeds[i];
+                let success = false;
+                
+                for (const corsProxy of corsProxies) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000);
                         
-                        // Enhanced image extraction
-                        let imageUrl = '';
+                        const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
                         
-                        // Try enclosure first
-                        const enclosure = item.querySelector('enclosure[type^="image"]');
-                        if (enclosure) {
-                            imageUrl = enclosure.getAttribute('url');
+                        if (!response.ok) continue;
+                        
+                        let xmlText;
+                        if (corsProxy.includes('allorigins')) {
+                            const data = await response.json();
+                            xmlText = data.contents;
+                        } else {
+                            xmlText = await response.text();
                         }
                         
-                        // Try media:content
-                        if (!imageUrl) {
-                            const mediaContent = item.querySelector('media\\:content[medium="image"]');
-                            if (mediaContent) {
-                                imageUrl = mediaContent.getAttribute('url');
-                            }
-                        }
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                         
-                        // Try image from content/description
-                        if (!imageUrl) {
-                            const imgMatch = (rawContent || rawDescription).match(/<img[^>]+src=["']([^"']+)["']/i);
-                            if (imgMatch) {
-                                imageUrl = imgMatch[1];
-                            }
-                        }
+                        if (xmlDoc.querySelector('parsererror')) continue;
                         
-                        const cleanContent = cleanHtmlContent(rawContent || rawDescription);
+                        const items = xmlDoc.querySelectorAll('item');
                         
-                        if (cleanContent.length > 50) { // Only include articles with substantial content
-                            const article = {
-                                title: cleanHtmlContent(rawTitle),
-                                description: cleanContent.substring(0, 500), // Limit for processing
-                                fullContent: cleanContent,
-                                link: item.querySelector('link')?.textContent || '',
-                                pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
-                                source: feed.title,
-                                category: feed.category,
-                                imageUrl: imageUrl,
-                                isBreaking: false
-                            };
+                        for (const item of Array.from(items).slice(0, 4)) {
+                            const rawTitle = item.querySelector('title')?.textContent || 'No Title';
+                            const rawDescription = item.querySelector('description')?.textContent || '';
+                            const rawContent = item.querySelector('content\\:encoded')?.textContent || rawDescription;
                             
-                            article.isBreaking = isBreakingNews(article);
-                            feedArticles.push(article);
+                            // Enhanced image extraction
+                            let imageUrl = '';
+                            
+                            const enclosure = item.querySelector('enclosure[type^="image"]');
+                            if (enclosure) {
+                                imageUrl = enclosure.getAttribute('url');
+                            }
+                            
+                            if (!imageUrl) {
+                                const mediaContent = item.querySelector('media\\:content[medium="image"], media\\:content[type^="image"]');
+                                if (mediaContent) {
+                                    imageUrl = mediaContent.getAttribute('url');
+                                }
+                            }
+                            
+                            if (!imageUrl) {
+                                const imgMatch = (rawContent || rawDescription).match(/<img[^>]+src=["']([^"']+)["']/i);
+                                if (imgMatch) {
+                                    imageUrl = imgMatch[1];
+                                }
+                            }
+                            
+                            const cleanContent = cleanHtmlContent(rawContent || rawDescription);
+                            
+                            if (cleanContent.length > 100) {
+                                const article = {
+                                    title: cleanHtmlContent(rawTitle),
+                                    description: cleanContent.substring(0, 600),
+                                    fullContent: cleanContent,
+                                    link: item.querySelector('link')?.textContent || '',
+                                    pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
+                                    source: feed.title,
+                                    category: feed.category,
+                                    imageUrl: imageUrl,
+                                    isBreaking: false
+                                };
+                                
+                                article.isBreaking = isBreakingNews(article);
+                                articles.push(article);
+                            }
                         }
+                        
+                        success = true;
+                        break;
+                    } catch (error) {
+                        continue;
                     }
-                    
-                    return feedArticles;
-                } catch (error) {
-                    console.error(`Error fetching from ${feed.title}:`, error);
-                    return [];
                 }
-            });
-            
-            // Wait for all feeds to complete
-            const feedResults = await Promise.allSettled(feedPromises);
-            
-            // Collect all articles from successful feeds
-            feedResults.forEach(result => {
-                if (result.status === 'fulfilled') {
-                    articles.push(...result.value);
+                
+                if (!success) {
+                    console.error(`Failed to fetch from ${feed.title} with all proxies`);
                 }
-            });
+                
+                if (articles.length >= maxArticles) break;
+            }
             
             console.log(`Fetched ${articles.length} articles from feeds`);
             return articles;
         }
 
-        async function generateAISummaries(articles, apiKey, digestLength, category, dateRange) {
+        async function generateAISummaries(articles, apiKey, digestLength, category) {
             const processedArticles = [];
             const batchSize = 3; // Process in smaller batches
             
