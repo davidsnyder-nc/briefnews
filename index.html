@@ -63,6 +63,55 @@
         .toast.error { background-color: #c82333; }
         .toast.success { background-color: #218838; }
         .toast.info { background-color: #0069d9; }
+        
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #1f2937;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .scroll-to-top:hover {
+            background: #374151;
+            transform: translateY(-2px);
+        }
+        
+        .audio-fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 18px;
+        }
+        
+        .audio-fab:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
 
         .settings-section { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .blocked-term-pill {
@@ -723,6 +772,7 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
 
             // Newsletter generation
             document.getElementById('generateNewsletter').addEventListener('click', generateNewsletter);
+            document.getElementById('generateTTSNewsletter').addEventListener('click', generateNewsletterWithTTS);
             document.getElementById('startOver').addEventListener('click', startOver);
 
             // Settings
@@ -1476,8 +1526,10 @@ Write exactly 3 sentences.`;
             // Show category dropdown and controls after articles are loaded
             document.getElementById('categoryDropdownContainer').style.display = 'flex';
             document.getElementById('generateNewsletter').style.display = 'inline-block';
-            document.getElementById('generateTTSNewsletter').style.display = 'inline-block';
             document.getElementById('startOver').style.display = 'inline-block';
+            
+            // Update floating buttons visibility
+            toggleFloatingButtons();
             
             // Create article index
             createArticleIndex(articles);
@@ -2021,6 +2073,37 @@ Write exactly 3 sentences.`;
                 }
             }
         }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function toggleFloatingButtons() {
+            const scrollButton = document.getElementById('scrollToTop');
+            const audioButton = document.getElementById('audioFab');
+            const articles = window.currentDisplayedArticles;
+            
+            // Show scroll button when scrolled down
+            if (window.scrollY > 300) {
+                scrollButton.style.display = 'flex';
+            } else {
+                scrollButton.style.display = 'none';
+            }
+            
+            // Show audio button when articles are loaded
+            if (articles && articles.length > 0) {
+                audioButton.style.display = 'flex';
+            } else {
+                audioButton.style.display = 'none';
+            }
+        }
+
+        // Add scroll event listener for floating buttons
+        window.addEventListener('scroll', toggleFloatingButtons);
+        window.addEventListener('resize', toggleFloatingButtons);
 
         function createLoadMoreButton() {
             // Remove existing load more button if it exists
@@ -2925,5 +3008,18 @@ Write exactly 3 sentences.`;
             loadSettings();
         });
     </script>
+    
+    <!-- Floating Action Buttons -->
+    <button id="scrollToTop" class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2l8 8h-4v8H6v-8H2l8-8z"/>
+        </svg>
+    </button>
+    
+    <button id="audioFab" class="audio-fab" onclick="generateNewsletterWithTTS()" title="Generate with Audio">
+        🎵
+    </button>
+    
+    <div id="toastContainer"></div>
 </body>
 </html>
