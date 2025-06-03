@@ -2303,6 +2303,12 @@ Write exactly 3 sentences.`;
         window.addEventListener('resize', toggleFloatingButtons);
 
         function createCategoryFilterButtons() {
+            // Only create category filter buttons when articles are displayed
+            const welcomeSection = document.getElementById('welcomeSection');
+            if (welcomeSection && welcomeSection.style.display !== 'none') {
+                return; // Don't create filter buttons on welcome page
+            }
+            
             // Remove existing category filter container if it exists
             const existingContainer = document.getElementById('categoryFilterContainer');
             if (existingContainer) {
