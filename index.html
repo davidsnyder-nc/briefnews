@@ -197,7 +197,7 @@
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 onclick="showNews()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
+            <h1 onclick="navigateToHome()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
                 <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
             </h1>
             <div class="flex items-center space-x-2">
@@ -205,7 +205,7 @@
                         class="hidden px-3 py-1 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
                     Generate Newsletter
                 </button>
-                <button id="navNews" onclick="showNews()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
+                <button id="navNews" onclick="navigateToHome()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
                 <button id="navSettings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">Settings</button>
             </div>
         </div>
@@ -742,9 +742,44 @@ Write ONE paragraph summary.</textarea>
             document.querySelector('.modal-close-button').addEventListener('click', closeModal);
         }
 
-        function showNews() {
+        function navigateToHome() {
+            // Show news page and hide settings
             document.getElementById('newsPage').classList.add('active');
             document.getElementById('settingsPage').classList.remove('active');
+            
+            // Show welcome section and hide articles/header
+            const welcomeSection = document.getElementById('welcomeSection');
+            const newsHeader = document.getElementById('newsHeader');
+            const headerNewsletterBtn = document.getElementById('headerNewsletterBtn');
+            
+            if (welcomeSection) {
+                welcomeSection.style.display = 'block';
+            }
+            
+            if (newsHeader) {
+                newsHeader.style.display = 'none';
+            }
+            
+            if (headerNewsletterBtn) {
+                headerNewsletterBtn.classList.add('hidden');
+            }
+            
+            // Clear articles and reset state
+            document.getElementById('newsletterArea').innerHTML = '';
+            document.getElementById('statusMessage').textContent = '';
+            
+            // Reset category selections
+            selectedCategories = [];
+            selectedFilterCategories = [];
+            
+            // Reset category buttons
+            document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('generateFromSelection').style.display = 'none';
+        }
+
+        function showNews() {
+            // Alias for backward compatibility
+            navigateToHome();
         }
 
         function showSettings() {
