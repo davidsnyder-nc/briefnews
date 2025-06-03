@@ -755,6 +755,10 @@ Write ONE paragraph summary.</textarea>
             if (welcomeSection) {
                 welcomeSection.style.display = 'block';
                 welcomeSection.style.visibility = 'visible';
+                // Force a reflow to ensure content is visible
+                welcomeSection.offsetHeight;
+            } else {
+                console.error('Welcome section not found');
             }
             
             if (newsHeader) {
@@ -765,16 +769,17 @@ Write ONE paragraph summary.</textarea>
                 headerNewsletterBtn.classList.add('hidden');
             }
             
-            // Ensure the newsletter area is cleared and hidden
+            // Clear articles and reset state with safety checks
             const newsletterArea = document.getElementById('newsletterArea');
             if (newsletterArea) {
                 newsletterArea.innerHTML = '';
                 newsletterArea.style.display = 'none';
             }
             
-            // Clear articles and reset state
-            document.getElementById('newsletterArea').innerHTML = '';
-            document.getElementById('statusMessage').textContent = '';
+            const statusMessageElement = document.getElementById('statusMessage');
+            if (statusMessageElement) {
+                statusMessageElement.textContent = '';
+            }
             
             // Hide category filter container if it exists
             const categoryFilterContainer = document.getElementById('categoryFilterContainer');
