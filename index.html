@@ -197,7 +197,7 @@
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 onclick="window.location.reload()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
+            <h1 onclick="window.location.href = window.location.origin + window.location.pathname" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
                 <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
             </h1>
             <div class="flex items-center space-x-2">
@@ -205,8 +205,19 @@
                         class="hidden px-3 py-1 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
                     Generate Newsletter
                 </button>
-                <button id="navNews" onclick="window.location.reload()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
-                <button id="navSettings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">Settings</button>
+                <button id="navNews" onclick="window.location.href = window.location.origin + window.location.pathname" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" fill="currentColor" fill-opacity="0.7"/>
+                        <path d="M8 8H16M8 12H16M8 16H12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    News
+                </button>
+                <button id="navSettings" class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L19 6.74C18.9 6.5 18.76 6.26 18.6 6.04L19.37 4.62L17.87 3.12L16.46 3.88C16.23 3.71 16 3.58 15.74 3.5L15.5 1.5H13.5L13.26 3.5C13 3.58 12.77 3.71 12.54 3.88L11.12 3.12L9.62 4.62L10.38 6.04C10.21 6.26 10.08 6.5 10 6.74L8 7V9L10 9.26C10.08 9.5 10.21 9.74 10.38 9.96L9.62 11.38L11.12 12.88L12.54 12.12C12.77 12.29 13 12.42 13.26 12.5L13.5 14.5H15.5L15.74 12.5C16 12.42 16.23 12.29 16.46 12.12L17.87 12.88L19.37 11.38L18.6 9.96C18.76 9.74 18.9 9.5 19 9.26L21 9ZM14.5 8C14.5 9.38 13.38 10.5 12 10.5C10.62 10.5 9.5 9.38 9.5 8C9.5 6.62 10.62 5.5 12 5.5C13.38 5.5 14.5 6.62 14.5 8Z" fill="currentColor"/>
+                    </svg>
+                    Settings
+                </button>
             </div>
         </div>
     </nav>
@@ -1067,8 +1078,8 @@ Write ONE paragraph summary.`;
         }
 
         function startOver() {
-            // Simple page reload to ensure clean state
-            window.location.reload();
+            // Navigate to home page cleanly
+            window.location.href = window.location.origin + window.location.pathname;
         }
 
         function parseOpml(opmlContent) {
