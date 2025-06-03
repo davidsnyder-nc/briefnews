@@ -26,11 +26,17 @@
         }
         .breaking-news {
             border-left: 4px solid #dc3545;
+            background: linear-gradient(90deg, rgba(220,53,69,0.1) 0%, rgba(255,255,255,1) 10%);
         }
         .feed-source { color: #5f6368; }
         .category-tag {
             background-color: #e8f0fe; color: #1a73e8;
             font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 0.25rem;
+        }
+        .breaking-tag {
+            background-color: #dc3545; color: white;
+            font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 0.25rem;
+            font-weight: bold; text-transform: uppercase;
         }
         .loader {
             border: 4px solid #f3f3f3; border-top: 4px solid #1a73e8;
@@ -546,32 +552,38 @@
         }
 
         function loadSettings() {
-            // Load API key
-            const apiKey = localStorage.getItem('geminiApiKey');
-            if (apiKey) {
-                document.getElementById('geminiApiKey').value = apiKey;
-            }
-
-            // Load OPML or use default
-            const opmlData = localStorage.getItem('opmlData');
-            if (opmlData) {
-                parseOpml(opmlData);
+            // Load and parse OPML feeds
+            const storedOpml = localStorage.getItem('opmlData');
+            if (storedOpml) {
+                parseOpml(storedOpml);
                 document.getElementById('opmlFileInfo').textContent = 'Custom OPML loaded';
             } else {
                 parseOpml(DEFAULT_OPML);
-                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139 sources)';
+                document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
             }
+
+            // Load settings
+            const apiKey = localStorage.getItem('geminiApiKey');
+            if (apiKey) document.getElementById('geminiApiKey').value = apiKey;
+
+            const maxArticles = localStorage.getItem('maxArticles');
+            if (maxArticles) document.getElementById('maxArticles').value = maxArticles;
+
+            const digestLength = localStorage.getItem('digestLength');
+            if (digestLength) document.getElementById('digestLength').value = digestLength;
+
+            const showReadingTime = localStorage.getItem('showReadingTime');
+            if (showReadingTime !== null) document.getElementById('showReadingTime').checked = showReadingTime === 'true';
+
+            const showSourceInfo = localStorage.getItem('showSourceInfo');
+            if (showSourceInfo !== null) document.getElementById('showSourceInfo').checked = showSourceInfo === 'true';
+
+            const showCategories = localStorage.getItem('showCategories');
+            if (showCategories !== null) document.getElementById('showCategories').checked = showCategories === 'true';
 
             // Load blocked terms
             const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
             displayBlockedTerms(blockedTerms);
-
-            // Load other settings
-            document.getElementById('maxArticles').value = localStorage.getItem('maxArticles') || '8';
-            document.getElementById('digestLength').value = localStorage.getItem('digestLength') || 'medium';
-            document.getElementById('showReadingTime').checked = localStorage.getItem('showReadingTime') !== 'false';
-            document.getElementById('showSourceInfo').checked = localStorage.getItem('showSourceInfo') !== 'false';
-            document.getElementById('showCategories').checked = localStorage.getItem('showCategories') !== 'false';
         }
 
         function saveAllSettings() {
@@ -581,8 +593,6 @@
                 localStorage.setItem('geminiApiKey', apiKey);
             }
 
-            // Save blocked terms (already saved when added)
-            
             // Save other settings
             localStorage.setItem('maxArticles', document.getElementById('maxArticles').value);
             localStorage.setItem('digestLength', document.getElementById('digestLength').value);
@@ -590,13 +600,13 @@
             localStorage.setItem('showSourceInfo', document.getElementById('showSourceInfo').checked);
             localStorage.setItem('showCategories', document.getElementById('showCategories').checked);
 
-            // Show confirmation modal
-            document.getElementById('saveConfirmModal').style.display = 'block';
+            // Show toast notification and navigate to home
+            showToast('Settings saved successfully!', 'success');
+            showNews();
         }
 
         function closeModal() {
             document.getElementById('saveConfirmModal').style.display = 'none';
-            // Navigate back to home page
             showNews();
         }
 
@@ -619,7 +629,7 @@
             localStorage.removeItem('opmlData');
             parseOpml(DEFAULT_OPML);
             document.getElementById('opmlFile').value = '';
-            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139 sources)';
+            document.getElementById('opmlFileInfo').textContent = 'Using default feeds (139+ sources)';
             showToast('Cleared custom OPML, using default feeds', 'info');
         }
 
@@ -708,7 +718,7 @@
                 }
 
                 // Fetch articles from RSS feeds
-                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 2); // Fetch more than needed
+                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 2);
                 
                 if (articles.length === 0) {
                     throw new Error('No articles found for the selected criteria');
@@ -721,13 +731,13 @@
                 const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
                 const cleanArticles = filterBlockedTerms(filteredArticles, blockedTerms);
 
-                // Sort articles with breaking news first
+                // Sort articles with breaking news first - ALWAYS prioritize breaking news
                 const sortedArticles = sortArticlesWithBreakingFirst(cleanArticles);
 
                 // Limit to max articles
                 const finalArticles = sortedArticles.slice(0, maxArticles);
 
-                // Generate AI summaries
+                // Generate AI summaries with dateRange context passed to AI
                 const processedArticles = await generateAISummaries(finalArticles, apiKey, digestLength, category, dateRange);
 
                 // Display articles
@@ -763,6 +773,7 @@
                 const aIsBreaking = isBreakingNews(a);
                 const bIsBreaking = isBreakingNews(b);
                 
+                // ALWAYS prioritize breaking news first regardless of other sorting
                 if (aIsBreaking && !bIsBreaking) return -1;
                 if (!aIsBreaking && bIsBreaking) return 1;
                 
@@ -790,22 +801,43 @@
             });
         }
 
+        function cleanHtmlContent(text) {
+            if (!text) return '';
+            // Remove HTML tags and decode entities
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent || div.innerText || '';
+        }
+
         async function fetchArticlesFromFeeds(feeds, maxArticles) {
             const articles = [];
             const corsProxy = 'https://api.allorigins.win/raw?url=';
             
-            for (const feed of feeds.slice(0, 20)) { // Limit to 20 feeds to avoid timeout
+            // Process feeds in parallel for better performance
+            const feedPromises = feeds.slice(0, 10).map(async (feed) => {
                 try {
-                    const response = await fetch(corsProxy + encodeURIComponent(feed.url));
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                    
+                    const response = await fetch(corsProxy + encodeURIComponent(feed.url), {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
                     const xmlText = await response.text();
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                     
                     const items = xmlDoc.querySelectorAll('item');
-                    for (const item of Array.from(items).slice(0, 3)) { // Max 3 articles per feed
+                    const feedArticles = [];
+                    
+                    for (const item of Array.from(items).slice(0, 2)) { // Max 2 articles per feed
+                        const rawTitle = item.querySelector('title')?.textContent || 'No Title';
+                        const rawDescription = item.querySelector('description')?.textContent || '';
+                        
                         const article = {
-                            title: item.querySelector('title')?.textContent || 'No Title',
-                            description: item.querySelector('description')?.textContent || '',
+                            title: cleanHtmlContent(rawTitle),
+                            description: cleanHtmlContent(rawDescription).substring(0, 300), // Limit description length
                             link: item.querySelector('link')?.textContent || '',
                             pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
                             source: feed.title,
@@ -814,85 +846,101 @@
                         };
                         
                         article.isBreaking = isBreakingNews(article);
-                        articles.push(article);
-                        
-                        if (articles.length >= maxArticles) break;
+                        feedArticles.push(article);
                     }
                     
-                    if (articles.length >= maxArticles) break;
+                    return feedArticles;
                 } catch (error) {
                     console.error(`Error fetching from ${feed.title}:`, error);
+                    return [];
                 }
-            }
+            });
+            
+            // Wait for all feeds to complete
+            const feedResults = await Promise.allSettled(feedPromises);
+            
+            // Collect all articles from successful feeds
+            feedResults.forEach(result => {
+                if (result.status === 'fulfilled') {
+                    articles.push(...result.value);
+                }
+            });
             
             return articles;
         }
 
         async function generateAISummaries(articles, apiKey, digestLength, category, dateRange) {
             const processedArticles = [];
+            const batchSize = 3; // Process in smaller batches
             
-            for (const article of articles) {
-                try {
-                    const prompt = `
-Create a ${digestLength} news summary for this article. The user is interested in ${category === 'all' ? 'all news categories' : category} and looking for ${dateRange} news.
+            for (let i = 0; i < articles.length; i += batchSize) {
+                const batch = articles.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (article) => {
+                    try {
+                        const prompt = `Summarize this news article in ${digestLength} style for ${category === 'all' ? 'general audience' : category} category.
 
 Title: ${article.title}
-Content: ${article.description}
+Content: ${article.description.substring(0, 500)}
 Source: ${article.source}
-Category: ${article.category}
 
-Please provide:
-1. A concise, engaging summary (2-3 sentences for brief, 3-4 for medium, 4-5 for detailed)
-2. Why this is important or relevant
-3. Key takeaways
+Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '3-4' : '4-5'} sentence summary focusing on key facts and relevance.`;
 
-Format as plain text, no special formatting.`;
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{
-                                    text: prompt
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: prompt
+                                    }]
                                 }]
-                            }]
-                        })
-                    });
+                            }),
+                            signal: controller.signal
+                        });
 
-                    if (!response.ok) {
-                        throw new Error(`Gemini API error: ${response.status}`);
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            throw new Error(`API Error: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        const aiSummary = data.candidates?.[0]?.content?.parts?.[0]?.text || article.description;
+
+                        return {
+                            ...article,
+                            aiSummary: cleanHtmlContent(aiSummary)
+                        };
+
+                    } catch (error) {
+                        console.error(`Error generating summary for ${article.title}:`, error);
+                        return {
+                            ...article,
+                            aiSummary: article.description || 'Summary unavailable'
+                        };
                     }
+                });
 
-                    const data = await response.json();
-                    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Summary unavailable';
-                    
-                    processedArticles.push({
-                        ...article,
-                        aiSummary: summary,
-                        readingTime: estimateReadingTime(summary)
-                    });
-                    
-                } catch (error) {
-                    console.error(`Error generating summary for ${article.title}:`, error);
-                    processedArticles.push({
-                        ...article,
-                        aiSummary: article.description || 'No summary available',
-                        readingTime: estimateReadingTime(article.description || '')
-                    });
+                // Process batch and add delay between batches
+                const batchResults = await Promise.allSettled(batchPromises);
+                batchResults.forEach(result => {
+                    if (result.status === 'fulfilled') {
+                        processedArticles.push(result.value);
+                    }
+                });
+
+                // Small delay between batches to avoid rate limits
+                if (i + batchSize < articles.length) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
             return processedArticles;
-        }
-
-        function estimateReadingTime(text) {
-            const wordsPerMinute = 200;
-            const wordCount = text.split(/\s+/).length;
-            const minutes = Math.ceil(wordCount / wordsPerMinute);
-            return `${minutes} min read`;
         }
 
         function displayArticles(articles) {
@@ -900,79 +948,63 @@ Format as plain text, no special formatting.`;
             const showReadingTime = localStorage.getItem('showReadingTime') !== 'false';
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
-            
-            container.innerHTML = articles.map(article => `
-                <article class="news-card rounded-lg p-6 ${article.isBreaking ? 'breaking-news' : ''}">
-                    <div>
-                        <div class="flex items-start justify-between mb-3">
-                            <h2 class="text-lg font-semibold text-gray-900 mb-2">${escapeHtml(article.title)}</h2>
-                            ${article.isBreaking ? '<span class="text-xs font-bold text-red-600 ml-2">BREAKING</span>' : ''}
-                        </div>
-                        
-                        ${showCategories ? `<div class="mb-3">
-                            <span class="category-tag">${escapeHtml(article.category)}</span>
-                        </div>` : ''}
-                        
-                        <div class="text-gray-700 mb-4 leading-relaxed">
-                            ${escapeHtml(article.aiSummary)}
-                        </div>
-                    </div>
-                    
-                    <div class="border-t pt-4 mt-4">
-                        <div class="flex items-center justify-between text-sm text-gray-500">
-                            <div class="flex items-center space-x-4">
-                                ${showSourceInfo ? `<span class="feed-source">${escapeHtml(article.source)}</span>` : ''}
-                                ${showReadingTime ? `<span>${article.readingTime}</span>` : ''}
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span>${formatDate(article.pubDate)}</span>
-                                ${article.link ? `<a href="${escapeHtml(article.link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-medium">Read More</a>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            `).join('');
-        }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch {
-                return 'Recently';
-            }
+            container.innerHTML = articles.map(article => {
+                const readingTime = showReadingTime ? Math.ceil(article.aiSummary.length / 200) : 0;
+                const breakingClass = article.isBreaking ? 'breaking-news' : '';
+                const breakingBadge = article.isBreaking ? '<span class="breaking-tag">Breaking</span>' : '';
+                
+                return `
+                    <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
+                        <header class="mb-4">
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                ${breakingBadge}
+                                ${showCategories ? `<span class="category-tag">${article.category}</span>` : ''}
+                            </div>
+                            <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                                <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                    ${article.title}
+                                </a>
+                            </h2>
+                            ${showSourceInfo ? `
+                            <div class="flex justify-between items-center text-sm text-gray-500">
+                                <span class="feed-source">${article.source}</span>
+                                ${showReadingTime ? `<span>${readingTime} min read</span>` : ''}
+                            </div>
+                            ` : ''}
+                        </header>
+                        <div class="flex-grow">
+                            <div class="text-gray-700 leading-relaxed">
+                                ${article.aiSummary}
+                            </div>
+                        </div>
+                        <footer class="mt-4 pt-4 border-t border-gray-100">
+                            <p class="text-xs text-gray-400">
+                                Published: ${new Date(article.pubDate).toLocaleDateString()}
+                            </p>
+                        </footer>
+                    </article>
+                `;
+            }).join('');
         }
 
         function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
             
-            document.getElementById('toastContainer').appendChild(toast);
+            container.appendChild(toast);
             
             // Trigger animation
             setTimeout(() => toast.classList.add('show'), 100);
             
-            // Remove after 3 seconds
+            // Remove after 4 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
+                setTimeout(() => container.removeChild(toast), 400);
+            }, 4000);
         }
-
-        // Make removeBlockedTerm available globally
-        window.removeBlockedTerm = removeBlockedTerm;
     </script>
 </body>
 </html>
