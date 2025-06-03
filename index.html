@@ -994,6 +994,9 @@ ${article.description.substring(0, 400)}`;
         }
 
         function displayArticles(articles) {
+            // Store articles globally for category filtering
+            window.currentDisplayedArticles = articles;
+            
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
@@ -1012,7 +1015,7 @@ ${article.description.substring(0, 400)}`;
                         <header class="mb-4">
                             <div class="flex flex-wrap gap-2 mb-2">
                                 ${breakingBadge}
-                                ${showCategories ? `<span class="category-tag">${article.category}</span>` : ''}
+                                ${showCategories ? `<span class="category-tag cursor-pointer hover:bg-blue-200" onclick="filterByCategory('${article.category}')">${article.category}</span>` : ''}
                             </div>
                             <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
                                 <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
@@ -1039,6 +1042,34 @@ ${article.description.substring(0, 400)}`;
                     </article>
                 `;
             }).join('');
+        }
+
+        function filterByCategory(categoryName) {
+            // Update the category selector
+            document.getElementById('categorySelect').value = categoryName.toLowerCase();
+            
+            // Store current articles for filtering
+            const currentArticles = window.currentDisplayedArticles || [];
+            
+            if (currentArticles.length > 0) {
+                // Filter and re-sort articles by the selected category
+                const filteredArticles = currentArticles.filter(article => 
+                    article.category.toLowerCase() === categoryName.toLowerCase()
+                );
+                
+                const otherArticles = currentArticles.filter(article => 
+                    article.category.toLowerCase() !== categoryName.toLowerCase()
+                );
+                
+                // Display selected category articles first, then others
+                const reorderedArticles = [...filteredArticles, ...otherArticles];
+                displayArticles(reorderedArticles);
+                
+                showToast(`Filtered by ${categoryName}`, 'info');
+            } else {
+                // If no current articles, generate new newsletter with this category
+                generateNewsletter();
+            }
         }
 
         function showToast(message, type = 'info') {
