@@ -753,25 +753,15 @@ Write ONE sentence summary. Maximum 10 words.</textarea>
             const aiProvider = localStorage.getItem('aiProvider') || 'gemini';
             document.getElementById('aiProvider').value = aiProvider;
             
-            // Auto-populate API keys from environment variables
-            let geminiApiKey = localStorage.getItem('geminiApiKey');
-            if (!geminiApiKey && window.location.hostname.includes('replit')) {
-                // Use environment variable for Gemini API key in Replit environment
-                geminiApiKey = 'GEMINI_API_KEY_FROM_ENV';
-                localStorage.setItem('geminiApiKey', geminiApiKey);
-            }
+            // Load API keys
+            const geminiApiKey = localStorage.getItem('geminiApiKey');
             if (geminiApiKey) {
-                document.getElementById('geminiApiKey').value = '••••••••••••••••'; // Show masked value
+                document.getElementById('geminiApiKey').value = geminiApiKey;
             }
             
-            let openaiApiKey = localStorage.getItem('openaiApiKey');
-            if (!openaiApiKey && window.location.hostname.includes('replit')) {
-                // Use environment variable for OpenAI API key in Replit environment if available
-                openaiApiKey = 'OPENAI_API_KEY_FROM_ENV';
-                localStorage.setItem('openaiApiKey', openaiApiKey);
-            }
+            const openaiApiKey = localStorage.getItem('openaiApiKey');
             if (openaiApiKey) {
-                document.getElementById('openaiApiKey').value = '••••••••••••••••'; // Show masked value
+                document.getElementById('openaiApiKey').value = openaiApiKey;
             }
             
             // Show/hide appropriate config section
@@ -1344,31 +1334,28 @@ Write exactly 3 sentences.`;
                         let response, data, aiContent;
 
                         if (aiProvider === 'gemini') {
-                            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                            // Use server-side proxy for Gemini API
+                            response = await fetch('/api/gemini', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
-                                    contents: [{
-                                        parts: [{
-                                            text: prompt
-                                        }]
-                                    }],
-                                    generationConfig: {
-                                        maxOutputTokens: maxTokens,
-                                        temperature: digestLength === 'brief' && !aiRewrite ? 0.1 : (aiRewrite ? 0.7 : 0.3)
-                                    }
+                                    prompt: prompt,
+                                    maxTokens: maxTokens,
+                                    temperature: digestLength === 'brief' && !aiRewrite ? 0.1 : (aiRewrite ? 0.7 : 0.3),
+                                    apiKey: apiKey
                                 }),
                                 signal: controller.signal
                             });
 
                             if (!response.ok) {
-                                throw new Error(`Gemini API Error: ${response.status}`);
+                                const errorText = await response.text();
+                                throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
                             }
 
                             data = await response.json();
-                            aiContent = data.candidates?.[0]?.content?.parts?.[0]?.text || article.description;
+                            aiContent = data.content || article.description;
                         } else {
                             // OpenAI API call
                             response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1409,6 +1396,7 @@ Write exactly 3 sentences.`;
 
                     } catch (error) {
                         console.warn(`AI processing failed for article: ${article.title}`, error.message);
+                        console.error('Full error details:', error);
                         return {
                             ...article,
                             aiSummary: article.description || 'Summary unavailable',
