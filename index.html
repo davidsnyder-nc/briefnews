@@ -744,8 +744,8 @@ Write ONE paragraph summary.</textarea>
 
         function navigateToHome() {
             // Show news page and hide settings
-            document.getElementById('newsPage').classList.add('active');
-            document.getElementById('settingsPage').classList.remove('active');
+            document.getElementById('newsPage').style.display = 'block';
+            document.getElementById('settingsPage').style.display = 'none';
             
             // Show welcome section and hide articles/header
             const welcomeSection = document.getElementById('welcomeSection');
@@ -930,8 +930,7 @@ Write ONE paragraph summary.`;
             // Show toast notification and navigate to home
             showToast('Settings saved successfully!', 'success');
             setTimeout(() => {
-                document.getElementById('newsPage').classList.add('active');
-                document.getElementById('settingsPage').classList.remove('active');
+                navigateToHome();
             }, 500);
         }
 
