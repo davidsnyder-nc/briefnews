@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![News Brief Screenshot](https://raw.githubusercontent.com/user/repo/main/screenshot.svg)
-
 **AI-powered news aggregation with intelligent filtering and custom newsletter generation**
 
 [![HTML](https://img.shields.io/badge/HTML-5-orange?style=flat-square&logo=html5)](https://html.spec.whatwg.org/)
@@ -26,8 +24,8 @@
 ### Advanced Capabilities
 - **Numbered Article System** - Articles displayed with numbers instead of icons for easy navigation
 - **Clickable Article Index** - Quick navigation to specific articles with truncated titles
-- **Google Text-to-Speech** - Convert articles to audio using Google's male voice (en-US-Standard-D)
-- **Audio Newsletter** - Listen to entire newsletter with play/pause controls and sequential playback
+- **Individual Article Audio** - Generate audio for specific articles using Google Text-to-Speech
+- **Scroll-to-Top Navigation** - Quick return to top when browsing long article lists
 - **Custom Newsletter Generation** - Export professionally formatted newsletters 
 - **Source Filtering** - View articles from specific news sources only
 - **Load More Articles** - Fetch additional unique content without duplicates
@@ -75,10 +73,10 @@
 5. **Load More**: Click "Load More Articles" for additional unique content
 
 ### Audio Features
-1. **Generate with Audio**: After articles load, click "Generate with Audio" button
-2. **Individual Playback**: Use play buttons on each article to listen to specific stories
-3. **Sequential Playback**: Use "Play All" to listen to the entire newsletter sequentially
-4. **Audio Controls**: Pause, resume, or stop audio playback at any time
+1. **Individual Article Audio**: Click "Generate Audio" button at the bottom of any article
+2. **On-Demand Generation**: Audio is created only for articles you specifically choose
+3. **Integrated Controls**: Audio player replaces the generation button after creation
+4. **Smart Playback**: Only one audio plays at a time, stopping others automatically
 
 ### Advanced Features
 - **Article Index Navigation**: Click numbered articles in the index for smooth scrolling with highlighting
@@ -89,11 +87,12 @@
 
 ### Newsletter Generation
 1. Generate articles using any method
-2. Choose from newsletter options:
+2. Choose from article options:
    - **Refresh**: Update articles with current settings
-   - **Generate with Audio**: Add Text-to-Speech capabilities to articles
+   - **Generate Audio**: Add Text-to-Speech to individual articles
+   - **Scroll to Top**: Quick navigation back to article index
 3. Export options available:
-   - **Copy Text**: Plain text for pasting elsewhere
+   - **Copy Text**: Clean plain text without CSS formatting
    - **Copy & Open NotebookLM**: Automatic integration with Google's NotebookLM
    - **Download HTML**: Professional newsletter that opens in a new tab
 
@@ -121,10 +120,10 @@
 - **Error Handling**: Graceful fallbacks when AI services are unavailable
 
 ### Audio Features
-- **MP3 Audio Generation**: High-quality audio synthesis from article content
-- **Sequential Playback**: Automatic progression through entire newsletter
-- **Individual Controls**: Play/pause buttons for each article
-- **Audio Management**: Global play all and stop all functionality
+- **On-Demand TTS**: Generate audio for individual articles using Google Text-to-Speech
+- **Article-Specific Audio**: Each article has its own audio generation button
+- **Integrated Player**: Audio controls replace generation button after creation
+- **Smart Audio Management**: Automatically stops other audio when starting new playback
 - **Blob URL Handling**: Efficient audio streaming without external dependencies
 
 ## 🔧 Customization
