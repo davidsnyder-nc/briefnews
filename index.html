@@ -116,11 +116,15 @@
 
     <nav class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl sm:text-2xl font-bold">
+            <h1 onclick="showNews()" class="text-xl sm:text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity">
                 <span class="app-title-brief">brief</span><span class="app-title-news">news</span>
             </h1>
-            <div>
-                <button id="navNews" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
+            <div class="flex items-center space-x-2">
+                <button id="headerNewsletterBtn" onclick="generateCustomNewsletter()" 
+                        class="hidden px-3 py-1 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
+                    Generate Newsletter
+                </button>
+                <button id="navNews" onclick="showNews()" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">News</button>
                 <button id="navSettings" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 focus:outline-none focus:bg-blue-800">Settings</button>
             </div>
         </div>
@@ -1441,8 +1445,11 @@ Write exactly 3 sentences.`;
             // Create load more button
             createLoadMoreButton();
             
-            // Create newsletter export button
-            createNewsletterExportButton();
+            // Show newsletter button in header
+            const headerNewsletterBtn = document.getElementById('headerNewsletterBtn');
+            if (headerNewsletterBtn) {
+                headerNewsletterBtn.classList.remove('hidden');
+            }
             
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
@@ -1922,34 +1929,7 @@ Write exactly 3 sentences.`;
             container.innerHTML += newArticlesHtml;
         }
 
-        function createNewsletterExportButton() {
-            // Remove existing export button if it exists
-            const existingButton = document.getElementById('exportNewsletterContainer');
-            if (existingButton) {
-                existingButton.remove();
-            }
-            
-            // Create export button container
-            const exportContainer = document.createElement('div');
-            exportContainer.id = 'exportNewsletterContainer';
-            exportContainer.className = 'mb-6 text-center';
-            
-            exportContainer.innerHTML = `
-                <button onclick="generateCustomNewsletter()" 
-                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors inline-flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                    </svg>
-                    Generate Newsletter
-                </button>
-            `;
-            
-            // Insert after source filter
-            const sourceFilter = document.getElementById('sourceFilterContainer');
-            if (sourceFilter) {
-                sourceFilter.parentNode.insertBefore(exportContainer, sourceFilter.nextSibling);
-            }
-        }
+
 
         function generateArticleIcon(article) {
             // Generate clean, simple icons based on article category
@@ -2445,10 +2425,11 @@ Write exactly 3 sentences.`;
             }
         }
 
-        function startOver() {
-            // Show welcome section
+        function showNews() {
+            // Show welcome section and hide header controls
             const welcomeSection = document.getElementById('welcomeSection');
             const newsHeader = document.getElementById('newsHeader');
+            const headerNewsletterBtn = document.getElementById('headerNewsletterBtn');
             
             if (welcomeSection) {
                 welcomeSection.style.display = 'block';
@@ -2458,13 +2439,31 @@ Write exactly 3 sentences.`;
                 newsHeader.style.display = 'none';
             }
             
-            // Clear articles
+            // Hide newsletter button in header
+            if (headerNewsletterBtn) {
+                headerNewsletterBtn.classList.add('hidden');
+            }
+            
+            // Clear articles and filters
             document.getElementById('newsletterArea').innerHTML = '';
             document.getElementById('statusMessage').textContent = '';
+            
+            // Remove source filter and load more buttons if they exist
+            const sourceFilter = document.getElementById('sourceFilterContainer');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            if (sourceFilter) sourceFilter.remove();
+            if (loadMoreContainer) loadMoreContainer.remove();
             
             // Reset category selection
             document.getElementById('categorySelect').value = 'all';
             
+            // Clear current articles
+            window.currentDisplayedArticles = [];
+        }
+
+        function startOver() {
+            // Alias for showNews for backward compatibility
+            showNews();
             showToast('Ready to start over!', 'info');
         }
 
