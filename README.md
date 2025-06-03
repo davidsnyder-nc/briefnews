@@ -1,199 +1,202 @@
 # News Brief
 
-<div align="center">
-
-**AI-powered news aggregation with intelligent filtering and custom newsletter generation**
-
-[![HTML](https://img.shields.io/badge/HTML-5-orange?style=flat-square&logo=html5)](https://html.spec.whatwg.org/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=flat-square&logo=javascript)](https://www.ecma-international.org/ecma-262/)
-[![CSS](https://img.shields.io/badge/CSS-3-blue?style=flat-square&logo=css3)](https://www.w3.org/Style/CSS/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-
-</div>
+A sophisticated single-page HTML news aggregation application that collects, curates, and presents news from 139+ RSS feeds with intelligent AI-powered content processing.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **139+ RSS Feed Sources** - Aggregates news from verified, trusted sources
-- **AI-Powered Summaries** - Uses Google Gemini or OpenAI to generate intelligent article summaries
-- **Multi-Category Support** - Technology, Business, Sports, Science, Health, Entertainment, and more
-- **Breaking News Detection** - Automatically prioritizes urgent news stories
-- **Smart Filtering** - Block unwanted terms and filter by source or category
-- **Witty Loading Messages** - 20+ random humorous loading messages for better user experience
+- **Multi-Source RSS Aggregation**: Fetches news from 139+ verified RSS feeds across 18 categories
+- **AI-Powered Content Processing**: Intelligent summarization using Google Gemini or OpenAI GPT models
+- **Text-to-Speech Integration**: Google Cloud Text-to-Speech for article audio generation
+- **Responsive Design**: Optimized for desktop and mobile viewing
+- **Single HTML File**: Complete application in one portable file
 
-### Advanced Capabilities
-- **Numbered Article System** - Articles displayed with numbers instead of icons for easy navigation
-- **Clickable Article Index** - Quick navigation to specific articles with truncated titles
-- **Individual Article Audio** - Generate audio for specific articles using Google Text-to-Speech
-- **Scroll-to-Top Navigation** - Quick return to top when browsing long article lists
-- **Custom Newsletter Generation** - Export professionally formatted newsletters 
-- **Source Filtering** - View articles from specific news sources only
-- **Load More Articles** - Fetch additional unique content without duplicates
-- **AI Rewrite Mode** - Transform articles into polished, engaging stories
-- **Custom AI Prompts** - Personalize how AI processes your news content
-- **Multiple Export Options** - Copy text, integrate with NotebookLM, or download HTML
+### News Categories
+- **General News**: The New York Times, CNN, NPR, CBS News, Associated Press
+- **Technology**: TechCrunch, WIRED, The Verge, CNET, Ars Technica, Gizmodo
+- **Business**: Wall Street Journal, Forbes, Reuters Business, Bloomberg, MarketWatch
+- **Sports**: ESPN, CBS Sports, Yahoo Sports, Sports Illustrated, NBC Sports
+- **Science**: Live Science, Space.com, Scientific American, Nature, ScienceDaily
+- **Health**: WebMD, Mayo Clinic, Healthline, Medical News Today
+- **Entertainment**: Entertainment Weekly, Variety, Rolling Stone, TMZ, Hollywood Reporter
+- **Politics**: Politico, The Hill, Washington Post Politics, NPR Politics, CNN Politics
+- **World News**: BBC World, Al Jazeera, The Guardian World, Reuters World News
+- **Environment**: Environmental Defense Fund, Sierra Club, Greenpeace, Earth Island Journal
+- **Education**: Education Week, Inside Higher Ed, Chronicle of Higher Education
+- **Lifestyle**: Lifehacker, Apartment Therapy, The Spruce, Better Homes & Gardens
+- **Food & Cooking**: Serious Eats, Allrecipes, Food Network, Bon Appétit
+- **Travel**: Condé Nast Traveler, Travel + Leisure, Nomadic Matt
+- **Personal Finance**: NerdWallet, The Motley Fool, Money Under 30
+- **Gaming**: IGN, GameSpot, Polygon, Kotaku, PC Gamer
+- **Podcasts**: This American Life, Radiolab, Freakonomics Radio
+- **Local News**: Customizable local news sources
 
-### User Experience
-- **Larger Loading Spinner** - Enhanced visibility during content loading
-- **Progressive UI** - Category dropdown and controls appear only after articles load
-- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
-- **Row/Grid View Modes** - Choose your preferred article layout
-- **Toast Notifications** - Non-intrusive feedback for all actions
-- **OPML Support** - Import custom RSS feed collections
-- **Persistent Settings** - All preferences saved locally
-- **Article Highlighting** - Smooth scrolling with visual highlighting when using index navigation
+### AI Content Processing
+- **Multiple AI Providers**: Support for Google Gemini and OpenAI GPT models
+- **Content Summarization**: Brief, medium, or detailed summaries
+- **Breaking News Detection**: Automatic identification and prioritization
+- **Content Rewriting**: AI-powered article rewriting in multiple styles
+- **Custom Prompts**: User-defined AI processing instructions
+- **Duplicate Detection**: Intelligent filtering of similar articles
 
-## 🎯 Quick Start
-
-1. **Download the HTML file** or clone this repository
-2. **Open `index.html`** in any modern web browser
-3. **Configure AI provider** in Settings (Gemini API key recommended)
-4. **Select news categories** and generate your personalized news digest
-
-### Getting API Keys
-
-**Google Gemini (Recommended)**
-- Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-- Create a free API key
-- Add it in Settings → AI Provider Configuration
-- **Note**: The same API key is used for both Gemini AI and Google Text-to-Speech features
-
-**OpenAI (Alternative)**
-- Visit [OpenAI Platform](https://platform.openai.com/api-keys)
-- Generate an API key
-- Select OpenAI in Settings and add your key
-
-## 📖 How to Use
-
-### Basic Usage
-1. **Select Categories**: Choose from 15+ news categories or select multiple for a custom mix
-2. **Generate Newsletter**: Click any category button to fetch and process articles
-3. **Navigate Articles**: Use the clickable article index at the top to jump to specific stories
-4. **Filter Content**: Use source filter buttons to view articles from specific news outlets
-5. **Load More**: Click "Load More Articles" for additional unique content
+### User Interface Features
+- **Category Selection**: Multiple category selection with toggle functionality
+- **View Modes**: Row and grid layout options
+- **Article Index**: Quick navigation to specific articles
+- **Source Filtering**: Filter articles by news source
+- **Image Integration**: Article thumbnails with responsive layout
+- **Real-time Status**: Loading indicators and progress tracking
 
 ### Audio Features
-1. **Individual Article Audio**: Click "Generate Audio" button at the bottom of any article
-2. **On-Demand Generation**: Audio is created only for articles you specifically choose
-3. **Integrated Controls**: Audio player replaces the generation button after creation
-4. **Smart Playback**: Only one audio plays at a time, stopping others automatically
+- **Individual Article Audio**: Generate speech for specific articles
+- **Batch Audio Generation**: Create audio for all articles
+- **Audio Controls**: Play, pause, and sequential playback
+- **Voice Selection**: Multiple voice options for text-to-speech
+
+### Data Management
+- **OPML Support**: Import custom RSS feed collections
+- **Settings Persistence**: Local storage of user preferences
+- **Export Options**: Download newsletters in various formats
+- **Content Filtering**: Block terms and customize content
 
 ### Advanced Features
-- **Article Index Navigation**: Click numbered articles in the index for smooth scrolling with highlighting
-- **AI Rewrite Mode**: Enable in Settings for completely rewritten articles instead of summaries
-- **Custom Prompts**: Modify the AI prompt template to change how articles are processed
-- **Newsletter Export**: Generate professional newsletters with numbered articles
-- **Blocked Terms**: Add keywords to automatically filter out unwanted content
+- **Multi-Proxy Support**: Robust RSS fetching with fallback mechanisms
+- **Error Handling**: Comprehensive error management and user feedback
+- **Performance Optimization**: Parallel processing and efficient data handling
+- **Mobile Optimization**: Touch-friendly interface and responsive design
 
-### Newsletter Generation
-1. Generate articles using any method
-2. Choose from article options:
-   - **Refresh**: Update articles with current settings
-   - **Generate Audio**: Add Text-to-Speech to individual articles
-   - **Scroll to Top**: Quick navigation back to article index
-3. Export options available:
-   - **Copy Text**: Clean plain text without CSS formatting
-   - **Copy & Open NotebookLM**: Automatic integration with Google's NotebookLM
-   - **Download HTML**: Professional newsletter that opens in a new tab
+## 🛠 Setup & Configuration
 
-## 🛠 Technical Details
+### Prerequisites
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- Internet connection for RSS feeds and AI services
+
+### API Key Configuration
+1. **Google Gemini API** (Recommended):
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Generate a new API key
+   - Enter in Settings → AI Provider Configuration
+
+2. **OpenAI API** (Alternative):
+   - Visit [OpenAI API Keys](https://platform.openai.com/api-keys)
+   - Generate a new API key
+   - Enter in Settings → AI Provider Configuration
+
+3. **Google Cloud Text-to-Speech** (Optional):
+   - Enable the Text-to-Speech API in Google Cloud Console
+   - Use the same API key as Gemini
+
+### Quick Start
+1. Download the `index.html` file
+2. Open in any modern web browser
+3. Configure AI API keys in Settings
+4. Select news categories and generate your first brief
+
+## 📖 Usage Guide
+
+### Basic Usage
+1. **Select Categories**: Choose one or multiple news categories
+2. **Generate Brief**: Click category buttons or use "Generate News from Selected Categories"
+3. **Browse Articles**: Read AI-generated summaries with source links
+4. **Audio Playback**: Generate and listen to article audio
+5. **Filter & Sort**: Use source filters and view options
+
+### Advanced Usage
+1. **Custom OPML**: Upload your own RSS feed collections
+2. **AI Customization**: Configure AI provider, style, and prompts
+3. **Content Filtering**: Block specific terms or sources
+4. **Export Options**: Download newsletters for sharing
+
+### Category Refresh System
+- After generating articles, use the blue "Refresh with different categories" section
+- Select multiple categories for combined news coverage
+- Use "Clear Selection" to reset category choices
+
+## 🔧 Technical Details
 
 ### Architecture
-- **Single HTML File**: Entire application contained in one file for maximum portability
-- **Client-Side Processing**: No server required, runs entirely in the browser
-- **Local Storage**: Settings and preferences persist between sessions
-- **RSS Parsing**: Native XML parsing with CORS proxy handling
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3 with Tailwind CSS
+- **RSS Processing**: Multi-proxy CORS handling with fallback mechanisms
+- **AI Integration**: RESTful API calls to Gemini/OpenAI services
+- **Audio Generation**: Google Cloud Text-to-Speech API integration
+- **Data Storage**: Browser localStorage for settings and preferences
 
-### Supported News Sources
-- **General News**: NYT, CNN, Reuters, BBC, NPR, Associated Press
-- **Technology**: TechCrunch, WIRED, The Verge, Ars Technica, Engadget
-- **Business**: Bloomberg, Forbes, MarketWatch, Financial Times
-- **Sports**: ESPN, Sports Illustrated, Bleacher Report
-- **Science**: Scientific American, Nature, New Scientist
-- **And 250+ more verified sources across all categories**
+### Performance Features
+- **Parallel Processing**: Concurrent RSS feed fetching
+- **Smart Caching**: Efficient data management and storage
+- **Error Recovery**: Robust fallback mechanisms for failed requests
+- **Progressive Loading**: Incremental content display
+- **Mobile Optimization**: Responsive design and touch interactions
 
-### AI Integration
-- **Google Gemini 1.5 Flash**: Primary AI provider for speed and accuracy
-- **OpenAI GPT-4**: Alternative option with proven reliability
-- **Google Text-to-Speech**: Convert articles to audio using en-US-Standard-D (cheapest male voice)
-- **Custom Prompts**: Full control over AI processing instructions
-- **Error Handling**: Graceful fallbacks when AI services are unavailable
+### Security & Privacy
+- **Client-Side Processing**: All data processing occurs in the browser
+- **Secure API Calls**: HTTPS-only communication with external services
+- **No Data Collection**: No user data is stored or transmitted
+- **Local Storage Only**: All settings remain on the user's device
 
-### Audio Features
-- **On-Demand TTS**: Generate audio for individual articles using Google Text-to-Speech
-- **Article-Specific Audio**: Each article has its own audio generation button
-- **Integrated Player**: Audio controls replace generation button after creation
-- **Smart Audio Management**: Automatically stops other audio when starting new playback
-- **Blob URL Handling**: Efficient audio streaming without external dependencies
+## 🎛 Configuration Options
 
-## 🔧 Customization
+### AI Settings
+- **Provider Selection**: Choose between Gemini and OpenAI
+- **Processing Style**: Professional, conversational, analytical, or simple
+- **Content Length**: Brief, medium, or detailed summaries
+- **Additional Features**: Context addition, impact analysis, thought-provoking questions
 
-### Adding Custom RSS Feeds
-1. Create an OPML file with your preferred feeds
-2. Upload via Settings → RSS Feeds (OPML)
-3. Or edit the `DEFAULT_OPML` constant in the code
+### Display Settings
+- **View Mode**: Row or grid layout
+- **Source Information**: Show/hide source details
+- **Category Tags**: Display article categories
+- **Breaking News**: Highlight urgent stories
 
-### Modifying AI Behavior
-- **Writing Style**: Choose from Professional, Conversational, Analytical, or Simple
-- **Custom Prompts**: Use `{article.title}` and `{article.description}` placeholders
-- **Rewrite Mode**: Enable for complete article transformation vs. summarization
+### Content Filtering
+- **Blocked Terms**: Filter out unwanted content
+- **Source Selection**: Choose specific news sources
+- **Date Range**: Filter by publication date
+- **Duplicate Handling**: Automatic similar article removal
 
-### Styling and Layout
-- Built with Tailwind CSS for easy customization
-- Modify CSS classes to change colors, spacing, and layout
-- Responsive design adapts to all screen sizes
+## 📱 Mobile Support
 
-## 📱 Browser Compatibility
+- **Responsive Layout**: Optimized for all screen sizes
+- **Touch Controls**: Finger-friendly buttons and navigation
+- **Mobile-First Design**: Prioritized mobile user experience
+- **Adaptive Images**: Proper image scaling and positioning
 
-- **Chrome/Chromium**: Full support (recommended)
-- **Firefox**: Full support
-- **Safari**: Full support
-- **Edge**: Full support
-- **Mobile Browsers**: Responsive design works on all devices
+## 🔄 RSS Feed Management
 
-## 🔒 Privacy & Security
+### Default Feeds (139+ sources)
+The application includes curated, verified RSS feeds across all major news categories, ensuring reliable content delivery.
 
-- **No Data Collection**: All processing happens locally in your browser
-- **API Keys**: Stored securely in browser local storage
-- **No Tracking**: No analytics, cookies, or external tracking
-- **Open Source**: Full transparency with readable code
+### Custom OPML Import
+- Upload OPML files to add custom RSS feeds
+- Automatically categorizes feeds by OPML structure
+- Overwrites default feeds when custom OPML is loaded
+- Clear custom feeds to restore defaults
 
-## 🤝 Contributing
+## 🚨 Troubleshooting
 
-This project is designed as a single-file application for maximum simplicity and portability. Contributions are welcome for:
+### Common Issues
+1. **No Articles Loading**: Check internet connection and API keys
+2. **AI Processing Fails**: Verify API key configuration
+3. **Audio Not Working**: Ensure Google Cloud TTS is enabled
+4. **RSS Feeds Failing**: Most feeds use rate limiting; this is normal
 
-- Adding new verified RSS feed sources
-- Improving AI prompt templates
-- Enhancing the user interface
-- Bug fixes and performance optimizations
+### Error Messages
+- **API Configuration Required**: Add AI provider API keys in settings
+- **Network Issues**: Check internet connection
+- **Rate Limiting**: Some feeds may be temporarily unavailable
 
 ## 📄 License
 
-MIT License - feel free to use, modify, and distribute as needed.
+This project is open source and available under the MIT License.
 
-## 🆘 Support
+## 🤝 Contributing
 
-### Common Issues
-- **No articles loading**: Check your internet connection and RSS feed availability
-- **AI not working**: Verify your API key is correctly configured in Settings
-- **Settings not saving**: Ensure local storage is enabled in your browser
-- **Audio not generating**: Confirm Google API key is set and has Text-to-Speech API enabled
-- **Article index not showing**: Wait for articles to fully load before expecting navigation features
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
 
-### Troubleshooting
-1. **Clear browser cache** if experiencing issues
-2. **Check browser console** for detailed error messages
-3. **Verify API keys** are valid and have sufficient quota for both AI and TTS services
-4. **Test with default feeds** before using custom OPML files
-5. **Audio issues**: Ensure browser supports HTML5 audio and check API quotas
-6. **Progressive loading**: Category controls appear only after successful article generation
+## 📞 Support
+
+For support and questions, please open an issue on the GitHub repository.
 
 ---
 
-<div align="center">
-
-**Built with ❤️ for news enthusiasts who value quality, curation, and customization**
-
-[Report Bug](https://github.com/user/repo/issues) • [Request Feature](https://github.com/user/repo/issues) • [Documentation](https://github.com/user/repo/wiki)
-
-</div>
+**News Brief** - Your intelligent news aggregation companion
