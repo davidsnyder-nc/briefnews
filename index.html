@@ -2561,10 +2561,8 @@ Write exactly 3 sentences.`;
                 return;
             }
 
-            // Extract text content from HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = window.currentNewsletterHTML;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            // Create a clean text version without CSS
+            const textContent = generateCleanNewsletterText();
 
             navigator.clipboard.writeText(textContent).then(() => {
                 showToast('Newsletter text copied to clipboard', 'success');
@@ -2780,11 +2778,19 @@ Write exactly 3 sentences.`;
             document.getElementById('newsletterArea').innerHTML = '';
             document.getElementById('statusMessage').textContent = '';
             
-            // Remove source filter and load more buttons if they exist
+            // Hide article index
+            const articleIndex = document.getElementById('articleIndex');
+            if (articleIndex) {
+                articleIndex.style.display = 'none';
+            }
+            
+            // Remove source filter, load more buttons, and audio controls if they exist
             const sourceFilter = document.getElementById('sourceFilterContainer');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
+            const audioContainer = document.getElementById('audioControlsContainer');
             if (sourceFilter) sourceFilter.remove();
             if (loadMoreContainer) loadMoreContainer.remove();
+            if (audioContainer) audioContainer.remove();
             
             // Reset category selection
             document.getElementById('categorySelect').value = 'all';
