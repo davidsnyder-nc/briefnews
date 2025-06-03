@@ -1435,6 +1435,9 @@ Write exactly 3 sentences.`;
                 welcomeSection.style.display = 'none';
             }
             
+            // Create source filter buttons
+            createSourceFilterButtons(articles);
+            
             const container = document.getElementById('newsletterArea');
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
@@ -1530,6 +1533,166 @@ Write exactly 3 sentences.`;
                             </footer>
                         </article>
                     `;
+                }
+            }).join('');
+        }
+
+        function createSourceFilterButtons(articles) {
+            // Get unique sources from articles
+            const sources = [...new Set(articles.map(article => article.source))].sort();
+            
+            // Create filter container if it doesn't exist
+            let filterContainer = document.getElementById('sourceFilterContainer');
+            if (!filterContainer) {
+                filterContainer = document.createElement('div');
+                filterContainer.id = 'sourceFilterContainer';
+                filterContainer.className = 'mb-6 p-4 bg-gray-50 rounded-lg';
+                
+                const newsletterArea = document.getElementById('newsletterArea');
+                newsletterArea.parentNode.insertBefore(filterContainer, newsletterArea);
+            }
+            
+            // Create filter buttons
+            const filterButtons = sources.map(source => 
+                `<button onclick="filterBySource('${source}')" 
+                         class="source-filter-btn px-3 py-1 m-1 bg-white border border-gray-300 rounded-full text-sm hover:bg-blue-50 hover:border-blue-300 transition-colors">
+                    ${source}
+                </button>`
+            ).join('');
+            
+            filterContainer.innerHTML = `
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700 mr-2">Filter by source:</span>
+                    <button onclick="showAllSources()" 
+                            class="source-filter-btn px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors">
+                        All Sources
+                    </button>
+                    ${filterButtons}
+                </div>
+            `;
+        }
+        
+        function filterBySource(sourceName) {
+            const filteredArticles = window.currentDisplayedArticles.filter(article => article.source === sourceName);
+            renderFilteredArticles(filteredArticles);
+            
+            // Update button states
+            document.querySelectorAll('.source-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'border-gray-300');
+            });
+            
+            event.target.classList.remove('bg-white', 'border-gray-300');
+            event.target.classList.add('bg-blue-600', 'text-white');
+            
+            showToast(`Showing ${filteredArticles.length} articles from ${sourceName}`, 'info');
+        }
+        
+        function showAllSources() {
+            renderFilteredArticles(window.currentDisplayedArticles);
+            
+            // Update button states
+            document.querySelectorAll('.source-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'border-gray-300');
+            });
+            
+            event.target.classList.remove('bg-white', 'border-gray-300');
+            event.target.classList.add('bg-blue-600', 'text-white');
+            
+            showToast(`Showing all ${window.currentDisplayedArticles.length} articles`, 'info');
+        }
+        
+        function renderFilteredArticles(articles) {
+            const container = document.getElementById('newsletterArea');
+            const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
+            const showCategories = localStorage.getItem('showCategories') !== 'false';
+            const viewMode = localStorage.getItem('viewMode') || 'row';
+
+            container.innerHTML = articles.map(article => {
+                const breakingClass = article.isBreaking ? 'breaking-news' : '';
+                const breakingBadge = article.isBreaking ? '<span class="breaking-tag">Breaking</span>' : '';
+                
+                if (viewMode === 'row') {
+                    // Row view - horizontal layout with image on the left
+                    const imageHtml = article.imageUrl ? 
+                        `<div class="flex-shrink-0 mr-6">
+                            <img src="${article.imageUrl}" alt="${article.title}" class="w-32 h-24 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
+                        </div>` : '';
+                    
+                    return `
+                        <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
+                            <div class="flex">
+                                ${imageHtml}
+                                <div class="flex-grow">
+                                    <header class="mb-3">
+                                        <div class="flex flex-wrap gap-2 mb-2">
+                                            ${breakingBadge}
+                                            ${showCategories ? `<span class="category-tag cursor-pointer hover:bg-blue-200" onclick="filterByCategory('${article.category}')">${article.category}</span>` : ''}
+                                        </div>
+                                        <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                                            <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                                ${article.title}
+                                            </a>
+                                        </h2>
+                                        ${showSourceInfo ? `
+                                        <div class="text-sm text-gray-500">
+                                            <span class="feed-source">${article.source}</span>
+                                        </div>
+                                        ` : ''}
+                                    </header>
+                                    <div class="content-area">
+                                        ${article.isRewritten ? `<div class="text-xs text-blue-600 mb-2 flex items-center">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.828-2.828z"/>
+                                            </svg>
+                                            AI Rewritten Story
+                                        </div>` : ''}
+                                        <div class="text-gray-700 leading-relaxed">
+                                            ${article.aiSummary}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>`;
+                } else {
+                    // Grid view - vertical layout with image on top
+                    const imageHtml = article.imageUrl ? 
+                        `<div class="mb-4">
+                            <img src="${article.imageUrl}" alt="${article.title}" class="w-full h-48 object-cover rounded-lg" loading="lazy" onerror="this.style.display='none'">
+                        </div>` : '';
+                    
+                    return `
+                        <article class="news-card ${breakingClass} rounded-lg p-6 shadow-sm">
+                            ${imageHtml}
+                            <header class="mb-3">
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    ${breakingBadge}
+                                    ${showCategories ? `<span class="category-tag cursor-pointer hover:bg-blue-200" onclick="filterByCategory('${article.category}')">${article.category}</span>` : ''}
+                                </div>
+                                <h2 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                                    <a href="${article.link}" target="_blank" class="hover:text-blue-600 transition-colors">
+                                        ${article.title}
+                                    </a>
+                                </h2>
+                                ${showSourceInfo ? `
+                                <div class="text-sm text-gray-500">
+                                    <span class="feed-source">${article.source}</span>
+                                </div>
+                                ` : ''}
+                            </header>
+                            <div class="content-area">
+                                ${article.isRewritten ? `<div class="text-xs text-blue-600 mb-2 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.828-2.828z"/>
+                                    </svg>
+                                    AI Rewritten Story
+                                </div>` : ''}
+                                <div class="text-gray-700 leading-relaxed">
+                                    ${article.aiSummary}
+                                </div>
+                            </div>
+                        </article>`;
                 }
             }).join('');
         }
