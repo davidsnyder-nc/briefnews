@@ -3381,14 +3381,23 @@ Write exactly 3 sentences.`;
                     console.log('Feeds to use:', feedsToUse.map(f => f.name));
                 }
 
-                // Fetch articles from RSS feeds
-                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 2);
+                // Fetch articles from RSS feeds with balanced category distribution
+                const articles = await fetchArticlesFromFeeds(feedsToUse, maxArticles * 4);
                 
                 if (articles.length === 0) {
                     document.getElementById('statusMessage').textContent = 'No articles found. Please try again or check your feeds.';
                     document.getElementById('loader').classList.add('hidden');
                     return;
                 }
+
+                // Log article distribution by source category for debugging
+                const categoryDistribution = {};
+                articles.forEach(article => {
+                    const feed = feedsToUse.find(f => f.name === article.source);
+                    const category = feed ? feed.category : 'Unknown';
+                    categoryDistribution[category] = (categoryDistribution[category] || 0) + 1;
+                });
+                console.log('Article distribution by category:', categoryDistribution);
 
                 // Apply blocked terms filter
                 const blockedTerms = JSON.parse(localStorage.getItem('blockedTerms') || '[]');
