@@ -253,10 +253,6 @@
             <h3 class="text-lg font-medium mb-3 text-gray-600">Display Preferences</h3>
             <div class="grid grid-cols-1 gap-4">
                 <label class="flex items-center">
-                    <input type="checkbox" id="showReadingTime" class="mr-2" checked>
-                    <span>Show estimated reading time</span>
-                </label>
-                <label class="flex items-center">
                     <input type="checkbox" id="showSourceInfo" class="mr-2" checked>
                     <span>Show source information</span>
                 </label>
@@ -529,9 +525,6 @@
             const digestLength = localStorage.getItem('digestLength');
             if (digestLength) document.getElementById('digestLength').value = digestLength;
 
-            const showReadingTime = localStorage.getItem('showReadingTime');
-            if (showReadingTime !== null) document.getElementById('showReadingTime').checked = showReadingTime === 'true';
-
             const showSourceInfo = localStorage.getItem('showSourceInfo');
             if (showSourceInfo !== null) document.getElementById('showSourceInfo').checked = showSourceInfo === 'true';
 
@@ -553,7 +546,6 @@
             // Save other settings
             localStorage.setItem('maxArticles', document.getElementById('maxArticles').value);
             localStorage.setItem('digestLength', document.getElementById('digestLength').value);
-            localStorage.setItem('showReadingTime', document.getElementById('showReadingTime').checked);
             localStorage.setItem('showSourceInfo', document.getElementById('showSourceInfo').checked);
             localStorage.setItem('showCategories', document.getElementById('showCategories').checked);
 
@@ -1010,14 +1002,10 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5'
 
         function displayArticles(articles) {
             const container = document.getElementById('newsletterArea');
-            const showReadingTime = localStorage.getItem('showReadingTime') !== 'false';
             const showSourceInfo = localStorage.getItem('showSourceInfo') !== 'false';
             const showCategories = localStorage.getItem('showCategories') !== 'false';
 
             container.innerHTML = articles.map(article => {
-                // Calculate reading time based on full content, assuming 200 words per minute
-                const wordCount = (article.fullContent || article.aiSummary || '').split(' ').length;
-                const readingTime = showReadingTime ? Math.max(1, Math.ceil(wordCount / 200)) : 0;
                 const breakingClass = article.isBreaking ? 'breaking-news' : '';
                 const breakingBadge = article.isBreaking ? '<span class="breaking-tag">Breaking</span>' : '';
                 
@@ -1039,9 +1027,8 @@ Provide a ${digestLength === 'brief' ? '2-3' : digestLength === 'medium' ? '4-5'
                                 </a>
                             </h2>
                             ${showSourceInfo ? `
-                            <div class="flex justify-between items-center text-sm text-gray-500">
+                            <div class="text-sm text-gray-500">
                                 <span class="feed-source">${article.source}</span>
-                                ${showReadingTime ? `<span>${readingTime} min read</span>` : ''}
                             </div>
                             ` : ''}
                         </header>
