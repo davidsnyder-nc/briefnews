@@ -974,8 +974,33 @@ Write ONE sentence summary. Maximum 10 words.`;
                 return;
             }
 
-            // Show loading state
-            document.getElementById('statusMessage').textContent = 'Fetching and analyzing news articles...';
+            // Show loading state with witty message
+            const loadingMessages = [
+                "Convincing journalists to share their best stories...",
+                "Teaching AI to read between the headlines...",
+                "Herding cats... I mean, organizing news articles...",
+                "Downloading the latest gossip from news servers...",
+                "Asking the internet what happened today...",
+                "Translating news-speak into human language...",
+                "Sorting through the digital noise for real news...",
+                "Bribing RSS feeds with virtual cookies...",
+                "Connecting to the news matrix... red pill or blue pill?",
+                "Waking up sleeping news algorithms...",
+                "Negotiating with stubborn news servers...",
+                "Teaching robots to appreciate good journalism...",
+                "Filtering out the fake news from the real deals...",
+                "Summoning the news spirits from the cloud...",
+                "Converting coffee into breaking news alerts...",
+                "Asking AI what humans actually want to read...",
+                "Synchronizing with the global news consciousness...",
+                "Untangling the web of worldwide information...",
+                "Politely requesting updates from news headquarters...",
+                "Transforming data streams into digestible insights...",
+                "Curating today's digital newspaper just for you..."
+            ];
+            
+            const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            document.getElementById('statusMessage').textContent = randomMessage;
             document.getElementById('loader').classList.remove('hidden');
             document.getElementById('newsletterArea').innerHTML = '';
 
@@ -1742,7 +1767,23 @@ Write exactly 3 sentences.`;
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const loadMoreLoader = document.getElementById('loadMoreLoader');
             
-            // Show loading state
+            // Show loading state with witty message
+            const moreLoadingMessages = [
+                "Digging deeper into the news archives...",
+                "Asking reporters for their secret stash...",
+                "Searching for stories you haven't seen yet...",
+                "Convincing more servers to share their news...",
+                "Finding the articles hiding behind page 2...",
+                "Collecting bonus content from the internet...",
+                "Discovering stories that thought they were safe...",
+                "Expanding the news universe just for you...",
+                "Hunting for fresh content in digital corners...",
+                "Summoning additional news from the void..."
+            ];
+            
+            const randomMessage = moreLoadingMessages[Math.floor(Math.random() * moreLoadingMessages.length)];
+            loadMoreLoader.querySelector('span').textContent = randomMessage;
+            
             loadMoreBtn.style.display = 'none';
             loadMoreLoader.classList.remove('hidden');
             
