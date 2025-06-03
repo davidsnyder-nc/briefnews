@@ -3061,6 +3061,21 @@ Write exactly 3 sentences.`;
             }
 
             showToast('Generating newsletter...', 'info');
+            
+            // Generate newsletter HTML with audio player for downloads
+            const newsletterWithAudio = generateNewsletterHTML(visibleArticles, true);
+            // Generate newsletter HTML without audio player for printing/copying
+            const newsletterWithoutAudio = generateNewsletterHTML(visibleArticles, false);
+            
+            // Store both versions globally
+            window.currentNewsletterHTML = newsletterWithAudio;
+            window.currentNewsletterHTMLForPrint = newsletterWithoutAudio;
+            
+            // Show newsletter in modal
+            showNewsletterModal(newsletterWithAudio, visibleArticles.length);
+        }
+
+        function generateNewsletterHTML(visibleArticles, includeAudio) {
 
             // Calculate date range from articles
             const articleDates = visibleArticles
@@ -3274,7 +3289,7 @@ Write exactly 3 sentences.`;
             <strong>${visibleArticles.length} articles</strong> from <strong>${categoryText}</strong>
         </div>
         
-        <!-- Simple Audio Player -->
+        ${includeAudio ? `<!-- Simple Audio Player -->
         <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 20px; margin-bottom: 30px; text-align: center;">
             <h3 style="margin: 0 0 10px 0; color: #1e40af;">🎧 Listen to Newsletter</h3>
             <p style="margin: 0 0 15px 0; font-size: 12px; color: #6b7280;">AI-generated audio of your complete newsletter</p>
@@ -3287,7 +3302,7 @@ Write exactly 3 sentences.`;
                 </div>
             </div>
             <div id="audioStatus" style="font-size: 12px; color: #6b7280; margin-top: 10px;"></div>
-        </div>
+        </div>` : ''}
 `;
 
             // Add articles by category
@@ -3335,7 +3350,7 @@ Write exactly 3 sentences.`;
         </div>
     </div>
     
-    <script>
+    ${includeAudio ? `<script>
         function generateAudio() {
             const button = event.target;
             const statusDiv = document.getElementById('audioStatus');
@@ -3347,7 +3362,7 @@ Write exactly 3 sentences.`;
             statusDiv.textContent = 'Preparing newsletter content for audio generation...';
 
             // Compile newsletter text from the page
-            let newsletterText = 'Today\'s News Brief. ';
+            let newsletterText = 'Today\\'s News Brief. ';
             
             // Extract all article content from the page
             const articles = document.querySelectorAll('.article');
@@ -3418,12 +3433,11 @@ Write exactly 3 sentences.`;
                 button.disabled = false;
             }
         }
-    <\/script>
+    <\/script>` : ''}
 </body>
 </html>`;
 
-            // Show newsletter in modal
-            showNewsletterModal(newsletterHTML, visibleArticles.length);
+            return newsletterHTML;
         }
 
         function showNewsletterModal(newsletterHTML, articleCount) {
@@ -3476,9 +3490,9 @@ Write exactly 3 sentences.`;
         }
 
         function printNewsletter() {
-            if (window.currentNewsletterHTML) {
+            if (window.currentNewsletterHTMLForPrint) {
                 const printWindow = window.open('', '_blank');
-                printWindow.document.write(window.currentNewsletterHTML);
+                printWindow.document.write(window.currentNewsletterHTMLForPrint);
                 printWindow.document.close();
                 printWindow.focus();
                 printWindow.print();
@@ -3493,7 +3507,7 @@ Write exactly 3 sentences.`;
         }
 
         function copyNewsletterText() {
-            if (!window.currentNewsletterHTML) {
+            if (!window.currentNewsletterHTMLForPrint) {
                 showToast('No newsletter to copy', 'error');
                 return;
             }
@@ -3509,7 +3523,7 @@ Write exactly 3 sentences.`;
         }
 
         function copyAndOpenNotebookLM() {
-            if (!window.currentNewsletterHTML) {
+            if (!window.currentNewsletterHTMLForPrint) {
                 showToast('No newsletter to copy', 'error');
                 return;
             }
