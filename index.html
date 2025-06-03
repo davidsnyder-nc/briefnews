@@ -3108,28 +3108,29 @@ Write exactly 3 sentences.`;
                 modal.id = 'newsletterModal';
                 modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
                 modal.innerHTML = `
-                    <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] mx-4 flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold">Newsletter Generated</h2>
-                            <button onclick="closeNewsletterModal()" class="text-gray-500 hover:text-gray-700">
+                    <div class="bg-white rounded-lg p-6 max-w-2xl mx-4">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800 mb-2">Newsletter Generated</h2>
+                                <p class="text-gray-600">Newsletter with <strong id="modalArticleCount"></strong> articles ready for export.</p>
+                            </div>
+                            <button onclick="closeNewsletterModal()" class="text-gray-400 hover:text-gray-600 ml-4">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"/>
-                            </svg>
-                        </button>
-                        <div class="mb-4">
-                            <p class="text-gray-600">Newsletter with <strong id="modalArticleCount"></strong> articles ready for export.</p>
+                                    <path d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"/>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <button onclick="copyNewsletterText()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button onclick="copyNewsletterText()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
                                 Copy Text
                             </button>
-                            <button onclick="copyAndOpenNotebookLM()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                            <button onclick="copyAndOpenNotebookLM()" class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
                                 Copy & Open NotebookLM
                             </button>
-                            <button onclick="downloadNewsletter()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                            <button onclick="downloadNewsletter()" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
                                 Download HTML
                             </button>
-                            <button onclick="printNewsletter()" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                            <button onclick="printNewsletter()" class="w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm">
                                 Print
                             </button>
                         </div>
